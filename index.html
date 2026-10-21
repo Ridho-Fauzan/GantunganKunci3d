@@ -74,6 +74,19 @@
   #reviewHint { position: absolute; bottom: 118px; left: 50%; transform: translateX(-50%); font-size: 12px; opacity: .7; white-space: nowrap; pointer-events: none; }
   body.light-review #reviewHint { color: #3a2a4d; }
   body.grabbing canvas { cursor: grabbing; }
+  #rvSettings {
+    position: absolute; top: 64px; right: 16px; width: 280px; max-height: calc(100vh - 200px); overflow-y: auto;
+    background: rgba(20,16,28,.78); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,.12);
+    border-radius: 16px; padding: 14px 16px; font-size: 13px; color: #fff;
+  }
+  body.light-review #rvSettings { background: rgba(255,255,255,.9); color: #3a2a4d; border-color: rgba(60,30,90,.12); }
+  #rvSettings .rvTitle { font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: #b892ff; }
+  body.light-review #rvSettings .rvTitle { color: #7b3fe4; }
+  #rvSettings label { font-size: 12px; }
+  #rvSettings label .val { color: inherit; opacity: .7; }
+  #rvSettings select { background: rgba(255,255,255,.95); color: #3a2a4d; }
+  #rvSettings .rvNote { font-size: 11px; opacity: .75; margin-top: 4px; min-height: 0; }
+  #review button.ghost.on { background: #7b3fe4; border-color: #7b3fe4; color: #fff; }
   @media (max-width: 600px) {
     #panel { width: calc(100% - 24px); left: 12px; top: auto; bottom: 12px; max-height: 50vh; }
     #hint { display: none; }
@@ -117,6 +130,11 @@
   <div id="assetStatus"></div>
 
   <div id="customOpts" hidden>
+    <label for="bgModeSelect">Latar gambar</label>
+    <select id="bgModeSelect">
+      <option value="auto">Hapus otomatis (bentuk ikut outline)</option>
+      <option value="keep">Pertahankan latar (bentuk persegi)</option>
+    </select>
     <label for="borderRange">Border akrilik <span class="val" id="borderVal"></span></label>
     <input type="range" id="borderRange" min="0" max="40" value="14" />
     <label for="holeRange">Posisi lubang <span class="val" id="holeVal"></span></label>
@@ -140,7 +158,9 @@
 
   <h2>Tampilan</h2>
   <button id="presetBtn" class="secondary" style="width:100%">✨ Preset Chrome + Emas (gaya studio)</button>
-  <div class="check"><input type="checkbox" id="studioCheck" /><label for="studioCheck">Latar Studio (hitam + glow)</label></div>
+  <label for="envSelect">Latar / Environment</label>
+  <select id="envSelect" class="envSelect"></select>
+  <div class="note" id="envStatus"></div>
   <label for="finishSelect">Material</label>
   <select id="finishSelect">
     <option value="glossy">Akrilik Glossy</option>
@@ -182,6 +202,31 @@
   <div id="reviewTop">
     <button id="backBtn" class="ghost">← Editor</button>
     <div id="recBadge" hidden><span class="dot"></span><span id="recTime">00:00</span></div>
+    <button id="rvSettingsBtn" class="ghost">⚙️ Atur</button>
+  </div>
+  <div id="rvSettings" hidden>
+    <div class="rvTitle">Pengaturan Review</div>
+    <label for="rvEnvSelect">Environment</label>
+    <select id="rvEnvSelect" class="envSelect"></select>
+    <div class="rvNote" id="rvEnvStatus"></div>
+    <div id="rvBlurBox" hidden>
+      <label for="rvBlur">Blur latar <span class="val" id="rvBlurVal"></span></label>
+      <input type="range" id="rvBlur" min="0" max="100" value="15" />
+    </div>
+    <div class="check"><input type="checkbox" id="rvBloom" /><label for="rvBloom">Efek glow</label></div>
+    <div class="check"><input type="checkbox" id="rvPeg" checked /><label for="rvPeg">Tampilkan paku gantungan</label></div>
+
+    <div class="rvTitle" style="margin-top:14px">Putar 360°</div>
+    <div class="check"><input type="checkbox" id="rvAuto" checked /><label for="rvAuto">Putar 360° otomatis</label></div>
+    <label for="rvSpeed">Kecepatan <span class="val" id="rvSpeedVal"></span></label>
+    <input type="range" id="rvSpeed" min="0.5" max="12" step="0.5" value="2.5" />
+    <label for="rvDir">Arah</label>
+    <select id="rvDir">
+      <option value="1">⟳ Searah jarum jam</option>
+      <option value="-1">⟲ Berlawanan jarum jam</option>
+    </select>
+    <div class="check"><input type="checkbox" id="rvAutoSwing" checked /><label for="rvAutoSwing">Goyang otomatis</label></div>
+    <button id="rvRec360" style="width:100%;margin-top:12px">⏺ Rekam tepat 1 putaran 360°</button>
   </div>
   <div id="reviewHint">Tarik gantungan untuk mengayun • Drag latar untuk memutar • Scroll / pinch untuk zoom</div>
   <div id="reviewBar">
@@ -189,7 +234,7 @@
     <button id="rvSwing" class="ghost" title="Goyangkan">💨<span>Goyang</span></button>
     <button id="rvRecord" class="rec" title="Mulai / berhenti rekam"><span class="recIcon"></span></button>
     <button id="rvPhoto" class="ghost" title="Ambil foto PNG">📸<span>Foto</span></button>
-    <button id="rvBg" class="ghost" title="Ganti latar">🌗<span>Latar</span></button>
+    <button id="rvBg" class="ghost" title="Environment berikutnya">🌄<span>Latar</span></button>
   </div>
 </div>
 <div id="dropOverlay">Lepaskan gambar untuk dijadikan gantungan 🔑</div>
@@ -205,6 +250,7 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 
 // ---------- Renderer / Scene ----------
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -411,7 +457,7 @@ const SHAPES = { heart: heartShape, star: starShape, tag: tagShape, circle: circ
 const WORK = 560;   // working resolution (px) of the artwork's longest side
 const PAD = 120;    // transparent padding around the artwork (room for border + tab)
 const CHARM_SIZE = 2.8; // longest side of the acrylic in world units
-const custom = { img: null, name: '', border: 14, tol: 40, holePos: null, relief: 'light', data: null };
+const custom = { img: null, name: '', border: 14, tol: 40, holePos: null, relief: 'light', bgMode: 'auto', data: null };
 
 function traceContour(mask, W, H) {
   // Moore-neighbour boundary following (8-connected), starting at the first pixel in raster order.
@@ -486,8 +532,12 @@ function processAsset() {
   const fg = new Uint8Array(N);
   let transparent = 0;
   for (let y = PAD; y < PAD + ih; y++) for (let x = PAD; x < PAD + iw; x++) if (px[(y * W + x) * 4 + 3] < 200) transparent++;
-  const keyed = transparent < iw * ih * 0.01; // no real transparency → remove a solid background
-  if (!keyed) {
+  const keepBg = custom.bgMode === 'keep';
+  const keyed = !keepBg && transparent < iw * ih * 0.01; // no real transparency → remove a solid background
+  if (keepBg) {
+    // Keep the whole picture (incl. its background): the acrylic follows the image rectangle
+    for (let y = PAD; y < PAD + ih; y++) for (let x = PAD; x < PAD + iw; x++) fg[y * W + x] = 1;
+  } else if (!keyed) {
     for (let i = 0; i < N; i++) fg[i] = px[i * 4 + 3] >= 128 ? 1 : 0;
   } else {
     const corners = [[PAD, PAD], [PAD + iw - 1, PAD], [PAD, PAD + ih - 1], [PAD + iw - 1, PAD + ih - 1]];
@@ -561,7 +611,7 @@ function processAsset() {
   const holeR = Math.max(8, Math.round(fgSize * 0.03));
   const gap = Math.max(4, B * 0.45);
   const tabR = holeR * 2.1;
-  if (custom.holePos == null) custom.holePos = maxX > minX ? (topX - minX) / (maxX - minX) : 0.5;
+  if (custom.holePos == null) custom.holePos = keepBg || maxX <= minX ? 0.5 : (topX - minX) / (maxX - minX);
   const colX = Math.round(minX + custom.holePos * (maxX - minX));
   const win = Math.ceil(holeR + gap);
   let topFg = -1;
@@ -647,7 +697,7 @@ function processAsset() {
     outline: pts.map(([x, y]) => toWorld(x, y)),
     hole: { x: hw.x, y: hw.y, r: holeR * s },
     art: { tex, reliefTex, canvas: cv, w: W * s, h: H * s },
-    keyed, droppedPieces, removed: totalBody - bestSize
+    keyed, keepBg, droppedPieces, removed: totalBody - bestSize
   };
 }
 
@@ -870,27 +920,77 @@ $('reliefSelect').onchange = e => { custom.relief = e.target.value; if (custom.d
 setColor('#ff4f8b');
 applyFinish('glossy');
 
-// --- Studio look (black background, rim lights, bloom glow) ---
-state.studio = false;
-function setStudio(on) {
-  state.studio = on;
-  $('studioCheck').checked = on;
-  scene.background.set(on ? '#000000' : '#f3e9ff');
-  wall.visible = !on;
-  hemi.intensity = on ? 0.15 : 0.6;
-  sun.intensity = on ? 1.6 : 2.2;
-  rimA.intensity = on ? 18 : 0;
-  rimB.intensity = on ? 10 : 0;
-  renderer.toneMappingExposure = on ? 0.95 : 0.85;
-  // Darker, higher-contrast reflections so chrome reads as mirror metal on black
-  for (const m of [chromeMat, charmMat, textMat, goldReliefMat, pegMat]) m.envMapIntensity = on ? 0.55 : 1;
-  document.body.classList.toggle('light-review', !on);
+// --- Environments: light wall, black studio (rim lights + glow), HDRI scenes from Poly Haven (CC0) ---
+const ROOM_ENV = scene.environment;
+const ENVS = {
+  light: { label: '🟪 Terang (dinding)' },
+  studio: { label: '⬛ Studio Hitam + Glow' },
+  studio_small_09: { label: '📷 Studio Foto', hdri: true },
+  neon_photostudio: { label: '💡 Studio Neon', hdri: true },
+  venice_sunset: { label: '🌇 Sunset Venesia', hdri: true },
+  kloppenheim_06_puresky: { label: '☁️ Langit Cerah', hdri: true },
+  forest_slope: { label: '🌲 Hutan', hdri: true },
+  rooftop_night: { label: '🌃 Rooftop Malam', hdri: true },
+  shanghai_bund: { label: '🏙️ Kota Shanghai', hdri: true }
+};
+const ENV_KEYS = Object.keys(ENVS);
+for (const sel of document.querySelectorAll('.envSelect')) {
+  for (const k of ENV_KEYS) sel.add(new Option(ENVS[k].label, k));
 }
-$('studioCheck').onchange = e => setStudio(e.target.checked);
+const hdriUrl = n => `https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/${n}_1k.hdr`;
+const hdriCache = {};
+const rgbeLoader = new RGBELoader();
+function loadHDRI(name) {
+  if (!hdriCache[name]) {
+    hdriCache[name] = new Promise((resolve, reject) => rgbeLoader.load(hdriUrl(name), tex => {
+      tex.mapping = THREE.EquirectangularReflectionMapping;
+      resolve(tex);
+    }, undefined, reject));
+  }
+  return hdriCache[name];
+}
+function setEnvStatus(msg) { $('envStatus').textContent = msg; $('rvEnvStatus').textContent = msg; }
+function setBloom(on) { state.bloom = on; $('rvBloom').checked = on; }
+state.env = 'light'; state.bloom = false; state.blur = 0.15;
+let envRequest = 0;
+async function setEnvironment(name) {
+  if (!ENVS[name]) name = 'light';
+  for (const sel of document.querySelectorAll('.envSelect')) sel.value = name;
+  const req = ++envRequest;
+  const isHdri = !!ENVS[name].hdri, isStudio = name === 'studio', isLight = name === 'light';
+  $('rvBlurBox').hidden = !isHdri;
+  let hdr = null;
+  if (isHdri) {
+    setEnvStatus('⏳ Memuat environment...');
+    try { hdr = await loadHDRI(name); }
+    catch (err) {
+      delete hdriCache[name];
+      if (req === envRequest) { setEnvStatus('✖ Gagal memuat environment, cek koneksi internet.'); setEnvironment(state.env === name ? 'studio' : state.env); }
+      return;
+    }
+    if (req !== envRequest) return; // a newer choice was made while loading
+  }
+  setEnvStatus(isHdri ? 'HDRI: Poly Haven (CC0)' : '');
+  state.env = name;
+  scene.background = isHdri ? hdr : new THREE.Color(isStudio ? '#000000' : '#f3e9ff');
+  scene.environment = isHdri ? hdr : ROOM_ENV;
+  scene.backgroundBlurriness = isHdri ? state.blur : 0;
+  wall.visible = isLight;
+  hemi.intensity = isLight ? 0.6 : isStudio ? 0.15 : 0.1;
+  sun.intensity = isLight ? 2.2 : isStudio ? 1.6 : 1.0;
+  rimA.intensity = isStudio ? 18 : 0;
+  rimB.intensity = isStudio ? 10 : 0;
+  renderer.toneMappingExposure = isLight ? 0.85 : isStudio ? 0.95 : 0.9;
+  // Darker, higher-contrast reflections so chrome reads as mirror metal on black
+  for (const m of [chromeMat, charmMat, textMat, goldReliefMat, pegMat]) m.envMapIntensity = isStudio ? 0.55 : 1;
+  setBloom(isStudio);
+  document.body.classList.toggle('light-review', isLight);
+}
+for (const sel of document.querySelectorAll('.envSelect')) sel.onchange = e => setEnvironment(e.target.value);
 $('presetBtn').onclick = () => {
   setFinish('chromegold');
   setColor('#e6e6ec');
-  setStudio(true);
+  setEnvironment('studio');
   impulse(0.8);
 };
 
@@ -903,6 +1003,7 @@ function updateCustomUI() {
   $('holeRange').value = Math.round(custom.holePos * 100);
   $('tolVal').textContent = custom.tol;
   $('tolBox').hidden = !custom.data?.keyed;
+  $('bgModeSelect').value = custom.bgMode;
 }
 
 function runProcess() {
@@ -911,7 +1012,7 @@ function runProcess() {
     updateCustomUI();
     const d = custom.data;
     let msg = `✔ "${custom.name}" → outline ${d.outline.length} titik. ` +
-      (d.keyed ? 'Latar polos dihapus otomatis.' : 'Pakai transparansi gambar.');
+      (d.keepBg ? 'Latar gambar dipertahankan.' : d.keyed ? 'Latar polos dihapus otomatis.' : 'Pakai transparansi gambar.');
     if (d.droppedPieces > 0) msg += ` ⚠ ${d.droppedPieces} bagian terpisah dibuang, naikkan border supaya menyatu.`;
     setStatus(msg, d.droppedPieces > 0 ? '' : 'ok');
     if (state.shape === 'custom') buildCharm();
@@ -964,6 +1065,7 @@ $('sampleBtn').onclick = () => useAsset(makeSampleAsset(), 'contoh');
 $('borderRange').oninput = e => { custom.border = +e.target.value; updateCustomUI(); scheduleProcess(); };
 $('holeRange').oninput = e => { custom.holePos = e.target.value / 100; updateCustomUI(); scheduleProcess(); };
 $('tolRange').oninput = e => { custom.tol = +e.target.value; updateCustomUI(); scheduleProcess(); };
+$('bgModeSelect').onchange = e => { custom.bgMode = e.target.value; custom.holePos = null; runProcess(); impulse(0.5); };
 
 // Drag & drop
 let dragDepth = 0;
@@ -1038,21 +1140,49 @@ const baseName = () => 'gantungan-kunci' + (state.shape === 'custom' && custom.n
 
 // Video (WebM) – shared recorder for the editor (6 s) and the Review page (free length, max 60 s)
 const MAX_REC_MS = 60000;
-let recorder = null, recStartedAt = 0, recTick = 0, recAutoStop = 0;
+let recorder = null, recStartedAt = 0, recTick = 0, recAutoStop = 0, recTrack = null;
 function isRecording() { return recorder && recorder.state === 'recording'; }
 function startRecording(maxMs = MAX_REC_MS) {
   if (!window.MediaRecorder || !renderer.domElement.captureStream) { alert('Browser ini tidak mendukung perekaman video.'); return false; }
   if (isRecording()) return false;
-  const stream = renderer.domElement.captureStream(60);
-  const mime = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm']
+  // Every rendered WebGL frame is copied onto a 2D canvas, and that 2D canvas is recorded.
+  // This is independent of WebGL's drawing-buffer/compositing behaviour (e.g. with transmission materials).
+  const src = renderer.domElement;
+  recCanvas.width = src.width; recCanvas.height = src.height;
+  recCtx.fillStyle = '#000'; recCtx.fillRect(0, 0, recCanvas.width, recCanvas.height);
+  const stream = recCanvas.captureStream(0);
+  recTrack = stream.getVideoTracks()[0];
+  if (typeof recTrack.requestFrame !== 'function') { // very old browsers: let the canvas push frames itself
+    stream.getTracks().forEach(t => t.stop());
+    recTrack = null;
+    return beginRecorder(recCanvas.captureStream(60), maxMs);
+  }
+  return beginRecorder(stream, maxMs);
+}
+const recCanvas = document.createElement('canvas');
+const recCtx = recCanvas.getContext('2d');
+function captureRecFrame() {
+  if (!isRecording()) return;
+  const src = renderer.domElement;
+  if (recCanvas.width !== src.width || recCanvas.height !== src.height) { recCanvas.width = src.width; recCanvas.height = src.height; }
+  recCtx.drawImage(src, 0, 0);
+  if (recTrack) recTrack.requestFrame();
+}
+function beginRecorder(stream, maxMs) {
+  // VP8 first: much lighter to encode than VP9, so it keeps up even on slow devices
+  const mime = ['video/webm;codecs=vp8', 'video/webm;codecs=vp9', 'video/webm']
     .find(m => MediaRecorder.isTypeSupported(m)) || '';
-  recorder = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 10e6 } : undefined);
+  recorder = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 8e6 } : undefined);
   const chunks = [];
   recorder.ondataavailable = e => e.data.size && chunks.push(e.data);
   recorder.onstop = () => {
     clearInterval(recTick); clearTimeout(recAutoStop);
-    download(new Blob(chunks, { type: 'video/webm' }), baseName() + '.webm');
+    recTrack = null;
+    stream.getTracks().forEach(t => t.stop());
+    const blob = new Blob(chunks, { type: 'video/webm' });
     updateRecUI();
+    if (blob.size < 1024) { alert('Rekaman kosong (tidak ada frame yang tertangkap). Coba rekam lagi.'); return; }
+    download(blob, baseName() + '.webm');
   };
   recorder.start(250);
   recStartedAt = performance.now();
@@ -1074,13 +1204,19 @@ function updateRecUI() {
 $('recordBtn').onclick = () => { if (startRecording(6000)) impulse(1); };
 
 // ---------- Review page ----------
+let savedView = null;
 function enterReview() {
   if (document.body.classList.contains('reviewing')) return;
   document.body.classList.add('reviewing');
   $('review').hidden = false;
-  setStudio(true);
-  controls.autoRotate = true;
-  $('rvRotate').classList.add('on');
+  if (state.env === 'light') setEnvironment('studio');
+  setAutoRotate($('rvAuto').checked);
+  // Frame the keychain a bit higher & further so the bottom toolbar doesn't cover the charm
+  savedView = { pos: camera.position.clone(), target: controls.target.clone() };
+  const offset = camera.position.clone().sub(controls.target);
+  controls.target.set(0, -0.7, 0);
+  camera.position.copy(controls.target).add(offset.setLength(Math.max(offset.length(), 11.5)));
+  controls.update();
   if (location.hash !== '#review') history.pushState(null, '', '#review');
   impulse(0.8);
 }
@@ -1090,6 +1226,8 @@ function exitReview() {
   document.body.classList.remove('reviewing');
   $('review').hidden = true;
   controls.autoRotate = false;
+  $('rvSettings').hidden = true; $('rvSettingsBtn').classList.remove('on');
+  if (savedView) { camera.position.copy(savedView.pos); controls.target.copy(savedView.target); controls.update(); savedView = null; }
   if (location.hash === '#review') history.pushState(null, '', location.pathname + location.search);
 }
 $('reviewBtn').onclick = enterReview;
@@ -1102,9 +1240,47 @@ addEventListener('keydown', e => {
 });
 $('rvRecord').onclick = () => (isRecording() ? stopRecording() : startRecording());
 $('rvSwing').onclick = () => impulse(1.2);
-$('rvRotate').onclick = () => { controls.autoRotate = !controls.autoRotate; $('rvRotate').classList.toggle('on', controls.autoRotate); };
-$('rvBg').onclick = () => setStudio(!state.studio);
 $('rvPhoto').onclick = () => $('pngBtn').click();
+
+// Review settings: environment, glow, peg, 360° auto-rotate (speed + direction), record one full turn
+function setAutoRotate(on) {
+  controls.autoRotate = on;
+  $('rvAuto').checked = on;
+  $('rvRotate').classList.toggle('on', on);
+}
+function rotationSeconds() { return 60 / Math.abs(controls.autoRotateSpeed); } // OrbitControls: 60/speed s per orbit
+function updateSpeed() {
+  const speed = +$('rvSpeed').value, dir = +$('rvDir').value;
+  controls.autoRotateSpeed = speed * dir;
+  $('rvSpeedVal').textContent = `≈ ${Math.round(rotationSeconds())} dtk / putaran`;
+}
+function updateBlur() {
+  state.blur = $('rvBlur').value / 100;
+  $('rvBlurVal').textContent = $('rvBlur').value + '%';
+  if (ENVS[state.env].hdri) scene.backgroundBlurriness = state.blur;
+}
+$('rvRotate').onclick = () => setAutoRotate(!controls.autoRotate);
+$('rvAuto').onchange = e => setAutoRotate(e.target.checked);
+$('rvSpeed').oninput = updateSpeed;
+$('rvDir').onchange = updateSpeed;
+$('rvBlur').oninput = updateBlur;
+$('rvBloom').onchange = e => setBloom(e.target.checked);
+$('rvPeg').onchange = e => { peg.visible = pegCap.visible = e.target.checked; };
+$('rvAutoSwing').onchange = e => { $('autoSwing').checked = e.target.checked; };
+$('autoSwing').addEventListener('change', e => { $('rvAutoSwing').checked = e.target.checked; });
+$('rvSettingsBtn').onclick = () => {
+  const open = $('rvSettings').hidden;
+  $('rvSettings').hidden = !open;
+  $('rvSettingsBtn').classList.toggle('on', open);
+};
+$('rvBg').onclick = () => setEnvironment(ENV_KEYS[(ENV_KEYS.indexOf(state.env) + 1) % ENV_KEYS.length]);
+$('rvRec360').onclick = () => {
+  if (isRecording()) return;
+  setAutoRotate(true);
+  if (startRecording(rotationSeconds() * 1000 + 200)) $('rvSettings').hidden = true, $('rvSettingsBtn').classList.remove('on');
+};
+updateSpeed();
+updateBlur();
 
 // 3D model (GLB) – exported in rest pose
 $('glbBtn').onclick = () => {
@@ -1163,8 +1339,9 @@ addEventListener('resize', () => {
 });
 
 function renderFrame() {
-  if (state.studio) composer.render();
+  if (state.bloom) composer.render();
   else renderer.render(scene, camera);
+  captureRecFrame(); // copy the finished frame to the recorder canvas (same task, buffer still valid)
 }
 
 const clock = new THREE.Clock();

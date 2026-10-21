@@ -21,6 +21,7 @@ Animasi 3D gantungan kunci interaktif yang dibuat dengan [Three.js](https://thre
 
 Upload (atau drag & drop) logo/artwork kamu, lalu bentuk akriliknya otomatis **mengikuti outline gambar**:
 - PNG/WebP/SVG transparan memakai alpha gambar. JPG berlatar polos, latarnya dihapus otomatis (toleransi bisa diatur).
+- **Latar gambar → Pertahankan latar**: background gambar tidak dihapus, jadi akriliknya berbentuk persegi mengikuti gambar (cocok untuk foto atau ilustrasi full).
 - **Border akrilik** di sekeliling artwork bisa diatur tebalnya.
 - **Lubang gantungan** otomatis di titik paling atas, dan posisinya bisa digeser.
 - Artwork dicetak di kedua sisi. Bagian dalam yang bolong otomatis diisi supaya akriliknya solid.
@@ -32,12 +33,17 @@ Upload (atau drag & drop) logo/artwork kamu, lalu bentuk akriliknya otomatis **m
 - Tombol **✨ Preset Chrome + Emas** untuk mengaktifkan semuanya sekaligus
 
 ### Halaman Review
-<img src="docs/review.png" alt="Halaman Review" width="560" />
+<img src="docs/review.png" alt="Halaman Review" width="420" /> <img src="docs/review-env.png" alt="Review dengan environment HDRI" width="420" />
 
 Klik **🎬 Buka Halaman Review** (atau buka `index.html#review`). Hasilnya tampilan layar penuh tanpa panel editor:
 - **Tarik gantungan** untuk mengayun, **drag latar** untuk memutar kamera, scroll/pinch untuk zoom
-- 🔄 Putar otomatis 360°, 💨 Goyang, 🌗 Ganti latar (studio/terang), 📸 Foto PNG
+- 🔄 Putar otomatis 360°, 💨 Goyang, 🌄 Ganti environment, 📸 Foto PNG
 - ⏺ **Rekam bebas**: tekan untuk mulai dan tekan lagi untuk berhenti (maks. 60 detik). Video langsung terunduh sebagai `.webm`
+- ⚙️ **Atur**:
+  - **Environment**: Terang, Studio Hitam + Glow, atau 7 HDRI ([Poly Haven](https://polyhaven.com/hdris), CC0): Studio Foto, Studio Neon, Sunset Venesia, Langit Cerah, Hutan, Rooftop Malam, Kota Shanghai. HDRI juga menjadi sumber pantulan cahaya di chrome/akrilik.
+  - Blur latar, efek glow, tampilkan/sembunyikan paku
+  - **Putar 360° otomatis** dengan kecepatan (5–120 detik per putaran) dan arah
+  - **Rekam tepat 1 putaran 360°**: video berhenti otomatis setelah satu putaran penuh
 - Shortcut: `Spasi` untuk rekam/stop, `Esc` untuk kembali ke editor
 
 ### Export
