@@ -25,6 +25,20 @@ Upload (atau drag & drop) logo/artwork kamu, lalu bentuk akriliknya otomatis **m
 - Artwork dicetak di kedua sisi. Bagian dalam yang bolong otomatis diisi supaya akriliknya solid.
 - Opsi **miring sesuai titik berat**: bandul menggantung miring seperti aslinya kalau lubangnya tidak di tengah.
 
+### Gaya Chrome + Emas (studio)
+- Material **Chrome + Emas Timbul**: badan chrome, dan bagian artwork yang dipilih (terang, gelap, atau semua) jadi timbul emas
+- **Latar Studio**: background hitam, rim light, dan efek glow (bloom)
+- Tombol **✨ Preset Chrome + Emas** untuk mengaktifkan semuanya sekaligus
+
+### Halaman Review
+<img src="docs/review.png" alt="Halaman Review" width="560" />
+
+Klik **🎬 Buka Halaman Review** (atau buka `index.html#review`). Hasilnya tampilan layar penuh tanpa panel editor:
+- **Tarik gantungan** untuk mengayun, **drag latar** untuk memutar kamera, scroll/pinch untuk zoom
+- 🔄 Putar otomatis 360°, 💨 Goyang, 🌗 Ganti latar (studio/terang), 📸 Foto PNG
+- ⏺ **Rekam bebas**: tekan untuk mulai dan tekan lagi untuk berhenti (maks. 60 detik). Video langsung terunduh sebagai `.webm`
+- Shortcut: `Spasi` untuk rekam/stop, `Esc` untuk kembali ke editor
+
 ### Export
 - 🧊 **Model 3D `.glb`**: bisa dibuka di Blender, viewer 3D, atau dipakai di web/AR
 - 📸 **Gambar `.png`**: screenshot tampilan saat ini

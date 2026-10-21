@@ -45,6 +45,35 @@
     color: #5a2db0; background: rgba(243,233,255,.85); border: 4px dashed #7b3fe4; z-index: 10; pointer-events: none; }
   #hint { position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%); font-size: 12px; color: #6b5a80; background: rgba(255,255,255,.7); padding: 6px 12px; border-radius: 20px; }
   [hidden] { display: none !important; }
+
+  /* ---------- Review page ---------- */
+  body.reviewing #panel, body.reviewing #hint { display: none; }
+  #review { position: fixed; inset: 0; pointer-events: none; z-index: 5; color: #fff; }
+  #review > * { pointer-events: auto; }
+  #reviewTop { position: absolute; top: 16px; left: 16px; right: 16px; display: flex; justify-content: space-between; align-items: center; pointer-events: none; }
+  #reviewTop > * { pointer-events: auto; }
+  #review button.ghost {
+    flex: none; background: rgba(255,255,255,.12); color: #fff; backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,.18); border-radius: 999px; padding: 9px 14px; font-size: 14px;
+  }
+  body.light-review #review button.ghost { background: rgba(60,30,90,.08); color: #3a2a4d; border-color: rgba(60,30,90,.15); }
+  #review button.ghost.on { background: #7b3fe4; border-color: #7b3fe4; color: #fff; }
+  #reviewBar {
+    position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 14px; align-items: center;
+  }
+  #reviewBar button.ghost { display: flex; flex-direction: column; align-items: center; gap: 2px; width: 62px; padding: 8px 0; border-radius: 16px; font-size: 20px; }
+  #reviewBar button.ghost span { font-size: 11px; font-weight: 600; }
+  #rvRecord { flex: none; width: 72px; height: 72px; border-radius: 50%; padding: 0; background: transparent; border: 4px solid #fff; display: grid; place-items: center; }
+  body.light-review #rvRecord { border-color: #3a2a4d; }
+  #rvRecord .recIcon { width: 52px; height: 52px; border-radius: 50%; background: #ff2d55; transition: all .2s; }
+  #rvRecord.recording .recIcon { width: 26px; height: 26px; border-radius: 6px; }
+  #recBadge { display: flex; align-items: center; gap: 8px; background: rgba(255,45,85,.9); padding: 6px 12px; border-radius: 999px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  #recBadge .dot { width: 9px; height: 9px; border-radius: 50%; background: #fff; animation: blink 1s infinite; }
+  @keyframes blink { 50% { opacity: .2; } }
+  #reviewHint { position: absolute; bottom: 118px; left: 50%; transform: translateX(-50%); font-size: 12px; opacity: .7; white-space: nowrap; pointer-events: none; }
+  body.light-review #reviewHint { color: #3a2a4d; }
+  body.grabbing canvas { cursor: grabbing; }
   @media (max-width: 600px) {
     #panel { width: calc(100% - 24px); left: 12px; top: auto; bottom: 12px; max-height: 50vh; }
     #hint { display: none; }
@@ -92,6 +121,12 @@
     <input type="range" id="borderRange" min="0" max="40" value="14" />
     <label for="holeRange">Posisi lubang <span class="val" id="holeVal"></span></label>
     <input type="range" id="holeRange" min="0" max="100" value="50" />
+    <label for="reliefSelect">Bagian timbul (mode Chrome + Emas)</label>
+    <select id="reliefSelect">
+      <option value="light">Bagian terang artwork</option>
+      <option value="dark">Bagian gelap artwork</option>
+      <option value="all">Seluruh artwork</option>
+    </select>
     <div id="tolBox" hidden>
       <label for="tolRange">Toleransi hapus latar <span class="val" id="tolVal"></span></label>
       <input type="range" id="tolRange" min="5" max="150" value="40" />
@@ -99,12 +134,19 @@
   </div>
   <div class="check"><input type="checkbox" id="tiltCheck" checked /><label for="tiltCheck">Miring sesuai titik berat</label></div>
 
+  <h2>Review</h2>
+  <button id="reviewBtn" style="width:100%">🎬 Buka Halaman Review</button>
+  <div class="note">Layar penuh tanpa panel: putar, tarik &amp; ayunkan gantungan dengan bebas, lalu rekam videonya.</div>
+
   <h2>Tampilan</h2>
+  <button id="presetBtn" class="secondary" style="width:100%">✨ Preset Chrome + Emas (gaya studio)</button>
+  <div class="check"><input type="checkbox" id="studioCheck" /><label for="studioCheck">Latar Studio (hitam + glow)</label></div>
   <label for="finishSelect">Material</label>
   <select id="finishSelect">
     <option value="glossy">Akrilik Glossy</option>
     <option value="clear">Akrilik Bening</option>
     <option value="metal">Metalik</option>
+    <option value="chromegold">Chrome + Emas Timbul</option>
     <option value="matte">Doff (Matte)</option>
   </select>
 
@@ -131,7 +173,23 @@
   </div>
   <div class="note">SVG berisi garis potong merah (outline + lubang) dan artwork sesuai ukuran mm, siap dikirim ke vendor akrilik.</div>
 </div>
-<div id="hint">Drag untuk memutar kamera • Scroll untuk zoom • Klik gantungan untuk menggoyangkan</div>
+<div id="hint">Drag latar untuk memutar kamera • Scroll untuk zoom • Tarik gantungan untuk mengayun</div>
+
+<!-- Review page (fullscreen, editor hidden) -->
+<div id="review" hidden>
+  <div id="reviewTop">
+    <button id="backBtn" class="ghost">← Editor</button>
+    <div id="recBadge" hidden><span class="dot"></span><span id="recTime">00:00</span></div>
+  </div>
+  <div id="reviewHint">Tarik gantungan untuk mengayun • Drag latar untuk memutar • Scroll / pinch untuk zoom</div>
+  <div id="reviewBar">
+    <button id="rvRotate" class="ghost toggle" title="Putar otomatis 360°">🔄<span>Putar</span></button>
+    <button id="rvSwing" class="ghost" title="Goyangkan">💨<span>Goyang</span></button>
+    <button id="rvRecord" class="rec" title="Mulai / berhenti rekam"><span class="recIcon"></span></button>
+    <button id="rvPhoto" class="ghost" title="Ambil foto PNG">📸<span>Foto</span></button>
+    <button id="rvBg" class="ghost" title="Ganti latar">🌗<span>Latar</span></button>
+  </div>
+</div>
 <div id="dropOverlay">Lepaskan gambar untuk dijadikan gantungan 🔑</div>
 
 <script type="module">
@@ -141,6 +199,10 @@ import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { FontLoader } from 'three/addons/loaders/FontLoader.js';
 import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 
 // ---------- Renderer / Scene ----------
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -166,7 +228,15 @@ controls.target.set(0, -0.2, 0);
 controls.enableDamping = true;
 controls.minDistance = 4;
 controls.maxDistance = 16;
+controls.autoRotateSpeed = 2.5;
 controls.update();
+
+// Post-processing (bloom/glow) – used in Studio mode
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.32, 0.35, 0.92);
+composer.addPass(bloom);
+composer.addPass(new OutputPass());
 
 // Lights
 scene.add(new THREE.HemisphereLight(0xffffff, 0xd9c6f0, 0.6));
@@ -179,6 +249,14 @@ sun.shadow.camera.top = 5; sun.shadow.camera.bottom = -5;
 sun.shadow.radius = 6;
 sun.shadow.bias = -0.0005;
 scene.add(sun);
+const hemi = scene.children.find(o => o.isHemisphereLight);
+
+// Rim lights for Studio mode (off by default)
+const rimA = new THREE.PointLight(0xffffff, 0, 30);
+rimA.position.set(-4, 2.5, -3);
+const rimB = new THREE.PointLight(0xfff2dd, 0, 30);
+rimB.position.set(4, -1.5, -2.5);
+scene.add(rimA, rimB);
 
 // Wall behind
 const wall = new THREE.Mesh(
@@ -195,6 +273,7 @@ const pegMat = new THREE.MeshStandardMaterial({ color: 0xc9a46a, metalness: 0.9,
 const charmMat = new THREE.MeshPhysicalMaterial({ color: '#ff4f8b' });
 const textMat = new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.3, clearcoat: 1 });
 const artMat = new THREE.MeshStandardMaterial({ roughness: 0.35, alphaTest: 0.4 });
+const goldReliefMat = new THREE.MeshStandardMaterial({ color: 0xf5bd4f, metalness: 1, roughness: 0.18, alphaTest: 0.5, side: THREE.DoubleSide });
 
 function applyFinish(finish) {
   Object.assign(charmMat, {
@@ -207,10 +286,16 @@ function applyFinish(finish) {
   } else if (finish === 'metal') {
     charmMat.metalness = 1; charmMat.roughness = 0.22; charmMat.clearcoat = 0;
     textMat.metalness = 1; textMat.roughness = 0.15; textMat.color.set(0xf1f1f5);
+  } else if (finish === 'chromegold') {
+    charmMat.metalness = 1; charmMat.roughness = 0.1; charmMat.clearcoat = 0;
+    textMat.color.set(0xe3a23a); textMat.metalness = 1; textMat.roughness = 0.22;
   } else if (finish === 'matte') {
     charmMat.roughness = 0.85; charmMat.clearcoat = 0;
   }
   charmMat.needsUpdate = true; textMat.needsUpdate = true;
+  const reliefChanged = (state.finish === 'chromegold') !== (finish === 'chromegold');
+  state.finish = finish;
+  if (reliefChanged && state.shape === 'custom') buildCharm();
 }
 
 // ---------- Build keychain hierarchy ----------
@@ -324,7 +409,7 @@ const SHAPES = { heart: heartShape, star: starShape, tag: tagShape, circle: circ
 const WORK = 560;   // working resolution (px) of the artwork's longest side
 const PAD = 120;    // transparent padding around the artwork (room for border + tab)
 const CHARM_SIZE = 2.8; // longest side of the acrylic in world units
-const custom = { img: null, name: '', border: 14, tol: 40, holePos: null, data: null };
+const custom = { img: null, name: '', border: 14, tol: 40, holePos: null, relief: 'light', data: null };
 
 function traceContour(mask, W, H) {
   // Moore-neighbour boundary following (8-connected), starting at the first pixel in raster order.
@@ -530,15 +615,36 @@ function processAsset() {
   const toWorld = (x, y) => new THREE.Vector2((x - W / 2) * s, -(y - H / 2) * s);
 
   if (custom.data?.art?.tex) custom.data.art.tex.dispose();
+  if (custom.data?.art?.reliefTex) custom.data.art.reliefTex.dispose();
   const tex = new THREE.CanvasTexture(cv);
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+
+  // 6. Relief mask (raised gold part in "Chrome + Emas" mode): light / dark / all artwork pixels
+  const rc = document.createElement('canvas');
+  rc.width = W; rc.height = H;
+  const rctx = rc.getContext('2d');
+  const art = ctx.getImageData(0, 0, W, H).data;
+  const rid = rctx.createImageData(W, H), rp = rid.data;
+  for (let i = 0; i < N; i++) {
+    const o = i * 4;
+    let on = art[o + 3] >= 128;
+    if (on && custom.relief !== 'all') {
+      const lum = 0.299 * art[o] + 0.587 * art[o + 1] + 0.114 * art[o + 2];
+      on = custom.relief === 'dark' ? lum < 110 : lum >= 140;
+    }
+    const v = on ? 255 : 0;
+    rp[o] = rp[o + 1] = rp[o + 2] = v; rp[o + 3] = 255;
+  }
+  rctx.putImageData(rid, 0, 0);
+  const reliefTex = new THREE.CanvasTexture(rc);
+  reliefTex.anisotropy = renderer.capabilities.getMaxAnisotropy();
 
   const hw = toWorld(hx, hy);
   custom.data = {
     outline: pts.map(([x, y]) => toWorld(x, y)),
     hole: { x: hw.x, y: hw.y, r: holeR * s },
-    art: { tex, canvas: cv, w: W * s, h: H * s },
+    art: { tex, reliefTex, canvas: cv, w: W * s, h: H * s },
     keyed, droppedPieces, removed: totalBody - bestSize
   };
 }
@@ -565,7 +671,7 @@ function polygonCentroid(pts) {
 let charmGroup = null;
 let currentDef = null;
 let font = null;
-const state = { shape: 'heart', text: 'KIRO', tilt: true };
+const state = { shape: 'heart', text: 'KIRO', tilt: true, finish: 'glossy' };
 
 function disposeGroup(g) {
   g.traverse(o => { if (o.isMesh) o.geometry.dispose(); });
@@ -592,7 +698,21 @@ function buildCharm() {
   charmGroup.add(new THREE.Mesh(geo, charmMat));
   const zFront = depth / 2 + bevelT;
 
-  if (def.art) {
+  const reliefGroup = new THREE.Group(); // added after shadows are set (alpha-tested layers cast no shadow)
+  if (def.art && state.finish === 'chromegold') {
+    // Raised gold relief: a stack of alpha-masked layers on both faces (reads as solid metal)
+    goldReliefMat.alphaMap = def.art.reliefTex; goldReliefMat.needsUpdate = true;
+    const pg = new THREE.PlaneGeometry(def.art.w, def.art.h);
+    const LAYERS = 14, RELIEF = 0.08;
+    for (const side of [1, -1]) {
+      for (let l = 0; l < LAYERS; l++) {
+        const p = new THREE.Mesh(pg, goldReliefMat);
+        p.position.z = side * (zFront + 0.002 + (RELIEF * l) / (LAYERS - 1));
+        if (side < 0) p.rotation.y = Math.PI;
+        reliefGroup.add(p);
+      }
+    }
+  } else if (def.art) {
     // Printed artwork on both faces
     artMat.map = def.art.tex; artMat.needsUpdate = true;
     const pg = new THREE.PlaneGeometry(def.art.w, def.art.h);
@@ -633,6 +753,7 @@ function buildCharm() {
     charmHang.rotation.z = -Math.PI / 2 - Math.atan2(c.y, c.x);
   }
   charmHang.add(addShadow(charmGroup));
+  charmGroup.add(reliefGroup);
   currentDef = def;
 }
 
@@ -727,8 +848,33 @@ $('shapeSelect').onchange = e => { setShape(e.target.value); impulse(0.6); };
 $('finishSelect').onchange = e => applyFinish(e.target.value);
 $('swingBtn').onclick = () => impulse(1);
 $('tiltCheck').onchange = e => { state.tilt = e.target.checked; buildCharm(); };
+$('reliefSelect').onchange = e => { custom.relief = e.target.value; if (custom.data) runProcess(); };
 setColor('#ff4f8b');
 applyFinish('glossy');
+
+// --- Studio look (black background, rim lights, bloom glow) ---
+state.studio = false;
+function setStudio(on) {
+  state.studio = on;
+  $('studioCheck').checked = on;
+  scene.background.set(on ? '#000000' : '#f3e9ff');
+  wall.visible = !on;
+  hemi.intensity = on ? 0.15 : 0.6;
+  sun.intensity = on ? 1.6 : 2.2;
+  rimA.intensity = on ? 18 : 0;
+  rimB.intensity = on ? 10 : 0;
+  renderer.toneMappingExposure = on ? 0.95 : 0.85;
+  // Darker, higher-contrast reflections so chrome reads as mirror metal on black
+  for (const m of [chromeMat, charmMat, textMat, goldReliefMat, pegMat]) m.envMapIntensity = on ? 0.55 : 1;
+  document.body.classList.toggle('light-review', !on);
+}
+$('studioCheck').onchange = e => setStudio(e.target.checked);
+$('presetBtn').onclick = () => {
+  setFinish('chromegold');
+  setColor('#e6e6ec');
+  setStudio(true);
+  impulse(0.8);
+};
 
 // --- Custom asset upload ---
 function setStatus(msg, cls = '') { const el = $('assetStatus'); el.textContent = msg; el.className = cls; }
@@ -827,20 +973,40 @@ function makeSampleAsset() {
   return c.toDataURL('image/png');
 }
 
-// --- Click (not drag) on the keychain → swing it ---
+// --- Grab & drag the keychain to swing it (tap = flick); dragging elsewhere orbits the camera ---
 const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
-let downPos = null;
-renderer.domElement.addEventListener('pointerdown', e => { downPos = [e.clientX, e.clientY]; });
-renderer.domElement.addEventListener('pointerup', e => {
-  if (!downPos) return;
-  const moved = Math.hypot(e.clientX - downPos[0], e.clientY - downPos[1]);
-  downPos = null;
-  if (moved > 5) return;
+const camRight = new THREE.Vector3();
+let grab = null;
+function hitsKeychain(e) {
   pointer.set((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
   raycaster.setFromCamera(pointer, camera);
-  if (raycaster.intersectObject(root, true).length) impulse(1.2);
+  return raycaster.intersectObject(root, true).length > 0;
+}
+// Capture phase on window so we decide before OrbitControls sees the event
+addEventListener('pointerdown', e => {
+  if (e.target !== renderer.domElement || !hitsKeychain(e)) return;
+  grab = { id: e.pointerId, x: e.clientX, y: e.clientY, lx: e.clientX, ly: e.clientY };
+  controls.enabled = false;
+  document.body.classList.add('grabbing');
+}, true);
+addEventListener('pointermove', e => {
+  if (!grab || e.pointerId !== grab.id) return;
+  const dx = e.clientX - grab.lx, dy = e.clientY - grab.ly;
+  grab.lx = e.clientX; grab.ly = e.clientY;
+  camRight.setFromMatrixColumn(camera.matrixWorld, 0);
+  swing.vz[0] += dx * 0.012 * camRight.x;
+  swing.vx[0] += -dx * 0.012 * camRight.z + dy * 0.004;
+  swing.vt += dx * 0.01;
 });
+addEventListener('pointerup', e => {
+  if (!grab || e.pointerId !== grab.id) return;
+  if (Math.hypot(e.clientX - grab.x, e.clientY - grab.y) < 5) impulse(1.2);
+  grab = null;
+  controls.enabled = true;
+  document.body.classList.remove('grabbing');
+});
+addEventListener('pointercancel', () => { grab = null; controls.enabled = true; document.body.classList.remove('grabbing'); });
 
 // ---------- Export ----------
 function download(blob, name) {
@@ -852,25 +1018,75 @@ function download(blob, name) {
 }
 const baseName = () => 'gantungan-kunci' + (state.shape === 'custom' && custom.name ? '-' + custom.name.replace(/\.[^.]+$/, '').replace(/[^\w-]+/g, '_') : '');
 
-// Video (WebM)
-$('recordBtn').onclick = () => {
-  if (!window.MediaRecorder) { alert('Browser ini tidak mendukung perekaman video.'); return; }
-  const btn = $('recordBtn');
+// Video (WebM) – shared recorder for the editor (6 s) and the Review page (free length, max 60 s)
+const MAX_REC_MS = 60000;
+let recorder = null, recStartedAt = 0, recTick = 0, recAutoStop = 0;
+function isRecording() { return recorder && recorder.state === 'recording'; }
+function startRecording(maxMs = MAX_REC_MS) {
+  if (!window.MediaRecorder || !renderer.domElement.captureStream) { alert('Browser ini tidak mendukung perekaman video.'); return false; }
+  if (isRecording()) return false;
   const stream = renderer.domElement.captureStream(60);
   const mime = ['video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm']
     .find(m => MediaRecorder.isTypeSupported(m)) || '';
-  const rec = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 8e6 } : undefined);
+  recorder = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 10e6 } : undefined);
   const chunks = [];
-  rec.ondataavailable = e => e.data.size && chunks.push(e.data);
-  rec.onstop = () => {
+  recorder.ondataavailable = e => e.data.size && chunks.push(e.data);
+  recorder.onstop = () => {
+    clearInterval(recTick); clearTimeout(recAutoStop);
     download(new Blob(chunks, { type: 'video/webm' }), baseName() + '.webm');
-    btn.disabled = false; btn.textContent = '🎥 Rekam 6 dtk';
+    updateRecUI();
   };
-  btn.disabled = true; btn.textContent = '⏺ Merekam...';
-  impulse(1);
-  rec.start();
-  setTimeout(() => rec.stop(), 6000);
-};
+  recorder.start(250);
+  recStartedAt = performance.now();
+  recTick = setInterval(updateRecUI, 250);
+  recAutoStop = setTimeout(stopRecording, maxMs);
+  updateRecUI();
+  return true;
+}
+function stopRecording() { if (isRecording()) recorder.stop(); }
+function updateRecUI() {
+  const on = isRecording();
+  const s = on ? Math.floor((performance.now() - recStartedAt) / 1000) : 0;
+  $('recTime').textContent = String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
+  $('recBadge').hidden = !on;
+  $('rvRecord').classList.toggle('recording', on);
+  $('recordBtn').disabled = on;
+  $('recordBtn').textContent = on ? '⏺ Merekam...' : '🎥 Rekam 6 dtk';
+}
+$('recordBtn').onclick = () => { if (startRecording(6000)) impulse(1); };
+
+// ---------- Review page ----------
+function enterReview() {
+  if (document.body.classList.contains('reviewing')) return;
+  document.body.classList.add('reviewing');
+  $('review').hidden = false;
+  setStudio(true);
+  controls.autoRotate = true;
+  $('rvRotate').classList.add('on');
+  if (location.hash !== '#review') history.pushState(null, '', '#review');
+  impulse(0.8);
+}
+function exitReview() {
+  if (!document.body.classList.contains('reviewing')) return;
+  stopRecording();
+  document.body.classList.remove('reviewing');
+  $('review').hidden = true;
+  controls.autoRotate = false;
+  if (location.hash === '#review') history.pushState(null, '', location.pathname + location.search);
+}
+$('reviewBtn').onclick = enterReview;
+$('backBtn').onclick = exitReview;
+addEventListener('popstate', () => (location.hash === '#review' ? enterReview() : exitReview()));
+addEventListener('keydown', e => {
+  if (!document.body.classList.contains('reviewing')) return;
+  if (e.key === 'Escape') exitReview();
+  if (e.key === ' ') { e.preventDefault(); isRecording() ? stopRecording() : startRecording(); }
+});
+$('rvRecord').onclick = () => (isRecording() ? stopRecording() : startRecording());
+$('rvSwing').onclick = () => impulse(1.2);
+$('rvRotate').onclick = () => { controls.autoRotate = !controls.autoRotate; $('rvRotate').classList.toggle('on', controls.autoRotate); };
+$('rvBg').onclick = () => setStudio(!state.studio);
+$('rvPhoto').onclick = () => $('pngBtn').click();
 
 // 3D model (GLB) – exported in rest pose
 $('glbBtn').onclick = () => {
@@ -887,7 +1103,7 @@ $('glbBtn').onclick = () => {
 
 // Screenshot (PNG)
 $('pngBtn').onclick = () => {
-  renderer.render(scene, camera);
+  renderFrame();
   renderer.domElement.toBlob(b => download(b, baseName() + '.png'), 'image/png');
 };
 
@@ -925,7 +1141,13 @@ addEventListener('resize', () => {
   camera.aspect = innerWidth / innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(innerWidth, innerHeight);
+  composer.setSize(innerWidth, innerHeight);
 });
+
+function renderFrame() {
+  if (state.studio) composer.render();
+  else renderer.render(scene, camera);
+}
 
 const clock = new THREE.Clock();
 let time = 0;
@@ -939,8 +1161,9 @@ renderer.setAnimationLoop(() => {
   }
   applyPhysics();
   controls.update();
-  renderer.render(scene, camera);
+  renderFrame();
 });
+if (location.hash === '#review') enterReview();
 </script>
 </body>
 </html>
