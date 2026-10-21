@@ -9,32 +9,44 @@
   html, body { margin: 0; height: 100%; overflow: hidden; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: #f3e9ff; }
   canvas { display: block; touch-action: none; }
   #panel {
-    position: fixed; top: 16px; left: 16px; width: 260px;
-    background: rgba(255,255,255,0.85); backdrop-filter: blur(10px);
+    position: fixed; top: 16px; left: 16px; width: 280px; max-height: calc(100vh - 32px); overflow-y: auto;
+    background: rgba(255,255,255,0.88); backdrop-filter: blur(10px);
     border-radius: 16px; padding: 16px; box-shadow: 0 8px 30px rgba(80,40,120,0.18);
     color: #3a2a4d; font-size: 14px;
   }
   #panel h1 { font-size: 18px; margin: 0 0 12px; }
+  #panel h2 { font-size: 13px; margin: 16px 0 6px; padding-top: 12px; border-top: 1px solid #e6dbf5; text-transform: uppercase; letter-spacing: .04em; color: #7b3fe4; }
   label { display: block; margin: 10px 0 4px; font-weight: 600; font-size: 13px; }
-  input[type=text], select {
+  label .val { float: right; font-weight: 500; color: #7b6a90; }
+  input[type=text], input[type=number], select {
     width: 100%; padding: 8px 10px; border-radius: 10px; border: 1px solid #d6c5ea; font-size: 14px; background: #fff;
   }
+  input[type=range] { width: 100%; accent-color: #7b3fe4; }
   .swatches { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
   .swatch { width: 26px; height: 26px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; box-shadow: 0 0 0 1px #ccc; }
   .swatch.active { box-shadow: 0 0 0 2px #7b3fe4; }
   input[type=color] { width: 30px; height: 30px; border: none; background: none; padding: 0; cursor: pointer; }
-  .row { display: flex; gap: 8px; margin-top: 14px; }
+  .row { display: flex; gap: 8px; margin-top: 10px; align-items: center; }
   button {
     flex: 1; padding: 9px 10px; border: none; border-radius: 10px; cursor: pointer;
     background: #7b3fe4; color: #fff; font-weight: 600; font-size: 13px;
   }
   button.secondary { background: #ece2fb; color: #5a2db0; }
   button:disabled { opacity: .6; cursor: wait; }
-  .check { display: flex; align-items: center; gap: 6px; margin-top: 12px; font-weight: 500; }
+  .check { display: flex; align-items: center; gap: 6px; margin-top: 10px; }
+  .check label { margin: 0; font-weight: 500; }
+  .note { font-size: 12px; color: #7b6a90; margin-top: 6px; line-height: 1.4; }
+  #assetStatus { font-size: 12px; margin-top: 8px; line-height: 1.4; }
+  #assetStatus.err { color: #c62828; }
+  #assetStatus.ok { color: #2e7d32; }
+  #assetThumb { display: none; width: 100%; max-height: 90px; object-fit: contain; margin-top: 8px; border-radius: 8px;
+    background: repeating-conic-gradient(#eee 0 25%, #fff 0 50%) 0 0 / 14px 14px; }
+  #dropOverlay { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; font-size: 22px; font-weight: 700;
+    color: #5a2db0; background: rgba(243,233,255,.85); border: 4px dashed #7b3fe4; z-index: 10; pointer-events: none; }
   #hint { position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%); font-size: 12px; color: #6b5a80; background: rgba(255,255,255,.7); padding: 6px 12px; border-radius: 20px; }
-  #toggle { display: none; }
+  [hidden] { display: none !important; }
   @media (max-width: 600px) {
-    #panel { width: calc(100% - 24px); left: 12px; top: auto; bottom: 12px; max-height: 50vh; overflow: auto; }
+    #panel { width: calc(100% - 24px); left: 12px; top: auto; bottom: 12px; max-height: 50vh; }
     #hint { display: none; }
   }
 </style>
@@ -51,17 +63,43 @@
 <div id="panel">
   <h1>🔑 Gantungan Kunci 3D</h1>
 
-  <label for="nameInput">Tulisan</label>
-  <input id="nameInput" type="text" maxlength="12" value="KIRO" />
-
   <label for="shapeSelect">Bentuk</label>
   <select id="shapeSelect">
-    <option value="heart">❤️ Hati</option>
+    <option value="custom" disabled>🖼️ Asset Custom (upload dulu)</option>
+    <option value="heart" selected>❤️ Hati</option>
     <option value="star">⭐ Bintang</option>
     <option value="tag">🏷️ Tag</option>
     <option value="circle">⚪ Bulat</option>
   </select>
 
+  <div id="textBox">
+    <label for="nameInput">Tulisan</label>
+    <input id="nameInput" type="text" maxlength="12" value="KIRO" />
+  </div>
+
+  <h2>Asset Custom</h2>
+  <input type="file" id="assetInput" accept="image/png,image/jpeg,image/webp,image/svg+xml" hidden />
+  <div class="row" style="margin-top:0">
+    <button id="uploadBtn">📁 Upload gambar</button>
+    <button id="sampleBtn" class="secondary">Contoh</button>
+  </div>
+  <div class="note">PNG transparan hasilnya paling rapi. JPG dengan latar polos, latarnya dihapus otomatis. Bisa juga drag &amp; drop gambar ke layar.</div>
+  <img id="assetThumb" alt="Preview asset" />
+  <div id="assetStatus"></div>
+
+  <div id="customOpts" hidden>
+    <label for="borderRange">Border akrilik <span class="val" id="borderVal"></span></label>
+    <input type="range" id="borderRange" min="0" max="40" value="14" />
+    <label for="holeRange">Posisi lubang <span class="val" id="holeVal"></span></label>
+    <input type="range" id="holeRange" min="0" max="100" value="50" />
+    <div id="tolBox" hidden>
+      <label for="tolRange">Toleransi hapus latar <span class="val" id="tolVal"></span></label>
+      <input type="range" id="tolRange" min="5" max="150" value="40" />
+    </div>
+  </div>
+  <div class="check"><input type="checkbox" id="tiltCheck" checked /><label for="tiltCheck">Miring sesuai titik berat</label></div>
+
+  <h2>Tampilan</h2>
   <label for="finishSelect">Material</label>
   <select id="finishSelect">
     <option value="glossy">Akrilik Glossy</option>
@@ -75,14 +113,26 @@
     <input type="color" id="colorPicker" value="#ff4f8b" title="Pilih warna" />
   </div>
 
-  <div class="check"><input type="checkbox" id="autoSwing" checked /><label for="autoSwing" style="margin:0;font-weight:500">Goyang otomatis</label></div>
-
+  <div class="check"><input type="checkbox" id="autoSwing" checked /><label for="autoSwing">Goyang otomatis</label></div>
   <div class="row">
     <button id="swingBtn">Goyangkan!</button>
     <button id="recordBtn" class="secondary">🎥 Rekam 6 dtk</button>
   </div>
+
+  <h2>Export</h2>
+  <div class="row" style="margin-top:0">
+    <button id="glbBtn" class="secondary">🧊 Model 3D (.glb)</button>
+    <button id="pngBtn" class="secondary">📸 Gambar (.png)</button>
+  </div>
+  <label for="sizeMm">Tinggi/lebar maks. akrilik (mm)</label>
+  <div class="row" style="margin-top:0">
+    <input type="number" id="sizeMm" min="10" max="300" value="60" style="flex:1" />
+    <button id="svgBtn" class="secondary" style="flex:1.4">✂️ Cut line (.svg)</button>
+  </div>
+  <div class="note">SVG berisi garis potong merah (outline + lubang) dan artwork sesuai ukuran mm, siap dikirim ke vendor akrilik.</div>
 </div>
 <div id="hint">Drag untuk memutar kamera • Scroll untuk zoom • Klik gantungan untuk menggoyangkan</div>
+<div id="dropOverlay">Lepaskan gambar untuk dijadikan gantungan 🔑</div>
 
 <script type="module">
 import * as THREE from 'three';
@@ -90,6 +140,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { FontLoader } from 'three/addons/loaders/FontLoader.js';
 import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
+import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 
 // ---------- Renderer / Scene ----------
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -143,6 +194,7 @@ const chromeMat = new THREE.MeshStandardMaterial({ color: 0xe8e8ee, metalness: 1
 const pegMat = new THREE.MeshStandardMaterial({ color: 0xc9a46a, metalness: 0.9, roughness: 0.3 });
 const charmMat = new THREE.MeshPhysicalMaterial({ color: '#ff4f8b' });
 const textMat = new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.3, clearcoat: 1 });
+const artMat = new THREE.MeshStandardMaterial({ roughness: 0.35, alphaTest: 0.4 });
 
 function applyFinish(finish) {
   Object.assign(charmMat, {
@@ -174,6 +226,7 @@ pegCap.castShadow = true;
 scene.add(pegCap);
 
 const root = new THREE.Group();
+root.name = 'GantunganKunci';
 root.position.set(0, 2.6, 0);
 scene.add(root);
 
@@ -221,11 +274,13 @@ jumpRing.rotation.y = Math.PI / 2;
 jumpRing.position.y = -0.13;
 charmJoint.add(addShadow(jumpRing));
 
-const charmTwist = new THREE.Group(); // rotates around Y (spinning charm)
+const charmTwist = new THREE.Group(); // spins around Y
 charmTwist.position.y = -0.28;
 charmJoint.add(charmTwist);
+const charmHang = new THREE.Group(); // tilt so the centre of mass hangs below the hole
+charmTwist.add(charmHang);
 
-// ---------- Charm shapes ----------
+// ---------- Built-in charm shapes ----------
 function heartShape() {
   const s = new THREE.Shape(), k = 0.075, n = 160;
   for (let i = 0; i <= n; i++) {
@@ -234,7 +289,7 @@ function heartShape() {
     const y = (13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t)) * k;
     i === 0 ? s.moveTo(x, y) : s.lineTo(x, y);
   }
-  return { shape: s, holeY: 0.12, holeR: 0.13, textY: -0.45, maxW: 1.35, maxH: 0.42 };
+  return { shape: s, holeX: 0, holeY: 0.12, holeR: 0.13, textY: -0.45, maxW: 1.35, maxH: 0.42 };
 }
 function starShape() {
   const s = new THREE.Shape(), outer = 1.35, inner = 0.62;
@@ -245,7 +300,7 @@ function starShape() {
     i === 0 ? s.moveTo(x, y) : s.lineTo(x, y);
   }
   s.closePath();
-  return { shape: s, holeY: 0.82, holeR: 0.12, textY: -0.08, maxW: 0.95, maxH: 0.32 };
+  return { shape: s, holeX: 0, holeY: 0.82, holeR: 0.12, textY: -0.08, maxW: 0.95, maxH: 0.32 };
 }
 function tagShape() {
   const s = new THREE.Shape(), w = 1.4, h = 2.2, r = 0.38, x = -w / 2, y = -h / 2;
@@ -254,66 +309,331 @@ function tagShape() {
   s.lineTo(x + w, y + h - r); s.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
   s.lineTo(x + r, y + h); s.quadraticCurveTo(x, y + h, x, y + h - r);
   s.lineTo(x, y + r); s.quadraticCurveTo(x, y, x + r, y);
-  return { shape: s, holeY: 0.78, holeR: 0.15, textY: -0.2, maxW: 1.1, maxH: 0.42 };
+  return { shape: s, holeX: 0, holeY: 0.78, holeR: 0.15, textY: -0.2, maxW: 1.1, maxH: 0.42 };
 }
 function circleShape() {
   const s = new THREE.Shape();
   s.absarc(0, 0, 1.05, 0, Math.PI * 2, false);
-  return { shape: s, holeY: 0.78, holeR: 0.13, textY: -0.12, maxW: 1.45, maxH: 0.45 };
+  return { shape: s, holeX: 0, holeY: 0.78, holeR: 0.13, textY: -0.12, maxW: 1.45, maxH: 0.45 };
 }
 const SHAPES = { heart: heartShape, star: starShape, tag: tagShape, circle: circleShape };
 
-const DEPTH = 0.22, BEVEL_T = 0.06;
+// ---------- Custom asset → acrylic outline ----------
+// Pipeline: image → foreground mask (alpha or background key) → dilate (acrylic border)
+// → add a tab with a hole at the top → fill holes → keep largest piece → trace contour → smooth.
+const WORK = 560;   // working resolution (px) of the artwork's longest side
+const PAD = 120;    // transparent padding around the artwork (room for border + tab)
+const CHARM_SIZE = 2.8; // longest side of the acrylic in world units
+const custom = { img: null, name: '', border: 14, tol: 40, holePos: null, data: null };
+
+function traceContour(mask, W, H) {
+  // Moore-neighbour boundary following (8-connected), starting at the first pixel in raster order.
+  const DX = [1, 1, 0, -1, -1, -1, 0, 1], DY = [0, -1, -1, -1, 0, 1, 1, 1];
+  let start = -1;
+  for (let i = 0; i < W * H; i++) if (mask[i]) { start = i; break; }
+  if (start < 0) return [];
+  const sx = start % W, sy = (start / W) | 0;
+  const pts = [[sx, sy]];
+  let x = sx, y = sy, dir = 7, prevStart = true;
+  for (let it = 0, max = W * H * 4; it < max; it++) {
+    const d0 = dir % 2 === 0 ? (dir + 7) % 8 : (dir + 6) % 8;
+    let found = false;
+    for (let k = 0; k < 8; k++) {
+      const d = (d0 + k) % 8, nx = x + DX[d], ny = y + DY[d];
+      if (nx >= 0 && ny >= 0 && nx < W && ny < H && mask[ny * W + nx]) { x = nx; y = ny; dir = d; found = true; break; }
+    }
+    if (!found) break;
+    if (prevStart && pts.length > 1 && x === pts[1][0] && y === pts[1][1]) { pts.pop(); break; }
+    pts.push([x, y]);
+    prevStart = x === sx && y === sy;
+  }
+  return pts;
+}
+
+function simplifyRDP(pts, eps) {
+  if (pts.length < 4) return pts;
+  const keep = new Uint8Array(pts.length);
+  keep[0] = keep[pts.length - 1] = 1;
+  const stack = [[0, pts.length - 1]];
+  while (stack.length) {
+    const [a, b] = stack.pop();
+    const [ax, ay] = pts[a], [bx, by] = pts[b];
+    const dx = bx - ax, dy = by - ay, len = Math.hypot(dx, dy) || 1;
+    let maxD = 0, idx = -1;
+    for (let i = a + 1; i < b; i++) {
+      const d = Math.abs(dy * pts[i][0] - dx * pts[i][1] + bx * ay - by * ax) / len;
+      if (d > maxD) { maxD = d; idx = i; }
+    }
+    if (maxD > eps && idx > 0) { keep[idx] = 1; stack.push([a, idx], [idx, b]); }
+  }
+  return pts.filter((_, i) => keep[i]);
+}
+
+function chaikin(pts, iterations) {
+  for (let n = 0; n < iterations; n++) {
+    const out = [];
+    for (let i = 0; i < pts.length; i++) {
+      const p = pts[i], q = pts[(i + 1) % pts.length];
+      out.push([p[0] * 0.75 + q[0] * 0.25, p[1] * 0.75 + q[1] * 0.25]);
+      out.push([p[0] * 0.25 + q[0] * 0.75, p[1] * 0.25 + q[1] * 0.75]);
+    }
+    pts = out;
+  }
+  return pts;
+}
+
+function processAsset() {
+  const img = custom.img;
+  const w0 = img.naturalWidth || img.width || 512, h0 = img.naturalHeight || img.height || 512;
+  const k = WORK / Math.max(w0, h0);
+  const iw = Math.max(1, Math.round(w0 * k)), ih = Math.max(1, Math.round(h0 * k));
+  const W = iw + PAD * 2, H = ih + PAD * 2, N = W * H;
+  const cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  const ctx = cv.getContext('2d', { willReadFrequently: true });
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(img, PAD, PAD, iw, ih);
+  const id = ctx.getImageData(0, 0, W, H), px = id.data;
+
+  // 1. Foreground mask
+  const fg = new Uint8Array(N);
+  let transparent = 0;
+  for (let y = PAD; y < PAD + ih; y++) for (let x = PAD; x < PAD + iw; x++) if (px[(y * W + x) * 4 + 3] < 200) transparent++;
+  const keyed = transparent < iw * ih * 0.01; // no real transparency → remove a solid background
+  if (!keyed) {
+    for (let i = 0; i < N; i++) fg[i] = px[i * 4 + 3] >= 128 ? 1 : 0;
+  } else {
+    const corners = [[PAD, PAD], [PAD + iw - 1, PAD], [PAD, PAD + ih - 1], [PAD + iw - 1, PAD + ih - 1]];
+    let br = 0, bgc = 0, bb = 0;
+    for (const [x, y] of corners) { const o = (y * W + x) * 4; br += px[o]; bgc += px[o + 1]; bb += px[o + 2]; }
+    br /= 4; bgc /= 4; bb /= 4;
+    const tol2 = custom.tol * custom.tol;
+    const bg = new Uint8Array(N), q = new Int32Array(iw * ih);
+    let qh = 0, qt = 0;
+    const push = (x, y) => {
+      const i = y * W + x;
+      if (bg[i]) return;
+      const o = i * 4, dr = px[o] - br, dg = px[o + 1] - bgc, db = px[o + 2] - bb;
+      if (dr * dr + dg * dg + db * db <= tol2) { bg[i] = 1; q[qt++] = i; }
+    };
+    for (let x = PAD; x < PAD + iw; x++) { push(x, PAD); push(x, PAD + ih - 1); }
+    for (let y = PAD; y < PAD + ih; y++) { push(PAD, y); push(PAD + iw - 1, y); }
+    while (qh < qt) {
+      const i = q[qh++], x = i % W, y = (i / W) | 0;
+      if (x > PAD) push(x - 1, y);
+      if (x < PAD + iw - 1) push(x + 1, y);
+      if (y > PAD) push(x, y - 1);
+      if (y < PAD + ih - 1) push(x, y + 1);
+    }
+    for (let y = PAD; y < PAD + ih; y++) for (let x = PAD; x < PAD + iw; x++) {
+      const i = y * W + x;
+      if (bg[i]) px[i * 4 + 3] = 0; else fg[i] = 1;
+    }
+    ctx.putImageData(id, 0, 0);
+  }
+
+  let minX = W, minY = H, maxX = -1, maxY = -1, topX = 0;
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    if (!fg[y * W + x]) continue;
+    if (y < minY) { minY = y; topX = x; }
+    if (y > maxY) maxY = y;
+    if (x < minX) minX = x;
+    if (x > maxX) maxX = x;
+  }
+  if (maxX < 0) throw new Error('Gambar kosong, atau seluruhnya terhapus sebagai latar. Coba turunkan toleransi.');
+
+  // 2. Dilate by the acrylic border (chamfer 3-4 distance transform)
+  const B = Math.max(2, custom.border);
+  const dist = new Float32Array(N);
+  for (let i = 0; i < N; i++) dist[i] = fg[i] ? 0 : 1e9;
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const i = y * W + x; let d = dist[i];
+    if (x > 0) d = Math.min(d, dist[i - 1] + 3);
+    if (y > 0) {
+      d = Math.min(d, dist[i - W] + 3);
+      if (x > 0) d = Math.min(d, dist[i - W - 1] + 4);
+      if (x < W - 1) d = Math.min(d, dist[i - W + 1] + 4);
+    }
+    dist[i] = d;
+  }
+  for (let y = H - 1; y >= 0; y--) for (let x = W - 1; x >= 0; x--) {
+    const i = y * W + x; let d = dist[i];
+    if (x < W - 1) d = Math.min(d, dist[i + 1] + 3);
+    if (y < H - 1) {
+      d = Math.min(d, dist[i + W] + 3);
+      if (x < W - 1) d = Math.min(d, dist[i + W + 1] + 4);
+      if (x > 0) d = Math.min(d, dist[i + W - 1] + 4);
+    }
+    dist[i] = d;
+  }
+  const body = new Uint8Array(N);
+  for (let i = 0; i < N; i++) body[i] = dist[i] <= B * 3 ? 1 : 0;
+
+  // 3. Tab with hole above the artwork
+  const fgSize = Math.max(maxX - minX, maxY - minY);
+  const holeR = Math.max(8, Math.round(fgSize * 0.03));
+  const gap = Math.max(4, B * 0.45);
+  const tabR = holeR * 2.1;
+  if (custom.holePos == null) custom.holePos = maxX > minX ? (topX - minX) / (maxX - minX) : 0.5;
+  const colX = Math.round(minX + custom.holePos * (maxX - minX));
+  const win = Math.ceil(holeR + gap);
+  let topFg = -1;
+  for (let y = minY; y <= maxY && topFg < 0; y++) {
+    for (let x = Math.max(0, colX - win); x <= Math.min(W - 1, colX + win); x++) if (fg[y * W + x]) { topFg = y; break; }
+  }
+  if (topFg < 0) topFg = minY;
+  const hx = colX, hy = Math.max(tabR + 2, topFg - holeR - gap);
+  for (let y = Math.floor(hy - tabR); y <= Math.ceil(hy + tabR); y++) {
+    for (let x = Math.floor(hx - tabR); x <= Math.ceil(hx + tabR); x++) {
+      if (x >= 0 && y >= 0 && x < W && y < H && (x - hx) ** 2 + (y - hy) ** 2 <= tabR * tabR) body[y * W + x] = 1;
+    }
+  }
+
+  // 4. Fill interior gaps (acrylic is solid), keep the largest connected piece
+  const outside = new Uint8Array(N), q = new Int32Array(N);
+  let qh = 0, qt = 0;
+  outside[0] = 1; q[qt++] = 0;
+  while (qh < qt) {
+    const i = q[qh++], x = i % W, y = (i / W) | 0;
+    const nb = [x > 0 ? i - 1 : -1, x < W - 1 ? i + 1 : -1, y > 0 ? i - W : -1, y < H - 1 ? i + W : -1];
+    for (const n of nb) if (n >= 0 && !outside[n] && !body[n]) { outside[n] = 1; q[qt++] = n; }
+  }
+  for (let i = 0; i < N; i++) body[i] = outside[i] ? 0 : 1;
+
+  const label = new Int32Array(N);
+  let cur = 0, best = 0, bestSize = 0, totalBody = 0;
+  for (let s = 0; s < N; s++) {
+    if (!body[s] || label[s]) continue;
+    cur++; let size = 0; qh = qt = 0; q[qt++] = s; label[s] = cur;
+    while (qh < qt) {
+      const i = q[qh++], x = i % W, y = (i / W) | 0; size++;
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+        const nx = x + dx, ny = y + dy;
+        if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+        const n = ny * W + nx;
+        if (body[n] && !label[n]) { label[n] = cur; q[qt++] = n; }
+      }
+    }
+    totalBody += size;
+    if (size > bestSize) { bestSize = size; best = cur; }
+  }
+  for (let i = 0; i < N; i++) body[i] = label[i] === best ? 1 : 0;
+  const droppedPieces = cur - 1;
+
+  // 5. Contour → simplified, smoothed polygon in world units
+  let pts = traceContour(body, W, H);
+  if (pts.length < 8) throw new Error('Bentuk terlalu kecil untuk dibuat outline.');
+  pts = chaikin(simplifyRDP(pts, 0.9), 2);
+  let pMinX = Infinity, pMaxX = -Infinity, pMinY = Infinity, pMaxY = -Infinity;
+  for (const [x, y] of pts) { pMinX = Math.min(pMinX, x); pMaxX = Math.max(pMaxX, x); pMinY = Math.min(pMinY, y); pMaxY = Math.max(pMaxY, y); }
+  const s = CHARM_SIZE / Math.max(pMaxX - pMinX, pMaxY - pMinY);
+  const toWorld = (x, y) => new THREE.Vector2((x - W / 2) * s, -(y - H / 2) * s);
+
+  if (custom.data?.art?.tex) custom.data.art.tex.dispose();
+  const tex = new THREE.CanvasTexture(cv);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+
+  const hw = toWorld(hx, hy);
+  custom.data = {
+    outline: pts.map(([x, y]) => toWorld(x, y)),
+    hole: { x: hw.x, y: hw.y, r: holeR * s },
+    art: { tex, canvas: cv, w: W * s, h: H * s },
+    keyed, droppedPieces, removed: totalBody - bestSize
+  };
+}
+
+function customDef() {
+  const d = custom.data;
+  return {
+    shape: new THREE.Shape(d.outline), holeX: d.hole.x, holeY: d.hole.y, holeR: d.hole.r,
+    art: d.art, depth: 0.14, bevelT: 0.03, bevelS: 0.015
+  };
+}
+
+function polygonCentroid(pts) {
+  let a = 0, cx = 0, cy = 0;
+  for (let i = 0; i < pts.length; i++) {
+    const p = pts[i], q = pts[(i + 1) % pts.length], c = p.x * q.y - q.x * p.y;
+    a += c; cx += (p.x + q.x) * c; cy += (p.y + q.y) * c;
+  }
+  a *= 0.5;
+  return Math.abs(a) < 1e-9 ? new THREE.Vector2() : new THREE.Vector2(cx / (6 * a), cy / (6 * a));
+}
+
+// ---------- Build the charm ----------
 let charmGroup = null;
+let currentDef = null;
 let font = null;
-const state = { shape: 'heart', text: 'KIRO' };
+const state = { shape: 'heart', text: 'KIRO', tilt: true };
 
 function disposeGroup(g) {
   g.traverse(o => { if (o.isMesh) o.geometry.dispose(); });
 }
 
 function buildCharm() {
-  if (charmGroup) { charmTwist.remove(charmGroup); disposeGroup(charmGroup); }
-  const def = SHAPES[state.shape]();
+  if (charmGroup) { charmHang.remove(charmGroup); disposeGroup(charmGroup); }
+  const isCustom = state.shape === 'custom' && custom.data;
+  const def = isCustom ? customDef() : SHAPES[state.shape === 'custom' ? 'heart' : state.shape]();
+  const depth = def.depth ?? 0.22, bevelT = def.bevelT ?? 0.06, bevelS = def.bevelS ?? 0.05;
+
   const hole = new THREE.Path();
-  hole.absarc(0, def.holeY, def.holeR, 0, Math.PI * 2, true);
+  hole.absarc(def.holeX, def.holeY, def.holeR, 0, Math.PI * 2, true);
   def.shape.holes.push(hole);
 
   const geo = new THREE.ExtrudeGeometry(def.shape, {
-    depth: DEPTH, bevelEnabled: true, bevelThickness: BEVEL_T, bevelSize: 0.05,
-    bevelSegments: 6, curveSegments: 64
+    depth, bevelEnabled: true, bevelThickness: bevelT, bevelSize: bevelS,
+    bevelSegments: isCustom ? 3 : 6, curveSegments: 64
   });
-  geo.translate(0, 0, -DEPTH / 2);
+  geo.translate(0, 0, -depth / 2);
   geo.computeVertexNormals();
 
   charmGroup = new THREE.Group();
-  const body = new THREE.Mesh(geo, charmMat);
-  charmGroup.add(body);
+  charmGroup.add(new THREE.Mesh(geo, charmMat));
+  const zFront = depth / 2 + bevelT;
 
-  // Engraved / raised text on both sides
-  const txt = state.text.trim();
-  if (font && txt) {
-    const tg = new TextGeometry(txt, {
-      font, size: 0.4, height: 0.04, depth: 0.04, curveSegments: 8,
-      bevelEnabled: true, bevelThickness: 0.01, bevelSize: 0.008, bevelSegments: 2
-    });
-    tg.computeBoundingBox();
-    const bb = tg.boundingBox;
-    const w = bb.max.x - bb.min.x, h = bb.max.y - bb.min.y;
-    const sc = Math.min(def.maxW / w, def.maxH / h, 1.2);
-    tg.translate(-(bb.min.x + w / 2), -(bb.min.y + h / 2), 0);
-    const zFront = DEPTH / 2 + BEVEL_T - 0.01;
+  if (def.art) {
+    // Printed artwork on both faces
+    artMat.map = def.art.tex; artMat.needsUpdate = true;
+    const pg = new THREE.PlaneGeometry(def.art.w, def.art.h);
     for (const side of [1, -1]) {
-      const t = new THREE.Mesh(tg, textMat);
-      t.scale.setScalar(sc);
-      t.position.set(0, def.textY, side * zFront);
-      if (side < 0) t.rotation.y = Math.PI;
-      charmGroup.add(t);
+      const p = new THREE.Mesh(pg, artMat);
+      p.position.z = side * (zFront + 0.003);
+      if (side < 0) p.rotation.y = Math.PI;
+      charmGroup.add(p);
+    }
+  } else {
+    const txt = state.text.trim();
+    if (font && txt) {
+      const tg = new TextGeometry(txt, {
+        font, size: 0.4, height: 0.04, depth: 0.04, curveSegments: 8,
+        bevelEnabled: true, bevelThickness: 0.01, bevelSize: 0.008, bevelSegments: 2
+      });
+      tg.computeBoundingBox();
+      const bb = tg.boundingBox;
+      const w = bb.max.x - bb.min.x, h = bb.max.y - bb.min.y;
+      const sc = Math.min(def.maxW / w, def.maxH / h, 1.2);
+      tg.translate(-(bb.min.x + w / 2), -(bb.min.y + h / 2), 0);
+      for (const side of [1, -1]) {
+        const t = new THREE.Mesh(tg, textMat);
+        t.scale.setScalar(sc);
+        t.position.set(0, def.textY, side * (zFront - 0.01));
+        if (side < 0) t.rotation.y = Math.PI;
+        charmGroup.add(t);
+      }
     }
   }
-  // Hang so the hole sits on the jump ring
-  charmGroup.position.y = -def.holeY;
-  charmTwist.add(addShadow(charmGroup));
+
+  // Hang so the top edge of the hole rests on the jump ring
+  const hang = new THREE.Vector2(def.holeX, def.holeY + def.holeR - bevelS - 0.04);
+  charmGroup.position.set(-hang.x, -hang.y, 0);
+  charmHang.rotation.z = 0;
+  if (state.tilt) {
+    const c = polygonCentroid(def.shape.getPoints()).sub(hang);
+    charmHang.rotation.z = -Math.PI / 2 - Math.atan2(c.y, c.x);
+  }
+  charmHang.add(addShadow(charmGroup));
+  currentDef = def;
 }
 
 new FontLoader().load(
@@ -341,7 +661,6 @@ function impulse(strength = 1) {
 
 function stepPhysics(dt, time, auto) {
   const { wz, vz, wx, vx } = swing;
-  // Root (ring around peg): gravity pendulum, low damping
   let az = -14 * wz[0] - 0.7 * vz[0];
   let ax = -18 * wx[0] - 1.5 * vx[0];
   if (auto) {
@@ -353,7 +672,6 @@ function stepPhysics(dt, time, auto) {
   wz[0] = THREE.MathUtils.clamp(wz[0], -0.9, 0.9);
   wx[0] = THREE.MathUtils.clamp(wx[0], -0.4, 0.4);
 
-  // Each link lags slightly behind its parent (gives a soft whip/delay effect)
   for (let i = 1; i < J; i++) {
     const k = 140 - i * 10, c = 9.0;
     const a1 = -k * (wz[i] - wz[i - 1]) - c * (vz[i] - vz[i - 1]) - 3 * wz[i];
@@ -362,7 +680,6 @@ function stepPhysics(dt, time, auto) {
     vx[i] += a2 * dt; wx[i] += vx[i] * dt;
   }
 
-  // Charm twist (spins around the jump ring)
   let at = -3 * swing.twist - 0.5 * swing.vt + vz[J - 1] * 0.8;
   if (auto) at += Math.sin(time * 0.6) * 0.5;
   swing.vt += at * dt; swing.twist += swing.vt * dt;
@@ -380,7 +697,7 @@ function applyPhysics() {
 
 // ---------- UI ----------
 const $ = id => document.getElementById(id);
-const PRESETS = ['#ff4f8b', '#ff8a3d', '#ffd23f', '#3ddc97', '#3fa7ff', '#7b3fe4', '#222233'];
+const PRESETS = ['#ffffff', '#ff4f8b', '#ff8a3d', '#ffd23f', '#3ddc97', '#3fa7ff', '#7b3fe4', '#222233'];
 const swatches = $('swatches');
 function setColor(hex) {
   charmMat.color.set(hex);
@@ -393,15 +710,124 @@ PRESETS.forEach(c => {
   d.onclick = () => setColor(c);
   swatches.insertBefore(d, $('colorPicker'));
 });
+function setFinish(f) { $('finishSelect').value = f; applyFinish(f); }
+
+function setShape(shape) {
+  state.shape = shape;
+  $('shapeSelect').value = shape;
+  const isCustom = shape === 'custom';
+  $('textBox').hidden = isCustom;
+  $('customOpts').hidden = !(isCustom && custom.data);
+  buildCharm();
+}
+
 $('colorPicker').oninput = e => setColor(e.target.value);
 $('nameInput').oninput = e => { state.text = e.target.value; buildCharm(); };
-$('shapeSelect').onchange = e => { state.shape = e.target.value; buildCharm(); impulse(0.6); };
+$('shapeSelect').onchange = e => { setShape(e.target.value); impulse(0.6); };
 $('finishSelect').onchange = e => applyFinish(e.target.value);
 $('swingBtn').onclick = () => impulse(1);
-setColor(PRESETS[0]);
+$('tiltCheck').onchange = e => { state.tilt = e.target.checked; buildCharm(); };
+setColor('#ff4f8b');
 applyFinish('glossy');
 
-// Click (not drag) on the keychain -> swing it
+// --- Custom asset upload ---
+function setStatus(msg, cls = '') { const el = $('assetStatus'); el.textContent = msg; el.className = cls; }
+
+function updateCustomUI() {
+  $('borderVal').textContent = custom.border + ' px';
+  $('holeVal').textContent = Math.round(custom.holePos * 100) + '%';
+  $('holeRange').value = Math.round(custom.holePos * 100);
+  $('tolVal').textContent = custom.tol;
+  $('tolBox').hidden = !custom.data?.keyed;
+}
+
+function runProcess() {
+  try {
+    processAsset();
+    updateCustomUI();
+    const d = custom.data;
+    let msg = `✔ "${custom.name}" → outline ${d.outline.length} titik. ` +
+      (d.keyed ? 'Latar polos dihapus otomatis.' : 'Pakai transparansi gambar.');
+    if (d.droppedPieces > 0) msg += ` ⚠ ${d.droppedPieces} bagian terpisah dibuang, naikkan border supaya menyatu.`;
+    setStatus(msg, d.droppedPieces > 0 ? '' : 'ok');
+    if (state.shape === 'custom') buildCharm();
+    return true;
+  } catch (err) {
+    console.error(err);
+    setStatus('✖ ' + err.message, 'err');
+    return false;
+  }
+}
+
+let processTimer = 0;
+function scheduleProcess() { clearTimeout(processTimer); processTimer = setTimeout(runProcess, 60); }
+
+function loadImage(url) {
+  return new Promise((resolve, reject) => {
+    const im = new Image();
+    im.onload = () => resolve(im);
+    im.onerror = () => reject(new Error('File tidak bisa dibaca sebagai gambar.'));
+    im.src = url;
+  });
+}
+
+async function useAsset(url, name) {
+  setStatus('Memproses gambar...');
+  try {
+    custom.img = await loadImage(url);
+  } catch (err) { setStatus('✖ ' + err.message, 'err'); return; }
+  custom.name = name;
+  custom.holePos = null;
+  $('assetThumb').src = url;
+  $('assetThumb').style.display = 'block';
+  if (!runProcess()) return;
+  const opt = $('shapeSelect').querySelector('option[value=custom]');
+  opt.disabled = false; opt.textContent = '🖼️ Asset Custom';
+  setFinish('clear');
+  setColor('#ffffff');
+  setShape('custom');
+  impulse(0.8);
+}
+
+function handleFile(file) {
+  if (!file || !file.type.startsWith('image/')) { setStatus('✖ Pilih file gambar (PNG, JPG, WebP, SVG).', 'err'); return; }
+  useAsset(URL.createObjectURL(file), file.name);
+}
+
+$('uploadBtn').onclick = () => $('assetInput').click();
+$('assetInput').onchange = e => { handleFile(e.target.files[0]); e.target.value = ''; };
+$('sampleBtn').onclick = () => useAsset(makeSampleAsset(), 'contoh');
+$('borderRange').oninput = e => { custom.border = +e.target.value; updateCustomUI(); scheduleProcess(); };
+$('holeRange').oninput = e => { custom.holePos = e.target.value / 100; updateCustomUI(); scheduleProcess(); };
+$('tolRange').oninput = e => { custom.tol = +e.target.value; updateCustomUI(); scheduleProcess(); };
+
+// Drag & drop
+let dragDepth = 0;
+addEventListener('dragenter', e => { e.preventDefault(); dragDepth++; $('dropOverlay').style.display = 'flex'; });
+addEventListener('dragleave', () => { if (--dragDepth <= 0) { dragDepth = 0; $('dropOverlay').style.display = 'none'; } });
+addEventListener('dragover', e => e.preventDefault());
+addEventListener('drop', e => {
+  e.preventDefault(); dragDepth = 0; $('dropOverlay').style.display = 'none';
+  handleFile(e.dataTransfer.files[0]);
+});
+
+// Sample graffiti-style logo (white letters, black outline + 3D drop) on a transparent background
+function makeSampleAsset() {
+  const c = document.createElement('canvas');
+  c.width = 900; c.height = 420;
+  const g = c.getContext('2d');
+  g.translate(450, 210); g.rotate(-0.12);
+  g.font = 'italic 900 200px "Arial Black", Impact, sans-serif';
+  g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round';
+  g.fillStyle = '#111'; g.strokeStyle = '#111'; g.lineWidth = 30;
+  for (let i = 14; i > 0; i--) { g.strokeText('Kiro', i * 1.2, i * 1.8); g.fillText('Kiro', i * 1.2, i * 1.8); }
+  g.strokeText('Kiro', 0, 0);
+  g.fillStyle = '#fff'; g.fillText('Kiro', 0, 0);
+  g.lineWidth = 5; g.strokeStyle = '#7b3fe4'; g.strokeText('Kiro', 0, 0);
+  return c.toDataURL('image/png');
+}
+
+// --- Click (not drag) on the keychain → swing it ---
 const raycaster = new THREE.Raycaster();
 const pointer = new THREE.Vector2();
 let downPos = null;
@@ -416,7 +842,17 @@ renderer.domElement.addEventListener('pointerup', e => {
   if (raycaster.intersectObject(root, true).length) impulse(1.2);
 });
 
-// Record 6 seconds of video (WebM)
+// ---------- Export ----------
+function download(blob, name) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+}
+const baseName = () => 'gantungan-kunci' + (state.shape === 'custom' && custom.name ? '-' + custom.name.replace(/\.[^.]+$/, '').replace(/[^\w-]+/g, '_') : '');
+
+// Video (WebM)
 $('recordBtn').onclick = () => {
   if (!window.MediaRecorder) { alert('Browser ini tidak mendukung perekaman video.'); return; }
   const btn = $('recordBtn');
@@ -427,16 +863,61 @@ $('recordBtn').onclick = () => {
   const chunks = [];
   rec.ondataavailable = e => e.data.size && chunks.push(e.data);
   rec.onstop = () => {
-    const url = URL.createObjectURL(new Blob(chunks, { type: 'video/webm' }));
-    const a = document.createElement('a');
-    a.href = url; a.download = 'gantungan-kunci.webm'; a.click();
-    setTimeout(() => URL.revokeObjectURL(url), 5000);
+    download(new Blob(chunks, { type: 'video/webm' }), baseName() + '.webm');
     btn.disabled = false; btn.textContent = '🎥 Rekam 6 dtk';
   };
   btn.disabled = true; btn.textContent = '⏺ Merekam...';
   impulse(1);
   rec.start();
   setTimeout(() => rec.stop(), 6000);
+};
+
+// 3D model (GLB) – exported in rest pose
+$('glbBtn').onclick = () => {
+  joints.forEach(j => { j.rotation.x = 0; j.rotation.z = 0; });
+  charmTwist.rotation.y = 0;
+  root.updateMatrixWorld(true);
+  new GLTFExporter().parse(
+    root,
+    glb => download(new Blob([glb], { type: 'model/gltf-binary' }), baseName() + '.glb'),
+    err => { console.error(err); alert('Export GLB gagal: ' + err.message); },
+    { binary: true }
+  );
+};
+
+// Screenshot (PNG)
+$('pngBtn').onclick = () => {
+  renderer.render(scene, camera);
+  renderer.domElement.toBlob(b => download(b, baseName() + '.png'), 'image/png');
+};
+
+// Cut line + artwork (SVG, in millimetres)
+$('svgBtn').onclick = () => {
+  const def = currentDef;
+  const outer = def.shape.getPoints(64);
+  const holes = def.shape.holes.map(h => h.getPoints(64));
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  for (const p of outer) { minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x); minY = Math.min(minY, p.y); maxY = Math.max(maxY, p.y); }
+  const sizeMm = Math.max(10, +$('sizeMm').value || 60);
+  const m = sizeMm / Math.max(maxX - minX, maxY - minY);
+  const W = (maxX - minX) * m, H = (maxY - minY) * m;
+  const f = v => v.toFixed(3);
+  const ring = pts => 'M' + pts.map(p => `${f((p.x - minX) * m)},${f((maxY - p.y) * m)}`).join('L') + 'Z';
+  const d = [outer, ...holes].map(ring).join(' ');
+  let art = '';
+  if (def.art) {
+    const ax = (-def.art.w / 2 - minX) * m, ay = (maxY - def.art.h / 2) * m;
+    art = `<g id="artwork"><image x="${f(ax)}" y="${f(ay)}" width="${f(def.art.w * m)}" height="${f(def.art.h * m)}" ` +
+      `href="${def.art.canvas.toDataURL('image/png')}"/></g>`;
+  }
+  const svg = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="${f(W)}mm" height="${f(H)}mm" viewBox="0 0 ${f(W)} ${f(H)}">
+  <!-- Gantungan Kunci 3D: ${f(W)} x ${f(H)} mm. Layer "cutline" = garis potong (merah, 0.1 mm). -->
+  <g id="acrylic"><path d="${d}" fill="#e8f4ff" fill-opacity="0.5" fill-rule="evenodd"/></g>
+  ${art}
+  <g id="cutline"><path d="${d}" fill="none" stroke="#ff0000" stroke-width="0.1" fill-rule="evenodd"/></g>
+</svg>`;
+  download(new Blob([svg], { type: 'image/svg+xml' }), baseName() + '-cutline.svg');
 };
 
 // ---------- Loop ----------

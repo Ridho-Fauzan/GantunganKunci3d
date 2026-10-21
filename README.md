@@ -13,8 +13,23 @@ Animasi 3D gantungan kunci interaktif yang dibuat dengan [Three.js](https://thre
 - 4 bentuk: Hati, Bintang, Tag, Bulat
 - 4 material: Akrilik Glossy, Akrilik Bening, Metalik, Doff
 - Pilihan warna siap pakai dan color picker
-- Rekam animasi 6 detik ke video `.webm`
 - Kamera bisa diputar (drag) dan di-zoom (scroll)
+
+### Asset custom
+<img src="docs/custom.png" alt="Asset custom" width="560" />
+
+Upload (atau drag & drop) logo/artwork kamu, lalu bentuk akriliknya otomatis **mengikuti outline gambar**:
+- PNG/WebP/SVG transparan memakai alpha gambar. JPG berlatar polos, latarnya dihapus otomatis (toleransi bisa diatur).
+- **Border akrilik** di sekeliling artwork bisa diatur tebalnya.
+- **Lubang gantungan** otomatis di titik paling atas, dan posisinya bisa digeser.
+- Artwork dicetak di kedua sisi. Bagian dalam yang bolong otomatis diisi supaya akriliknya solid.
+- Opsi **miring sesuai titik berat**: bandul menggantung miring seperti aslinya kalau lubangnya tidak di tengah.
+
+### Export
+- 🧊 **Model 3D `.glb`**: bisa dibuka di Blender, viewer 3D, atau dipakai di web/AR
+- 📸 **Gambar `.png`**: screenshot tampilan saat ini
+- ✂️ **Cut line `.svg`**: garis potong merah (outline + lubang) dan artwork dalam ukuran mm, siap dikirim ke vendor akrilik
+- 🎥 **Video `.webm`**: rekam animasi 6 detik
 
 ## Cara menjalankan
 Buka `index.html` di browser modern (Chrome, Edge, Firefox, Safari). Perlu koneksi internet karena Three.js dimuat dari CDN.
