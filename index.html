@@ -346,13 +346,16 @@ scene.add(wall);
 const chromeMat = new THREE.MeshStandardMaterial({ color: 0xe8e8ee, metalness: 1, roughness: 0.18 });
 const pegMat = new THREE.MeshStandardMaterial({ color: 0xc9a46a, metalness: 0.9, roughness: 0.3 });
 // Each charm on the ring owns its own material set; these globals point at the *active* charm (see bind()).
-let charmMat, textMat, artMat, goldReliefMat;
+let charmMat, textMat, artMat, artBackMat, goldReliefMat;
 const view = { env: 'light', bloom: false, envIntensity: 1, bgColor: null }; // scene-wide settings
 function makeMats() {
   const m = {
     charm: new THREE.MeshPhysicalMaterial({ color: '#ff4f8b' }),
     text: new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.3, clearcoat: 1 }),
     art: new THREE.MeshStandardMaterial({ roughness: 0.35, alphaTest: 0.4 }),
+    // Back print: same plane/UVs as the front (so it stays inside the outline), rendered from behind
+    // → mirrored like a real printed acrylic seen from the back
+    artBack: new THREE.MeshStandardMaterial({ roughness: 0.35, alphaTest: 0.4, side: THREE.BackSide }),
     gold: new THREE.MeshStandardMaterial({ color: 0xf5bd4f, metalness: 1, roughness: 0.18, alphaTest: 0.5, side: THREE.DoubleSide })
   };
   for (const k in m) m[k].envMapIntensity = view.envIntensity;
@@ -803,7 +806,7 @@ function newCharm(from) {
 }
 function bind(c) {
   active = c; state = c.state; custom = c.custom;
-  charmMat = c.mats.charm; textMat = c.mats.text; artMat = c.mats.art; goldReliefMat = c.mats.gold;
+  charmMat = c.mats.charm; textMat = c.mats.text; artMat = c.mats.art; artBackMat = c.mats.artBack; goldReliefMat = c.mats.gold;
 }
 function withCharm(c, fn) { const prev = active; bind(c); try { fn(); } finally { if (prev) bind(prev); } }
 function allCharmMats() { return charms.flatMap(c => Object.values(c.mats)); }
@@ -853,19 +856,19 @@ function buildCharm() {
     for (const side of [1, -1]) {
       for (let l = 0; l < LAYERS; l++) {
         const p = new THREE.Mesh(pg, goldReliefMat);
+        // no rotation on the back: the relief must sit over the same part of the outline on both faces
         p.position.z = side * (zFront + 0.002 + (RELIEF * l) / (LAYERS - 1));
-        if (side < 0) p.rotation.y = Math.PI;
         reliefGroup.add(p);
       }
     }
   } else if (def.art) {
     // Printed artwork on both faces
-    artMat.map = def.art.tex; artMat.needsUpdate = true;
+    artMat.map = artBackMat.map = def.art.tex;
+    artMat.needsUpdate = artBackMat.needsUpdate = true;
     const pg = new THREE.PlaneGeometry(def.art.w, def.art.h);
     for (const side of [1, -1]) {
-      const p = new THREE.Mesh(pg, artMat);
+      const p = new THREE.Mesh(pg, side > 0 ? artMat : artBackMat);
       p.position.z = side * (zFront + 0.003);
-      if (side < 0) p.rotation.y = Math.PI;
       charmGroup.add(p);
     }
   } else {
