@@ -34,6 +34,7 @@ Upload (atau drag & drop) logo/artwork kamu, lalu bentuk akriliknya otomatis **m
 - Klik nomor untuk memilih gantungan. Semua pengaturan (bentuk, tulisan, asset custom, material, warna, ukuran, ketebalan) berlaku untuk gantungan yang dipilih saja
 - **Panjang rantai** (0–8 mata) per gantungan, supaya posisinya bisa dibuat bertingkat
 - Gantungan disebar di sepanjang ring, berselang depan/belakang, dan semuanya ikut berayun
+- **Tabrakan antar gantungan (solid)**: tiap akrilik diperlakukan sebagai pelat padat (outline + ketebalan aslinya), jadi gantungan saling menahan dan memantul sedikit, tidak saling tembus. Bisa dimatikan lewat checkbox kalau perangkat terasa berat.
 - Export GLB berisi seluruh stack. Export SVG cut line berisi gantungan yang sedang dipilih (satu potongan akrilik)
 
 ### Gaya Chrome + Emas (studio)

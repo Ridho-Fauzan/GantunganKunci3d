@@ -126,6 +126,7 @@
   </div>
   <label for="linksRange">Panjang rantai <span class="val" id="linksVal"></span></label>
   <input type="range" id="linksRange" min="0" max="8" step="1" value="4" />
+  <div class="check"><input type="checkbox" id="collisionCheck" checked /><label for="collisionCheck">Tabrakan antar gantungan (solid)</label></div>
   <div class="note">Klik nomor untuk memilih gantungan. Semua pengaturan di bawah berlaku untuk gantungan yang dipilih.</div>
 
   <label for="shapeSelect">Bentuk</label>
@@ -460,9 +461,11 @@ function layoutRigs() {
   charms.forEach((c, k) => {
     const phi = (k - (n - 1) / 2) * spread;
     c.rig.root.position.set(R * Math.sin(phi), ringCenterY - R * Math.cos(phi), 0);
-    // alternate front/back, fanning further out for every extra pair → fewer overlaps in big stacks
-    c.baseX = n > 1 ? (k % 2 ? 1 : -1) * (0.12 + 0.07 * Math.floor(k / 2)) : 0;
-    c.baseTwist = n > 1 ? (k - (n - 1) / 2) * 0.7 : 0;
+    // Rest pose: plates parallel, fanned alternately front/back (a non-intersecting pose, so the
+    // springs never fight the collision solver). Collisions provide the rest of the separation.
+    // per side, each further charm leans ~0.14 rad more, so their rest poses never intersect
+    c.baseX = n > 1 ? (k % 2 ? 1 : -1) * (0.12 + 0.14 * Math.floor(k / 2)) : 0;
+    c.baseTwist = 0;
   });
 }
 
@@ -896,6 +899,7 @@ function buildCharm() {
   charmGroup.add(reliefGroup);
   c.group = charmGroup;
   c.def = def;
+  buildCollider(c, def, total + bevelS * 0.5);
 }
 function rebuildAll() { for (const c of charms) withCharm(c, buildCharm); }
 
@@ -934,16 +938,225 @@ function stepPhysics(dt, time, auto) {
     for (let i = 0; i < p.n; i++) {
       const pwz = i ? p.wz[i - 1] : ring.wz, pvz = i ? p.vz[i - 1] : ring.vz;
       const pwx = i ? p.wx[i - 1] : ring.wx, pvx = i ? p.vx[i - 1] : ring.vx;
-      const k = Math.max(60, 130 - i * 10), c = 9.0;
+      // The first link hangs loosely on the ring (soft); deeper links follow their parent more tightly
+      const k = i === 0 ? 30 : Math.max(60, 130 - i * 10), c = i === 0 ? 4.0 : 9.0;
       const a1 = -k * (p.wz[i] - pwz) - c * (p.vz[i] - pvz) - 3 * p.wz[i];
       const a2 = -k * (p.wx[i] - pwx) - c * (p.vx[i] - pvx) - 3 * p.wx[i];
       p.vz[i] += a1 * dt; p.wz[i] += p.vz[i] * dt;
       p.vx[i] += a2 * dt; p.wx[i] += p.vx[i] * dt;
+      // physical limits: a hanging chain never swings above ~75° and can't spin up without bound
+      p.wz[i] = THREE.MathUtils.clamp(p.wz[i], -1.3, 1.3); p.vz[i] = THREE.MathUtils.clamp(p.vz[i], -12, 12);
+      p.wx[i] = THREE.MathUtils.clamp(p.wx[i], -1.3, 1.3); p.vx[i] = THREE.MathUtils.clamp(p.vx[i], -12, 12);
     }
     let at = -3 * (p.twist - ch.baseTwist) - 0.5 * p.vt + p.vz[p.n - 1] * 0.8;
     if (auto) at += Math.sin(time * 0.6 + ch.id * 1.7) * 0.5;
-    p.vt += at * dt; p.twist += p.vt * dt;
+    p.vt = THREE.MathUtils.clamp(p.vt + at * dt, -15, 15);
+    p.twist += p.vt * dt;
   }
+}
+
+// ---------- Collision between charms ----------
+// Each charm is an acrylic plate: its 2D outline extruded by its real thickness (in charm-local space).
+// Sample points on one plate that end up inside another plate are pushed out along the shallowest
+// direction (through the face, or out over the nearest edge). The push is applied to the chain's
+// generalised coordinates (swing angles + twist), so the chain stays connected and motion stays natural.
+const collision = { enabled: true, iterations: 3, restitution: 0.15 }; // iterations per physics substep
+
+function resamplePoly(pts, n) {
+  const m = pts.length, L = [0];
+  for (let i = 0; i < m; i++) L.push(L[i] + pts[i].distanceTo(pts[(i + 1) % m]));
+  const total = L[m], out = [];
+  let j = 0;
+  for (let k = 0; k < n; k++) {
+    const t = (k / n) * total;
+    while (j < m - 1 && L[j + 1] < t) j++;
+    const a = pts[j], b = pts[(j + 1) % m], f = (t - L[j]) / ((L[j + 1] - L[j]) || 1);
+    out.push(a.x + (b.x - a.x) * f, a.y + (b.y - a.y) * f);
+  }
+  return new Float32Array(out);
+}
+function pointInPoly(poly, x, y) {
+  let inside = false;
+  for (let i = 0, n = poly.length / 2, j = n - 1; i < n; j = i++) {
+    const xi = poly[2 * i], yi = poly[2 * i + 1], xj = poly[2 * j], yj = poly[2 * j + 1];
+    if ((yi > y) !== (yj > y) && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) inside = !inside;
+  }
+  return inside;
+}
+const _edge = { d: 0, nx: 0, ny: 0 };
+function nearestEdge(poly, x, y) { // for a point inside: distance to the outline + outward direction
+  let best = Infinity, bx = 0, by = 0;
+  for (let i = 0, n = poly.length / 2, j = n - 1; i < n; j = i++) {
+    const ax = poly[2 * j], ay = poly[2 * j + 1], ex = poly[2 * i] - ax, ey = poly[2 * i + 1] - ay;
+    const t = Math.max(0, Math.min(1, ((x - ax) * ex + (y - ay) * ey) / (ex * ex + ey * ey || 1)));
+    const cx = ax + ex * t, cy = ay + ey * t, d = Math.hypot(cx - x, cy - y);
+    if (d < best) { best = d; bx = cx; by = cy; }
+  }
+  _edge.d = best;
+  _edge.nx = best > 1e-6 ? (bx - x) / best : 1;
+  _edge.ny = best > 1e-6 ? (by - y) / best : 0;
+  return _edge;
+}
+function buildCollider(c, def, thickness) {
+  const poly = resamplePoly(def.shape.getPoints(48), 40);
+  const h = thickness / 2 + 0.006;
+  let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity, cx = 0, cy = 0;
+  const n = poly.length / 2;
+  for (let i = 0; i < n; i++) {
+    const x = poly[2 * i], y = poly[2 * i + 1];
+    x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y);
+    cx += x / n; cy += y / n;
+  }
+  let r = 0;
+  for (let i = 0; i < n; i++) r = Math.max(r, Math.hypot(poly[2 * i] - cx, poly[2 * i + 1] - cy));
+  const s = [];
+  const rim = resamplePoly(def.shape.getPoints(48), 28);
+  for (let i = 0; i < rim.length; i += 2) for (const z of [-h, 0, h]) s.push(rim[i], rim[i + 1], z);
+  const G = 6;
+  for (let gx = 0; gx < G; gx++) for (let gy = 0; gy < G; gy++) {
+    const x = x0 + ((gx + 0.5) / G) * (x1 - x0), y = y0 + ((gy + 0.5) / G) * (y1 - y0);
+    if (pointInPoly(poly, x, y)) s.push(x, y, -h, x, y, h);
+  }
+  c.col = { poly, samples: new Float32Array(s), h, cx, cy, r: r + h };
+}
+
+const _pw = new THREE.Vector3(), _pl = new THREE.Vector3(), _nw = new THREE.Vector3();
+const _ca = new THREE.Vector3(), _cb = new THREE.Vector3(), _inv = new THREE.Matrix4();
+const _rootP = new THREE.Vector3(), _twP = new THREE.Vector3(), _twY = new THREE.Vector3();
+const contact = { d: 0, p: new THREE.Vector3(), n: new THREE.Vector3(), from: null };
+const pairSide = new Map(); // remembers which side of each other two charms are on (no flip-flopping)
+
+// Which side of plate Y is plate X on? (+1 = in front of Y's face, -1 = behind). Uses X's centre,
+// falls back to the remembered side when X is (almost) in Y's plane, e.g. two identical duplicates.
+function sideOf(X, Y) {
+  const key = X.id < Y.id ? `${X.id}|${Y.id}` : `${Y.id}|${X.id}`;
+  _inv.copy(Y.group.matrixWorld).invert();
+  X.group.localToWorld(_pl.set(X.col.cx, X.col.cy, 0)).applyMatrix4(_inv);
+  let s = pairSide.get(key);
+  const sXY = s === undefined ? undefined : (X.id < Y.id ? s : -s);
+  if (Math.abs(_pl.z) > Y.col.h * 0.5 || sXY === undefined) {
+    const side = Math.abs(_pl.z) > 1e-4 ? Math.sign(_pl.z) : (X.id < Y.id ? 1 : -1);
+    pairSide.set(key, X.id < Y.id ? side : -side);
+    return side;
+  }
+  return sXY;
+}
+
+// How far must plate X move along Y's face normal (towards `side`) so no part of X is inside Y?
+// Every sample of X over Y's footprint must end up beyond Y's surface on that side.
+function plateOverlap(X, Y, side) {
+  const sx = X.col.samples, mX = X.group.matrixWorld, mY = Y.group.matrixWorld, hY = Y.col.h, hX = X.col.h;
+  _inv.copy(mY).invert();
+  let depth = 0;
+  for (let i = 0; i < sx.length; i += 3) {
+    _pw.set(sx[i], sx[i + 1], sx[i + 2]).applyMatrix4(mX);
+    _pl.copy(_pw).applyMatrix4(_inv);
+    const pen = hY - side * _pl.z;           // > 0: this point is not yet clear of Y's surface
+    if (pen <= 0 || pen > 2 * (hY + hX) + 0.6) continue; // clear, or far away on the other side
+    if (!pointInPoly(Y.col.poly, _pl.x, _pl.y)) continue;
+    if (pen > depth) { depth = pen; contact.p.copy(_pw); }
+  }
+  return depth;
+}
+
+// How much n·p changes per radian of each degree of freedom of charm c (swing z, swing x, twist)
+function contactJacobian(c, p, n, out) {
+  c.rig.root.getWorldPosition(_rootP);
+  c.rig.twist.getWorldPosition(_twP);
+  _twY.set(0, 1, 0).transformDirection(c.rig.twist.matrixWorld);
+  const rx = p.x - _rootP.x, ry = p.y - _rootP.y, rz = p.z - _rootP.z;
+  out[0] = n.x * -ry + n.y * rx;   // n · (ẑ × r)
+  out[1] = n.y * -rz + n.z * ry;   // n · (x̂ × r)
+  const tx = p.x - _twP.x, ty = p.y - _twP.y, tz = p.z - _twP.z;
+  out[2] = n.x * (_twY.y * tz - _twY.z * ty) + n.y * (_twY.z * tx - _twY.x * tz) + n.z * (_twY.x * ty - _twY.y * tx);
+  return out;
+}
+const _J = new Float32Array(3);
+function pushCharm(c, p, n, depth) {
+  const J = contactJacobian(c, p, n, _J);
+  // Regularised (never divides by ~0 when the contact is almost in line with every rotation axis)
+  const s = J[0] * J[0] + J[1] * J[1] + J[2] * J[2] + 0.05;
+  const ph = c.phys, last = ph.n - 1, k = depth / s;
+  const MAXA = 0.06; // max angle change per push (rad) → corrections stay smooth and bounded
+  const dz = THREE.MathUtils.clamp(k * J[0], -MAXA, MAXA);
+  const dx = THREE.MathUtils.clamp(k * J[1], -MAXA, MAXA);
+  const dt = THREE.MathUtils.clamp(k * J[2], -MAXA, MAXA);
+  // Rigidly rotate the whole chain about its attachment point (keeps the links' relative angles) + twist
+  for (let i = 0; i < ph.n; i++) { ph.wz[i] += dz; ph.wx[i] += dx; }
+  ph.twist += dt;
+  // Remove (and slightly bounce) the velocity that drives this point into the other charm
+  const vn = J[0] * ph.vz[last] + J[1] * ph.vx[last] + J[2] * ph.vt;
+  if (vn < 0) {
+    const kv = Math.min((-(1 + collision.restitution) * vn) / s, 4);
+    for (let i = 0; i < ph.n; i++) { ph.vz[i] += kv * J[0]; ph.vx[i] += kv * J[1]; }
+    ph.vt += kv * J[2];
+  }
+}
+
+// Separate A and B along whichever plate normal needs the smaller move (minimum translation)
+const _pA = new THREE.Vector3(), _pB = new THREE.Vector3();
+function resolvePair(A, B) {
+  const sA = sideOf(A, B), dA = plateOverlap(A, B, sA); _pA.copy(contact.p); // move A off B's face
+  const sB = sideOf(B, A), dB = plateOverlap(B, A, sB); _pB.copy(contact.p); // move B off A's face
+  if (dA <= 0 && dB <= 0) return false;
+  const useA = dA > 0 && (dB <= 0 || dA <= dB);
+  const X = useA ? A : B, Y = useA ? B : A, side = useA ? sA : sB;
+  const depth = Math.min(useA ? dA : dB, 0.06);   // cap per pass; iterations/substeps finish the job
+  const p = useA ? _pA : _pB;
+  _nw.set(0, 0, side).transformDirection(Y.group.matrixWorld); // Y's face normal, towards X
+  const d = depth * 0.5 + 0.001;
+  pushCharm(X, p, _nw, d);
+  _nw.negate();
+  pushCharm(Y, p, _nw, d);
+  return true;
+}
+
+function collideCharms() {
+  if (!collision.enabled || charms.length < 2) return;
+  for (let it = 0; it < collision.iterations; it++) {
+    root.updateMatrixWorld(true);
+    let any = false;
+    for (let a = 0; a < charms.length; a++) for (let b = a + 1; b < charms.length; b++) {
+      const A = charms[a], B = charms[b];
+      if (!A.col || !B.col || !A.group || !B.group) continue;
+      A.group.localToWorld(_ca.set(A.col.cx, A.col.cy, 0));
+      B.group.localToWorld(_cb.set(B.col.cx, B.col.cy, 0));
+      if (_ca.distanceTo(_cb) > A.col.r + B.col.r) continue; // broad phase
+      if (!resolvePair(A, B)) continue;
+      any = true;
+    }
+    applyPhysics();
+    if (!any) break;
+  }
+}
+
+// Independent penetration check for testing: deepest point of X that is *inside* plate Y,
+// measured to Y's nearest surface (face or edge). Not used by the solver.
+function trueDepth(X, Y) {
+  const sx = X.col.samples, mX = X.group.matrixWorld, hY = Y.col.h;
+  _inv.copy(Y.group.matrixWorld).invert();
+  let worst = 0;
+  for (let i = 0; i < sx.length; i += 3) {
+    _pl.set(sx[i], sx[i + 1], sx[i + 2]).applyMatrix4(mX).applyMatrix4(_inv);
+    const az = Math.abs(_pl.z);
+    if (az >= hY || !pointInPoly(Y.col.poly, _pl.x, _pl.y)) continue;
+    worst = Math.max(worst, Math.min(hY - az, nearestEdge(Y.col.poly, _pl.x, _pl.y).d));
+  }
+  return worst;
+}
+// Max penetration depth between any two charms (world units) – used by ?debug for testing
+function measurePenetration(detail = false) {
+  root.updateMatrixWorld(true);
+  let worst = 0;
+  const pairs = [];
+  for (let a = 0; a < charms.length; a++) for (let b = a + 1; b < charms.length; b++) {
+    const A = charms[a], B = charms[b];
+    if (!A.col || !B.col) continue;
+    const d = Math.min(trueDepth(A, B), trueDepth(B, A));
+    worst = Math.max(worst, d);
+    if (detail && d > 0) pairs.push(`${a + 1}-${b + 1}:${d.toFixed(3)}`);
+  }
+  return detail ? pairs : worst;
 }
 
 function applyPhysics() {
@@ -1110,6 +1323,7 @@ $('addCharmBtn').onclick = addCharm;
 $('dupCharmBtn').onclick = duplicateCharm;
 $('delCharmBtn').onclick = removeCharm;
 $('linksRange').oninput = e => setLinks(+e.target.value);
+$('collisionCheck').onchange = e => { collision.enabled = e.target.checked; impulse(0.4); };
 
 // First charm
 {
@@ -1561,12 +1775,35 @@ renderer.setAnimationLoop(() => {
   for (let i = 0; i < sub; i++) {
     time += dt / sub;
     stepPhysics(dt / sub, time, $('autoSwing').checked);
+    applyPhysics();
+    collideCharms(); // every substep, so the chain springs can't push charms back into each other
   }
   applyPhysics();
   controls.update();
   renderFrame();
 });
 if (location.hash === '#review') enterReview();
+if (new URLSearchParams(location.search).has('debug')) {
+  // simulate(): run the exact same loop as the renderer at a fixed 60 fps (no drawing) and report
+  // how deep charms penetrate each other – a deterministic test independent of the device's frame rate
+  const simulate = (seconds, { auto = true, kicks = 0 } = {}) => {
+    const frames = Math.round(seconds * 60), dt = 1 / 60, sub = 4, depths = [];
+    for (let f = 0; f < frames; f++) {
+      if (kicks && f % Math.round(frames / kicks) === 0) impulse(1.5);
+      for (let i = 0; i < sub; i++) {
+        time += dt / sub;
+        stepPhysics(dt / sub, time, auto);
+        applyPhysics();
+        collideCharms();
+      }
+      applyPhysics();
+      depths.push(measurePenetration());
+    }
+    const max = Math.max(...depths), avg = depths.reduce((a, b) => a + b, 0) / frames;
+    return { frames, max: +max.toFixed(4), avg: +avg.toFixed(5), over1mm: depths.filter(d => d > 0.047).length };
+  };
+  window.gantungan = { charms, collision, ring, impulse, measurePenetration, simulate, selectCharm, setLinks };
+}
 </script>
 </body>
 </html>
