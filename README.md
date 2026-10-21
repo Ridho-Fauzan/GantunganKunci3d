@@ -13,6 +13,7 @@ Animasi 3D gantungan kunci interaktif yang dibuat dengan [Three.js](https://thre
 - 4 bentuk: Hati, Bintang, Tag, Bulat
 - 4 material: Akrilik Glossy, Akrilik Bening, Metalik, Doff
 - Pilihan warna siap pakai dan color picker
+- **Ukuran asli (mm)** dan **ketebalan akrilik (1–15 mm)**. Tebal di preview 3D proporsional dengan ukuran aslinya.
 - Kamera bisa diputar (drag) dan di-zoom (scroll)
 
 ### Asset custom

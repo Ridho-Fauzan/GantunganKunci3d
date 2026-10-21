@@ -150,6 +150,12 @@
     <option value="matte">Doff (Matte)</option>
   </select>
 
+  <label for="sizeMm">Ukuran asli: tinggi/lebar maks. (mm)</label>
+  <input type="number" id="sizeMm" min="10" max="300" value="60" />
+  <label for="thickRange">Ketebalan akrilik <span class="val" id="thickVal"></span></label>
+  <input type="range" id="thickRange" min="1" max="15" step="0.5" value="4" />
+  <div class="note">Ketebalan umum akrilik: 2, 3, atau 5 mm. Proporsinya mengikuti ukuran asli di atas.</div>
+
   <label>Warna</label>
   <div class="swatches" id="swatches">
     <input type="color" id="colorPicker" value="#ff4f8b" title="Pilih warna" />
@@ -166,12 +172,8 @@
     <button id="glbBtn" class="secondary">🧊 Model 3D (.glb)</button>
     <button id="pngBtn" class="secondary">📸 Gambar (.png)</button>
   </div>
-  <label for="sizeMm">Tinggi/lebar maks. akrilik (mm)</label>
-  <div class="row" style="margin-top:0">
-    <input type="number" id="sizeMm" min="10" max="300" value="60" style="flex:1" />
-    <button id="svgBtn" class="secondary" style="flex:1.4">✂️ Cut line (.svg)</button>
-  </div>
-  <div class="note">SVG berisi garis potong merah (outline + lubang) dan artwork sesuai ukuran mm, siap dikirim ke vendor akrilik.</div>
+  <button id="svgBtn" class="secondary" style="width:100%;margin-top:8px">✂️ Cut line (.svg)</button>
+  <div class="note">SVG berisi garis potong merah (outline + lubang) dan artwork sesuai ukuran asli &amp; ketebalan di bagian Tampilan, siap dikirim ke vendor akrilik.</div>
 </div>
 <div id="hint">Drag latar untuk memutar kamera • Scroll untuk zoom • Tarik gantungan untuk mengayun</div>
 
@@ -653,7 +655,7 @@ function customDef() {
   const d = custom.data;
   return {
     shape: new THREE.Shape(d.outline), holeX: d.hole.x, holeY: d.hole.y, holeR: d.hole.r,
-    art: d.art, depth: 0.14, bevelT: 0.03, bevelS: 0.015
+    art: d.art, custom: true
   };
 }
 
@@ -671,7 +673,7 @@ function polygonCentroid(pts) {
 let charmGroup = null;
 let currentDef = null;
 let font = null;
-const state = { shape: 'heart', text: 'KIRO', tilt: true, finish: 'glossy' };
+const state = { shape: 'heart', text: 'KIRO', tilt: true, finish: 'glossy', sizeMm: 60, thickMm: 4 };
 
 function disposeGroup(g) {
   g.traverse(o => { if (o.isMesh) o.geometry.dispose(); });
@@ -681,7 +683,16 @@ function buildCharm() {
   if (charmGroup) { charmHang.remove(charmGroup); disposeGroup(charmGroup); }
   const isCustom = state.shape === 'custom' && custom.data;
   const def = isCustom ? customDef() : SHAPES[state.shape === 'custom' ? 'heart' : state.shape]();
-  const depth = def.depth ?? 0.22, bevelT = def.bevelT ?? 0.06, bevelS = def.bevelS ?? 0.05;
+  // Real-world thickness → world units, using the charm's real size (mm) as the scale reference
+  const pts2 = def.shape.getPoints();
+  let bx0 = Infinity, bx1 = -Infinity, by0 = Infinity, by1 = -Infinity;
+  for (const p of pts2) { bx0 = Math.min(bx0, p.x); bx1 = Math.max(bx1, p.x); by0 = Math.min(by0, p.y); by1 = Math.max(by1, p.y); }
+  const unitsPerMm = Math.max(bx1 - bx0, by1 - by0) / state.sizeMm;
+  const total = state.thickMm * unitsPerMm;                       // full thickness incl. bevels
+  const bevelT = Math.min(isCustom ? 0.03 : 0.06, total * 0.22);  // rounded edge scales down when thin
+  const bevelS = Math.min(isCustom ? 0.015 : 0.05, bevelT * (isCustom ? 0.5 : 0.85));
+  const depth = Math.max(0.002, total - bevelT * 2);
+  def.thicknessMm = state.thickMm;
 
   const hole = new THREE.Path();
   hole.absarc(def.holeX, def.holeY, def.holeR, 0, Math.PI * 2, true);
@@ -848,6 +859,13 @@ $('shapeSelect').onchange = e => { setShape(e.target.value); impulse(0.6); };
 $('finishSelect').onchange = e => applyFinish(e.target.value);
 $('swingBtn').onclick = () => impulse(1);
 $('tiltCheck').onchange = e => { state.tilt = e.target.checked; buildCharm(); };
+function updateThickUI() { $('thickVal').textContent = state.thickMm.toFixed(1).replace('.0', '') + ' mm'; }
+$('thickRange').oninput = e => { state.thickMm = +e.target.value; updateThickUI(); buildCharm(); };
+$('sizeMm').oninput = e => {
+  const v = +e.target.value;
+  if (v >= 10 && v <= 300) { state.sizeMm = v; buildCharm(); }
+};
+updateThickUI();
 $('reliefSelect').onchange = e => { custom.relief = e.target.value; if (custom.data) runProcess(); };
 setColor('#ff4f8b');
 applyFinish('glossy');
@@ -1114,7 +1132,7 @@ $('svgBtn').onclick = () => {
   const holes = def.shape.holes.map(h => h.getPoints(64));
   let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
   for (const p of outer) { minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x); minY = Math.min(minY, p.y); maxY = Math.max(maxY, p.y); }
-  const sizeMm = Math.max(10, +$('sizeMm').value || 60);
+  const sizeMm = state.sizeMm;
   const m = sizeMm / Math.max(maxX - minX, maxY - minY);
   const W = (maxX - minX) * m, H = (maxY - minY) * m;
   const f = v => v.toFixed(3);
@@ -1128,7 +1146,7 @@ $('svgBtn').onclick = () => {
   }
   const svg = `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" width="${f(W)}mm" height="${f(H)}mm" viewBox="0 0 ${f(W)} ${f(H)}">
-  <!-- Gantungan Kunci 3D: ${f(W)} x ${f(H)} mm. Layer "cutline" = garis potong (merah, 0.1 mm). -->
+  <!-- Gantungan Kunci 3D: ${f(W)} x ${f(H)} mm, tebal akrilik ${state.thickMm} mm. Layer "cutline" = garis potong (merah, 0.1 mm). -->
   <g id="acrylic"><path d="${d}" fill="#e8f4ff" fill-opacity="0.5" fill-rule="evenodd"/></g>
   ${art}
   <g id="cutline"><path d="${d}" fill="none" stroke="#ff0000" stroke-width="0.1" fill-rule="evenodd"/></g>
