@@ -43,15 +43,16 @@ Upload (atau drag & drop) logo/artwork kamu, lalu bentuk akriliknya otomatis **m
 - Tombol **✨ Preset Chrome + Emas** untuk mengaktifkan semuanya sekaligus
 
 ### Halaman Review
-<img src="docs/review.png" alt="Halaman Review" width="420" /> <img src="docs/review-env.png" alt="Review dengan environment HDRI" width="420" />
+<img src="docs/review.png" alt="Halaman Review" width="420" /> <img src="docs/review-env.png" alt="Review dengan cahaya HDRI dan latar polos" width="420" />
 
 Klik **🎬 Buka Halaman Review** (atau buka `index.html#review`). Hasilnya tampilan layar penuh tanpa panel editor:
 - **Tarik gantungan** untuk mengayun, **drag latar** untuk memutar kamera, scroll/pinch untuk zoom
 - 🔄 Putar otomatis 360°, 💨 Goyang, 🌄 Ganti environment, 📸 Foto PNG
 - ⏺ **Rekam bebas**: tekan untuk mulai dan tekan lagi untuk berhenti (maks. 60 detik). Video langsung terunduh sebagai `.webm`
 - ⚙️ **Atur**:
-  - **Environment**: Terang, Studio Hitam + Glow, atau 7 HDRI ([Poly Haven](https://polyhaven.com/hdris), CC0): Studio Foto, Studio Neon, Sunset Venesia, Langit Cerah, Hutan, Rooftop Malam, Kota Shanghai. HDRI juga menjadi sumber pantulan cahaya di chrome/akrilik.
-  - Blur latar, efek glow, tampilkan/sembunyikan paku
+  - **Pencahayaan & pantulan**: Terang, Studio Hitam + Glow, atau 7 gaya cahaya HDRI ([Poly Haven](https://polyhaven.com/hdris), CC0): Studio Foto, Neon, Sunset, Langit Cerah, Hutan, Malam Kota, Kota. HDRI hanya dipakai untuk cahaya dan pantulan di chrome/akrilik. **Latarnya tetap polos.**
+  - **Warna latar**: Otomatis (ikut gaya cahaya), 7 warna siap pakai, atau color picker. Tombol dan teks UI menyesuaikan latar gelap/terang.
+  - Efek glow, tampilkan/sembunyikan paku
   - **Putar 360° otomatis** dengan kecepatan (5–120 detik per putaran) dan arah
   - **Rekam tepat 1 putaran 360°**: video berhenti otomatis setelah satu putaran penuh
 - Shortcut: `Spasi` untuk rekam/stop, `Esc` untuk kembali ke editor

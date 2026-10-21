@@ -86,6 +86,9 @@
   #reviewHint { position: absolute; bottom: 118px; left: 50%; transform: translateX(-50%); font-size: 12px; opacity: .7; white-space: nowrap; pointer-events: none; }
   body.light-review #reviewHint { color: #3a2a4d; }
   body.grabbing canvas { cursor: grabbing; }
+  .bgSwatches .swatch { width: 24px; height: 24px; }
+  .bgSwatches .swatch.auto { background: #fff; color: #7b3fe4; font-size: 10px; font-weight: 800; display: grid; place-items: center; }
+  .bgSwatches input[type=color] { width: 28px; height: 28px; }
   #rvSettings {
     position: absolute; top: 64px; right: 16px; width: 280px; max-height: calc(100vh - 200px); overflow-y: auto;
     background: rgba(20,16,28,.78); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,.12);
@@ -182,9 +185,11 @@
 
   <h2>Tampilan</h2>
   <button id="presetBtn" class="secondary" style="width:100%">✨ Preset Chrome + Emas (gaya studio)</button>
-  <label for="envSelect">Latar / Environment</label>
+  <label for="envSelect">Pencahayaan &amp; pantulan</label>
   <select id="envSelect" class="envSelect"></select>
   <div class="note" id="envStatus"></div>
+  <label>Warna latar</label>
+  <div class="swatches bgSwatches"></div>
   <label for="finishSelect">Material</label>
   <select id="finishSelect">
     <option value="glossy">Akrilik Glossy</option>
@@ -230,13 +235,11 @@
   </div>
   <div id="rvSettings" hidden>
     <div class="rvTitle">Pengaturan Review</div>
-    <label for="rvEnvSelect">Environment</label>
+    <label for="rvEnvSelect">Pencahayaan &amp; pantulan</label>
     <select id="rvEnvSelect" class="envSelect"></select>
     <div class="rvNote" id="rvEnvStatus"></div>
-    <div id="rvBlurBox" hidden>
-      <label for="rvBlur">Blur latar <span class="val" id="rvBlurVal"></span></label>
-      <input type="range" id="rvBlur" min="0" max="100" value="15" />
-    </div>
+    <label>Warna latar</label>
+    <div class="swatches bgSwatches"></div>
     <div class="check"><input type="checkbox" id="rvBloom" /><label for="rvBloom">Efek glow</label></div>
     <div class="check"><input type="checkbox" id="rvPeg" checked /><label for="rvPeg">Tampilkan paku gantungan</label></div>
 
@@ -258,7 +261,7 @@
     <button id="rvSwing" class="ghost" title="Goyangkan">💨<span>Goyang</span></button>
     <button id="rvRecord" class="rec" title="Mulai / berhenti rekam"><span class="recIcon"></span></button>
     <button id="rvPhoto" class="ghost" title="Ambil foto PNG">📸<span>Foto</span></button>
-    <button id="rvBg" class="ghost" title="Environment berikutnya">🌄<span>Latar</span></button>
+    <button id="rvBg" class="ghost" title="Gaya pencahayaan berikutnya">💡<span>Cahaya</span></button>
   </div>
 </div>
 <div id="dropOverlay">Lepaskan gambar untuk dijadikan gantungan 🔑</div>
@@ -344,7 +347,7 @@ const chromeMat = new THREE.MeshStandardMaterial({ color: 0xe8e8ee, metalness: 1
 const pegMat = new THREE.MeshStandardMaterial({ color: 0xc9a46a, metalness: 0.9, roughness: 0.3 });
 // Each charm on the ring owns its own material set; these globals point at the *active* charm (see bind()).
 let charmMat, textMat, artMat, goldReliefMat;
-const view = { env: 'light', bloom: false, blur: 0.15, envIntensity: 1 }; // scene-wide settings
+const view = { env: 'light', bloom: false, envIntensity: 1, bgColor: null }; // scene-wide settings
 function makeMats() {
   const m = {
     charm: new THREE.MeshPhysicalMaterial({ color: '#ff4f8b' }),
@@ -1331,18 +1334,20 @@ $('collisionCheck').onchange = e => { collision.enabled = e.target.checked; impu
   attachCharm(first);
 }
 
-// --- Environments: light wall, black studio (rim lights + glow), HDRI scenes from Poly Haven (CC0) ---
+// --- Lighting styles: light wall, black studio (rim lights + glow), or HDRI lighting from Poly Haven (CC0).
+// HDRIs are used for lighting/reflections only – the visible background is always a plain colour.
+// `bg` = the automatic background colour that suits each style.
 const ROOM_ENV = scene.environment;
 const ENVS = {
-  light: { label: '🟪 Terang (dinding)' },
-  studio: { label: '⬛ Studio Hitam + Glow' },
-  studio_small_09: { label: '📷 Studio Foto', hdri: true },
-  neon_photostudio: { label: '💡 Studio Neon', hdri: true },
-  venice_sunset: { label: '🌇 Sunset Venesia', hdri: true },
-  kloppenheim_06_puresky: { label: '☁️ Langit Cerah', hdri: true },
-  forest_slope: { label: '🌲 Hutan', hdri: true },
-  rooftop_night: { label: '🌃 Rooftop Malam', hdri: true },
-  shanghai_bund: { label: '🏙️ Kota Shanghai', hdri: true }
+  light: { label: '🟪 Terang (dinding)', bg: '#f3e9ff' },
+  studio: { label: '⬛ Studio Hitam + Glow', bg: '#000000' },
+  studio_small_09: { label: '📷 Cahaya Studio Foto', hdri: true, bg: '#ececf1' },
+  neon_photostudio: { label: '💡 Cahaya Neon', hdri: true, bg: '#120a1f' },
+  venice_sunset: { label: '🌇 Cahaya Sunset', hdri: true, bg: '#2a1a22' },
+  kloppenheim_06_puresky: { label: '☁️ Cahaya Langit Cerah', hdri: true, bg: '#dfeaf5' },
+  forest_slope: { label: '🌲 Cahaya Hutan', hdri: true, bg: '#16201a' },
+  rooftop_night: { label: '🌃 Cahaya Malam Kota', hdri: true, bg: '#0b0d14' },
+  shanghai_bund: { label: '🏙️ Cahaya Kota', hdri: true, bg: '#14141c' }
 };
 const ENV_KEYS = Object.keys(ENVS);
 for (const sel of document.querySelectorAll('.envSelect')) {
@@ -1368,7 +1373,6 @@ async function setEnvironment(name) {
   for (const sel of document.querySelectorAll('.envSelect')) sel.value = name;
   const req = ++envRequest;
   const isHdri = !!ENVS[name].hdri, isStudio = name === 'studio', isLight = name === 'light';
-  $('rvBlurBox').hidden = !isHdri;
   let hdr = null;
   if (isHdri) {
     setEnvStatus('⏳ Memuat environment...');
@@ -1380,12 +1384,13 @@ async function setEnvironment(name) {
     }
     if (req !== envRequest) return; // a newer choice was made while loading
   }
-  setEnvStatus(isHdri ? 'HDRI: Poly Haven (CC0)' : '');
+  setEnvStatus(isHdri ? 'Pantulan dari HDRI Poly Haven (CC0). Latar tetap polos.' : '');
   view.env = name;
-  scene.background = isHdri ? hdr : new THREE.Color(isStudio ? '#000000' : '#f3e9ff');
+  // The HDRI only lights the scene and shows up in reflections; the visible background stays plain
   scene.environment = isHdri ? hdr : ROOM_ENV;
-  scene.backgroundBlurriness = isHdri ? view.blur : 0;
+  scene.backgroundBlurriness = 0;
   wall.visible = isLight;
+  applyBackground();
   hemi.intensity = isLight ? 0.6 : isStudio ? 0.15 : 0.1;
   sun.intensity = isLight ? 2.2 : isStudio ? 1.6 : 1.0;
   rimA.intensity = isStudio ? 18 : 0;
@@ -1395,9 +1400,41 @@ async function setEnvironment(name) {
   view.envIntensity = isStudio ? 0.55 : 1;
   for (const m of [chromeMat, pegMat, ...allCharmMats()]) m.envMapIntensity = view.envIntensity;
   setBloom(isStudio);
-  document.body.classList.toggle('light-review', isLight);
 }
 for (const sel of document.querySelectorAll('.envSelect')) sel.onchange = e => setEnvironment(e.target.value);
+
+// --- Plain background colour: "Auto" follows the lighting style, or pick any colour ---
+const BG_PRESETS = ['#000000', '#1a1a24', '#ffffff', '#f3e9ff', '#ffd6e7', '#d6ecff', '#e3f7dc'];
+view.bgColor = null; // null = automatic (matches the lighting style)
+function applyBackground() {
+  const hex = view.bgColor || ENVS[view.env].bg;
+  scene.background = new THREE.Color(hex);
+  if (wall.visible) wall.material.color.set(hex).offsetHSL(0, 0, -0.02); // light style: wall takes the colour
+  // Toolbar/text colours adapt to dark or light backgrounds
+  const c = new THREE.Color(hex), lum = 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b;
+  document.body.classList.toggle('light-review', lum > 0.35);
+  for (const box of document.querySelectorAll('.bgSwatches')) {
+    box.querySelectorAll('.swatch').forEach(s => s.classList.toggle('active', (s.dataset.c || null) === view.bgColor));
+    box.querySelector('input[type=color]').value = hex;
+  }
+}
+function setBgColor(hex) { view.bgColor = hex; applyBackground(); }
+for (const box of document.querySelectorAll('.bgSwatches')) {
+  const auto = document.createElement('div');
+  auto.className = 'swatch auto'; auto.textContent = 'A'; auto.title = 'Otomatis (ikut gaya cahaya)';
+  auto.onclick = () => setBgColor(null);
+  box.append(auto);
+  for (const c of BG_PRESETS) {
+    const d = document.createElement('div');
+    d.className = 'swatch'; d.style.background = c; d.dataset.c = c; d.title = c;
+    d.onclick = () => setBgColor(c);
+    box.append(d);
+  }
+  const pick = document.createElement('input');
+  pick.type = 'color'; pick.title = 'Warna latar bebas';
+  pick.oninput = e => setBgColor(e.target.value);
+  box.append(pick);
+}
 $('presetBtn').onclick = () => {
   setFinish('chromegold');
   setColor('#e6e6ec');
@@ -1673,16 +1710,10 @@ function updateSpeed() {
   controls.autoRotateSpeed = speed * dir;
   $('rvSpeedVal').textContent = `≈ ${Math.round(rotationSeconds())} dtk / putaran`;
 }
-function updateBlur() {
-  view.blur = $('rvBlur').value / 100;
-  $('rvBlurVal').textContent = $('rvBlur').value + '%';
-  if (ENVS[view.env].hdri) scene.backgroundBlurriness = view.blur;
-}
 $('rvRotate').onclick = () => setAutoRotate(!controls.autoRotate);
 $('rvAuto').onchange = e => setAutoRotate(e.target.checked);
 $('rvSpeed').oninput = updateSpeed;
 $('rvDir').onchange = updateSpeed;
-$('rvBlur').oninput = updateBlur;
 $('rvBloom').onchange = e => setBloom(e.target.checked);
 $('rvPeg').onchange = e => { peg.visible = pegCap.visible = e.target.checked; };
 $('rvAutoSwing').onchange = e => { $('autoSwing').checked = e.target.checked; };
@@ -1699,7 +1730,7 @@ $('rvRec360').onclick = () => {
   if (startRecording(rotationSeconds() * 1000 + 200)) $('rvSettings').hidden = true, $('rvSettingsBtn').classList.remove('on');
 };
 updateSpeed();
-updateBlur();
+applyBackground();
 
 // 3D model (GLB) – exported in rest pose
 $('glbBtn').onclick = () => {
