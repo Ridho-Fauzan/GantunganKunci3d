@@ -45,6 +45,18 @@
     color: #5a2db0; background: rgba(243,233,255,.85); border: 4px dashed #7b3fe4; z-index: 10; pointer-events: none; }
   #hint { position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%); font-size: 12px; color: #6b5a80; background: rgba(255,255,255,.7); padding: 6px 12px; border-radius: 20px; }
   [hidden] { display: none !important; }
+  #panel h2 .val { float: right; text-transform: none; letter-spacing: 0; color: #7b6a90; font-weight: 500; }
+  .stackList { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    flex: none; position: relative; width: 44px; height: 44px; padding: 0; border-radius: 12px;
+    background: #fff; border: 2px solid #e6dbf5; display: grid; place-items: center; font-size: 20px;
+    box-shadow: inset 0 -4px 0 var(--chip, #ccc);
+  }
+  .chip img { width: 34px; height: 30px; object-fit: contain; }
+  .chip small { position: absolute; top: -6px; right: -6px; background: #7b3fe4; color: #fff; font-size: 10px; font-weight: 700;
+    width: 17px; height: 17px; border-radius: 50%; display: grid; place-items: center; }
+  .chip.active { border-color: #7b3fe4; box-shadow: 0 0 0 2px rgba(123,63,228,.25), inset 0 -4px 0 var(--chip, #ccc); }
+  .row button.secondary:disabled { opacity: .45; cursor: not-allowed; }
 
   /* ---------- Review page ---------- */
   body.reviewing #panel, body.reviewing #hint { display: none; }
@@ -104,6 +116,17 @@
 <body>
 <div id="panel">
   <h1>🔑 Gantungan Kunci 3D</h1>
+
+  <h2 style="margin-top:0;padding-top:0;border-top:none">Gantungan di ring <span class="val" id="stackCount"></span></h2>
+  <div id="stackList" class="stackList"></div>
+  <div class="row" style="margin-top:8px">
+    <button id="addCharmBtn" class="secondary" title="Tambah gantungan baru">➕ Tambah</button>
+    <button id="dupCharmBtn" class="secondary" title="Duplikat gantungan aktif">⧉ Duplikat</button>
+    <button id="delCharmBtn" class="secondary" title="Hapus gantungan aktif">🗑️ Hapus</button>
+  </div>
+  <label for="linksRange">Panjang rantai <span class="val" id="linksVal"></span></label>
+  <input type="range" id="linksRange" min="0" max="8" step="1" value="4" />
+  <div class="note">Klik nomor untuk memilih gantungan. Semua pengaturan di bawah berlaku untuk gantungan yang dipilih.</div>
 
   <label for="shapeSelect">Bentuk</label>
   <select id="shapeSelect">
@@ -318,10 +341,19 @@ scene.add(wall);
 // ---------- Materials ----------
 const chromeMat = new THREE.MeshStandardMaterial({ color: 0xe8e8ee, metalness: 1, roughness: 0.18 });
 const pegMat = new THREE.MeshStandardMaterial({ color: 0xc9a46a, metalness: 0.9, roughness: 0.3 });
-const charmMat = new THREE.MeshPhysicalMaterial({ color: '#ff4f8b' });
-const textMat = new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.3, clearcoat: 1 });
-const artMat = new THREE.MeshStandardMaterial({ roughness: 0.35, alphaTest: 0.4 });
-const goldReliefMat = new THREE.MeshStandardMaterial({ color: 0xf5bd4f, metalness: 1, roughness: 0.18, alphaTest: 0.5, side: THREE.DoubleSide });
+// Each charm on the ring owns its own material set; these globals point at the *active* charm (see bind()).
+let charmMat, textMat, artMat, goldReliefMat;
+const view = { env: 'light', bloom: false, blur: 0.15, envIntensity: 1 }; // scene-wide settings
+function makeMats() {
+  const m = {
+    charm: new THREE.MeshPhysicalMaterial({ color: '#ff4f8b' }),
+    text: new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.3, clearcoat: 1 }),
+    art: new THREE.MeshStandardMaterial({ roughness: 0.35, alphaTest: 0.4 }),
+    gold: new THREE.MeshStandardMaterial({ color: 0xf5bd4f, metalness: 1, roughness: 0.18, alphaTest: 0.5, side: THREE.DoubleSide })
+  };
+  for (const k in m) m[k].envMapIntensity = view.envIntensity;
+  return m;
+}
 
 function applyFinish(finish) {
   Object.assign(charmMat, {
@@ -377,41 +409,62 @@ for (const dz of [-0.055, 0.055]) {
   ringGroup.add(addShadow(r));
 }
 
-// Chain links (joints 1..N)
-const N_LINKS = 4, PITCH = 0.38;
+// Each charm hangs from the ring on its own chain: rig.root (on the ring) → link joints → charm joint
+// (jump ring) → twist (spin) → hang (centre-of-mass tilt) → charm mesh group.
+const PITCH = 0.38, MAX_CHARMS = 6;
 const linkGeo = new THREE.TorusGeometry(0.16, 0.042, 16, 48);
-const joints = [ringGroup];
-let parent = ringGroup;
-let jointY = ringCenterY - R;
-for (let i = 0; i < N_LINKS; i++) {
-  const j = new THREE.Group();
-  j.position.y = jointY;
-  parent.add(j);
-  const link = new THREE.Mesh(linkGeo, chromeMat);
-  link.scale.set(1, 1.6, 1);
-  link.position.y = -PITCH / 2;
-  if (i % 2 === 0) link.rotation.y = Math.PI / 2; // alternate orientation
-  j.add(addShadow(link));
-  joints.push(j);
-  parent = j;
-  jointY = -PITCH;
+const jumpGeo = new THREE.TorusGeometry(0.15, 0.036, 16, 48);
+function createRig(c) {
+  const rig = { root: new THREE.Group(), joints: [] };
+  ringGroup.add(rig.root);
+  let parent = rig.root, y = 0;
+  for (let i = 0; i < c.links; i++) {
+    const j = new THREE.Group();
+    j.position.y = y;
+    parent.add(j);
+    const link = new THREE.Mesh(linkGeo, chromeMat);
+    link.scale.set(1, 1.6, 1);
+    link.position.y = -PITCH / 2;
+    if (i % 2 === 0) link.rotation.y = Math.PI / 2; // alternate orientation
+    j.add(addShadow(link));
+    rig.joints.push(j);
+    parent = j;
+    y = -PITCH;
+  }
+  const charmJoint = new THREE.Group();
+  charmJoint.position.y = c.links ? -PITCH - 0.02 : 0.02;
+  parent.add(charmJoint);
+  rig.joints.push(charmJoint);
+  const jumpRing = new THREE.Mesh(jumpGeo, chromeMat);
+  jumpRing.rotation.y = c.links % 2 ? 0 : Math.PI / 2; // perpendicular to the last link
+  jumpRing.position.y = -0.13;
+  charmJoint.add(addShadow(jumpRing));
+  rig.twist = new THREE.Group();
+  rig.twist.position.y = -0.28;
+  charmJoint.add(rig.twist);
+  rig.hang = new THREE.Group();
+  rig.twist.add(rig.hang);
+  if (c.group) rig.hang.add(c.group);
+  c.rig = rig;
+  const n = rig.joints.length;
+  c.phys = { n, wz: new Float32Array(n), vz: new Float32Array(n), wx: new Float32Array(n), vx: new Float32Array(n), twist: 0, vt: 0 };
 }
-
-// Jump ring + charm pivot (last joint)
-const charmJoint = new THREE.Group();
-charmJoint.position.y = -PITCH - 0.02;
-parent.add(charmJoint);
-joints.push(charmJoint);
-const jumpRing = new THREE.Mesh(new THREE.TorusGeometry(0.15, 0.036, 16, 48), chromeMat);
-jumpRing.rotation.y = Math.PI / 2;
-jumpRing.position.y = -0.13;
-charmJoint.add(addShadow(jumpRing));
-
-const charmTwist = new THREE.Group(); // spins around Y
-charmTwist.position.y = -0.28;
-charmJoint.add(charmTwist);
-const charmHang = new THREE.Group(); // tilt so the centre of mass hangs below the hole
-charmTwist.add(charmHang);
+function destroyRig(c) {
+  if (c.group) c.rig.hang.remove(c.group);
+  ringGroup.remove(c.rig.root); // link/jump geometries are shared, so nothing to dispose here
+}
+// Spread charms along the bottom arc of the ring, fanning them front/back and facing different ways
+function layoutRigs() {
+  const n = charms.length;
+  const spread = n > 1 ? Math.min(0.45, 1.6 / (n - 1)) : 0;
+  charms.forEach((c, k) => {
+    const phi = (k - (n - 1) / 2) * spread;
+    c.rig.root.position.set(R * Math.sin(phi), ringCenterY - R * Math.cos(phi), 0);
+    // alternate front/back, fanning further out for every extra pair → fewer overlaps in big stacks
+    c.baseX = n > 1 ? (k % 2 ? 1 : -1) * (0.12 + 0.07 * Math.floor(k / 2)) : 0;
+    c.baseTwist = n > 1 ? (k - (n - 1) / 2) * 0.7 : 0;
+  });
+}
 
 // ---------- Built-in charm shapes ----------
 function heartShape() {
@@ -457,7 +510,7 @@ const SHAPES = { heart: heartShape, star: starShape, tag: tagShape, circle: circ
 const WORK = 560;   // working resolution (px) of the artwork's longest side
 const PAD = 120;    // transparent padding around the artwork (room for border + tab)
 const CHARM_SIZE = 2.8; // longest side of the acrylic in world units
-const custom = { img: null, name: '', border: 14, tol: 40, holePos: null, relief: 'light', bgMode: 'auto', data: null };
+let custom = null; // custom-asset settings of the active charm (see bind())
 
 function traceContour(mask, W, H) {
   // Moore-neighbour boundary following (8-connected), starting at the first pixel in raster order.
@@ -666,8 +719,12 @@ function processAsset() {
   const s = CHARM_SIZE / Math.max(pMaxX - pMinX, pMaxY - pMinY);
   const toWorld = (x, y) => new THREE.Vector2((x - W / 2) * s, -(y - H / 2) * s);
 
-  if (custom.data?.art?.tex) custom.data.art.tex.dispose();
-  if (custom.data?.art?.reliefTex) custom.data.art.reliefTex.dispose();
+  // Free the old textures, unless a duplicated charm still shares them
+  const oldData = custom.data;
+  if (oldData && !charms.some(o => o !== active && o.custom.data === oldData)) {
+    oldData.art.tex.dispose();
+    oldData.art.reliefTex.dispose();
+  }
   const tex = new THREE.CanvasTexture(cv);
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
@@ -719,18 +776,40 @@ function polygonCentroid(pts) {
   return Math.abs(a) < 1e-9 ? new THREE.Vector2() : new THREE.Vector2(cx / (6 * a), cy / (6 * a));
 }
 
-// ---------- Build the charm ----------
-let charmGroup = null;
-let currentDef = null;
+// ---------- Charms on the ring (stack) ----------
+// The editor always edits the *active* charm: `state`, `custom` and the material globals are bound to it.
 let font = null;
-const state = { shape: 'heart', text: 'KIRO', tilt: true, finish: 'glossy', sizeMm: 60, thickMm: 4 };
+let state = null;
+const charms = [];
+let active = null, charmSeq = 0;
+
+function newCharm(from) {
+  const c = {
+    id: ++charmSeq,
+    state: from ? { ...from.state }
+      : { shape: 'heart', text: 'KIRO', tilt: true, finish: 'glossy', sizeMm: 60, thickMm: 4, color: '#ff4f8b' },
+    custom: from ? { ...from.custom }
+      : { img: null, name: '', border: 14, tol: 40, holePos: null, relief: 'light', bgMode: 'auto', data: null, thumb: '', status: '', statusCls: '' },
+    links: from ? from.links : 4,
+    mats: makeMats(), group: null, def: null, rig: null, phys: null, baseX: 0, baseTwist: 0
+  };
+  return c;
+}
+function bind(c) {
+  active = c; state = c.state; custom = c.custom;
+  charmMat = c.mats.charm; textMat = c.mats.text; artMat = c.mats.art; goldReliefMat = c.mats.gold;
+}
+function withCharm(c, fn) { const prev = active; bind(c); try { fn(); } finally { if (prev) bind(prev); } }
+function allCharmMats() { return charms.flatMap(c => Object.values(c.mats)); }
 
 function disposeGroup(g) {
   g.traverse(o => { if (o.isMesh) o.geometry.dispose(); });
 }
 
 function buildCharm() {
-  if (charmGroup) { charmHang.remove(charmGroup); disposeGroup(charmGroup); }
+  const c = active;
+  if (!c || !c.rig) return;
+  if (c.group) { c.rig.hang.remove(c.group); disposeGroup(c.group); }
   const isCustom = state.shape === 'custom' && custom.data;
   const def = isCustom ? customDef() : SHAPES[state.shape === 'custom' ? 'heart' : state.shape]();
   // Real-world thickness → world units, using the charm's real size (mm) as the scale reference
@@ -755,7 +834,7 @@ function buildCharm() {
   geo.translate(0, 0, -depth / 2);
   geo.computeVertexNormals();
 
-  charmGroup = new THREE.Group();
+  const charmGroup = new THREE.Group();
   charmGroup.add(new THREE.Mesh(geo, charmMat));
   const zFront = depth / 2 + bevelT;
 
@@ -808,73 +887,77 @@ function buildCharm() {
   // Hang so the top edge of the hole rests on the jump ring
   const hang = new THREE.Vector2(def.holeX, def.holeY + def.holeR - bevelS - 0.04);
   charmGroup.position.set(-hang.x, -hang.y, 0);
-  charmHang.rotation.z = 0;
+  c.rig.hang.rotation.z = 0;
   if (state.tilt) {
-    const c = polygonCentroid(def.shape.getPoints()).sub(hang);
-    charmHang.rotation.z = -Math.PI / 2 - Math.atan2(c.y, c.x);
+    const ctr = polygonCentroid(def.shape.getPoints()).sub(hang);
+    c.rig.hang.rotation.z = -Math.PI / 2 - Math.atan2(ctr.y, ctr.x);
   }
-  charmHang.add(addShadow(charmGroup));
+  c.rig.hang.add(addShadow(charmGroup));
   charmGroup.add(reliefGroup);
-  currentDef = def;
+  c.group = charmGroup;
+  c.def = def;
 }
+function rebuildAll() { for (const c of charms) withCharm(c, buildCharm); }
 
 new FontLoader().load(
   'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/fonts/helvetiker_bold.typeface.json',
-  f => { font = f; buildCharm(); },
+  f => { font = f; rebuildAll(); },
   undefined,
   () => console.warn('Font gagal dimuat, tulisan tidak ditampilkan')
 );
-buildCharm();
 
 // ---------- Simple chained-pendulum physics ----------
-const J = joints.length;
-const swing = {
-  wz: new Float32Array(J), vz: new Float32Array(J), // swing left/right (world angle)
-  wx: new Float32Array(J), vx: new Float32Array(J), // swing front/back
-  twist: 0, vt: 0
-};
+// The ring swings on the peg; every charm's chain follows the ring with a slight lag (whip effect).
+const ring = { wz: 0, vz: 0, wx: 0, vx: 0 };
 
 function impulse(strength = 1) {
   const dir = Math.random() < 0.5 ? -1 : 1;
-  swing.vz[0] += dir * (0.9 + Math.random() * 0.5) * strength;
-  swing.vx[0] += (Math.random() - 0.5) * 0.8 * strength;
-  swing.vt += (Math.random() < 0.5 ? -1 : 1) * (2.5 + Math.random() * 2.5) * strength;
+  ring.vz += dir * (0.9 + Math.random() * 0.5) * strength;
+  ring.vx += (Math.random() - 0.5) * 0.8 * strength;
+  for (const c of charms) c.phys.vt += (Math.random() < 0.5 ? -1 : 1) * (2.5 + Math.random() * 2.5) * strength;
 }
 
 function stepPhysics(dt, time, auto) {
-  const { wz, vz, wx, vx } = swing;
-  let az = -14 * wz[0] - 0.7 * vz[0];
-  let ax = -18 * wx[0] - 1.5 * vx[0];
+  let az = -14 * ring.wz - 0.7 * ring.vz;
+  let ax = -18 * ring.wx - 1.5 * ring.vx;
   if (auto) {
     az += Math.sin(time * 1.1) * 0.45 + Math.sin(time * 2.7) * 0.15;
     ax += Math.sin(time * 0.8 + 1) * 0.2;
   }
-  vz[0] += az * dt; wz[0] += vz[0] * dt;
-  vx[0] += ax * dt; wx[0] += vx[0] * dt;
-  wz[0] = THREE.MathUtils.clamp(wz[0], -0.9, 0.9);
-  wx[0] = THREE.MathUtils.clamp(wx[0], -0.4, 0.4);
+  ring.vz += az * dt; ring.wz += ring.vz * dt;
+  ring.vx += ax * dt; ring.wx += ring.vx * dt;
+  ring.wz = THREE.MathUtils.clamp(ring.wz, -0.9, 0.9);
+  ring.wx = THREE.MathUtils.clamp(ring.wx, -0.4, 0.4);
 
-  for (let i = 1; i < J; i++) {
-    const k = 140 - i * 10, c = 9.0;
-    const a1 = -k * (wz[i] - wz[i - 1]) - c * (vz[i] - vz[i - 1]) - 3 * wz[i];
-    const a2 = -k * (wx[i] - wx[i - 1]) - c * (vx[i] - vx[i - 1]) - 3 * wx[i];
-    vz[i] += a1 * dt; wz[i] += vz[i] * dt;
-    vx[i] += a2 * dt; wx[i] += vx[i] * dt;
+  for (const ch of charms) {
+    const p = ch.phys;
+    for (let i = 0; i < p.n; i++) {
+      const pwz = i ? p.wz[i - 1] : ring.wz, pvz = i ? p.vz[i - 1] : ring.vz;
+      const pwx = i ? p.wx[i - 1] : ring.wx, pvx = i ? p.vx[i - 1] : ring.vx;
+      const k = Math.max(60, 130 - i * 10), c = 9.0;
+      const a1 = -k * (p.wz[i] - pwz) - c * (p.vz[i] - pvz) - 3 * p.wz[i];
+      const a2 = -k * (p.wx[i] - pwx) - c * (p.vx[i] - pvx) - 3 * p.wx[i];
+      p.vz[i] += a1 * dt; p.wz[i] += p.vz[i] * dt;
+      p.vx[i] += a2 * dt; p.wx[i] += p.vx[i] * dt;
+    }
+    let at = -3 * (p.twist - ch.baseTwist) - 0.5 * p.vt + p.vz[p.n - 1] * 0.8;
+    if (auto) at += Math.sin(time * 0.6 + ch.id * 1.7) * 0.5;
+    p.vt += at * dt; p.twist += p.vt * dt;
   }
-
-  let at = -3 * swing.twist - 0.5 * swing.vt + vz[J - 1] * 0.8;
-  if (auto) at += Math.sin(time * 0.6) * 0.5;
-  swing.vt += at * dt; swing.twist += swing.vt * dt;
 }
 
 function applyPhysics() {
-  const { wz, wx } = swing;
-  for (let i = 0; i < J; i++) {
-    const pz = i ? wz[i - 1] : 0, px = i ? wx[i - 1] : 0;
-    joints[i].rotation.z = wz[i] - pz;
-    joints[i].rotation.x = wx[i] - px;
+  ringGroup.rotation.z = ring.wz;
+  ringGroup.rotation.x = ring.wx;
+  for (const ch of charms) {
+    const p = ch.phys, js = ch.rig.joints;
+    for (let i = 0; i < p.n; i++) {
+      const pz = i ? p.wz[i - 1] : ring.wz, px = i ? p.wx[i - 1] : ring.wx;
+      js[i].rotation.z = p.wz[i] - pz;
+      js[i].rotation.x = p.wx[i] - px + (i === 0 ? ch.baseX : 0);
+    }
+    ch.rig.twist.rotation.y = p.twist;
   }
-  charmTwist.rotation.y = swing.twist;
 }
 
 // ---------- UI ----------
@@ -882,9 +965,12 @@ const $ = id => document.getElementById(id);
 const PRESETS = ['#ffffff', '#ff4f8b', '#ff8a3d', '#ffd23f', '#3ddc97', '#3fa7ff', '#7b3fe4', '#222233'];
 const swatches = $('swatches');
 function setColor(hex) {
+  state.color = hex;
   charmMat.color.set(hex);
   $('colorPicker').value = hex;
   swatches.querySelectorAll('.swatch').forEach(s => s.classList.toggle('active', s.dataset.c === hex));
+  const chip = $('stackList').children[charms.indexOf(active)];
+  if (chip) chip.style.setProperty('--chip', hex);
 }
 PRESETS.forEach(c => {
   const d = document.createElement('div');
@@ -905,7 +991,7 @@ function setShape(shape) {
 
 $('colorPicker').oninput = e => setColor(e.target.value);
 $('nameInput').oninput = e => { state.text = e.target.value; buildCharm(); };
-$('shapeSelect').onchange = e => { setShape(e.target.value); impulse(0.6); };
+$('shapeSelect').onchange = e => { setShape(e.target.value); renderStack(); impulse(0.6); };
 $('finishSelect').onchange = e => applyFinish(e.target.value);
 $('swingBtn').onclick = () => impulse(1);
 $('tiltCheck').onchange = e => { state.tilt = e.target.checked; buildCharm(); };
@@ -915,10 +1001,121 @@ $('sizeMm').oninput = e => {
   const v = +e.target.value;
   if (v >= 10 && v <= 300) { state.sizeMm = v; buildCharm(); }
 };
-updateThickUI();
 $('reliefSelect').onchange = e => { custom.relief = e.target.value; if (custom.data) runProcess(); };
-setColor('#ff4f8b');
-applyFinish('glossy');
+
+// --- Stack: several charms on one ring ---
+const SHAPE_ICONS = { heart: '❤️', star: '⭐', tag: '🏷️', circle: '⚪', custom: '🖼️' };
+const STACK_COLORS = ['#ff4f8b', '#3fa7ff', '#ffd23f', '#3ddc97', '#7b3fe4', '#ff8a3d'];
+
+// Push the active charm's settings into every editor control
+function syncUI() {
+  const opt = $('shapeSelect').querySelector('option[value=custom]');
+  opt.disabled = !custom.data;
+  opt.textContent = custom.data ? '🖼️ Asset Custom' : '🖼️ Asset Custom (upload dulu)';
+  $('shapeSelect').value = state.shape;
+  $('textBox').hidden = state.shape === 'custom';
+  $('nameInput').value = state.text;
+  $('customOpts').hidden = !(state.shape === 'custom' && custom.data);
+  if (custom.data) updateCustomUI();
+  $('reliefSelect').value = custom.relief;
+  $('bgModeSelect').value = custom.bgMode;
+  $('assetThumb').style.display = custom.thumb ? 'block' : 'none';
+  if (custom.thumb) $('assetThumb').src = custom.thumb;
+  $('assetStatus').textContent = custom.status;
+  $('assetStatus').className = custom.statusCls;
+  $('tiltCheck').checked = state.tilt;
+  $('finishSelect').value = state.finish;
+  $('colorPicker').value = state.color;
+  swatches.querySelectorAll('.swatch').forEach(s => s.classList.toggle('active', s.dataset.c === state.color));
+  $('thickRange').value = state.thickMm; updateThickUI();
+  $('sizeMm').value = state.sizeMm;
+  $('linksRange').value = active.links; $('linksVal').textContent = active.links + ' mata';
+  renderStack();
+}
+
+function renderStack() {
+  const list = $('stackList');
+  list.textContent = '';
+  charms.forEach((c, k) => {
+    const b = document.createElement('button');
+    b.className = 'chip' + (c === active ? ' active' : '');
+    b.title = `Gantungan ${k + 1}`;
+    if (c.state.shape === 'custom' && c.custom.thumb) {
+      const im = document.createElement('img'); im.src = c.custom.thumb; im.alt = ''; b.append(im);
+    } else {
+      const s = document.createElement('span'); s.textContent = SHAPE_ICONS[c.state.shape] || '🔑'; b.append(s);
+    }
+    const n = document.createElement('small'); n.textContent = k + 1; b.append(n);
+    b.style.setProperty('--chip', c.state.color);
+    b.onclick = () => { selectCharm(c); swingCharm(c); };
+    list.append(b);
+  });
+  $('stackCount').textContent = `${charms.length}/${MAX_CHARMS}`;
+  $('addCharmBtn').disabled = $('dupCharmBtn').disabled = charms.length >= MAX_CHARMS;
+  $('delCharmBtn').disabled = charms.length <= 1;
+}
+
+function selectCharm(c) { bind(c); syncUI(); }
+function swingCharm(c) { c.phys.vt += (Math.random() < 0.5 ? -1 : 1) * 3; }
+
+// Finish a freshly created charm: rig on the ring, materials, mesh
+function attachCharm(c) {
+  charms.push(c);
+  createRig(c);
+  layoutRigs();
+  bind(c);
+  applyFinish(state.finish);
+  setColor(state.color);
+  buildCharm();
+  syncUI();
+  impulse(0.6);
+}
+function addCharm() {
+  if (charms.length >= MAX_CHARMS) return;
+  const c = newCharm();
+  c.state.color = STACK_COLORS[charms.length % STACK_COLORS.length];
+  c.state.text = String(charms.length + 1);
+  c.links = 2 + (charms.length % 3) * 2; // vary chain lengths so the charms stagger
+  attachCharm(c);
+}
+function duplicateCharm() {
+  if (charms.length >= MAX_CHARMS) return;
+  const c = newCharm(active);
+  c.links = Math.min(8, active.links + 1);
+  attachCharm(c);
+}
+function removeCharm() {
+  if (charms.length <= 1) return;
+  const c = active, idx = charms.indexOf(c);
+  destroyRig(c);
+  if (c.group) disposeGroup(c.group);
+  if (c.custom.data && !charms.some(o => o !== c && o.custom.data === c.custom.data)) {
+    c.custom.data.art.tex.dispose(); c.custom.data.art.reliefTex.dispose();
+  }
+  Object.values(c.mats).forEach(m => m.dispose());
+  charms.splice(idx, 1);
+  layoutRigs();
+  selectCharm(charms[Math.min(idx, charms.length - 1)]);
+  impulse(0.4);
+}
+function setLinks(n) {
+  const c = active;
+  c.links = n;
+  destroyRig(c);
+  createRig(c);
+  layoutRigs();
+  $('linksVal').textContent = n + ' mata';
+}
+$('addCharmBtn').onclick = addCharm;
+$('dupCharmBtn').onclick = duplicateCharm;
+$('delCharmBtn').onclick = removeCharm;
+$('linksRange').oninput = e => setLinks(+e.target.value);
+
+// First charm
+{
+  const first = newCharm();
+  attachCharm(first);
+}
 
 // --- Environments: light wall, black studio (rim lights + glow), HDRI scenes from Poly Haven (CC0) ---
 const ROOM_ENV = scene.environment;
@@ -950,8 +1147,7 @@ function loadHDRI(name) {
   return hdriCache[name];
 }
 function setEnvStatus(msg) { $('envStatus').textContent = msg; $('rvEnvStatus').textContent = msg; }
-function setBloom(on) { state.bloom = on; $('rvBloom').checked = on; }
-state.env = 'light'; state.bloom = false; state.blur = 0.15;
+function setBloom(on) { view.bloom = on; $('rvBloom').checked = on; }
 let envRequest = 0;
 async function setEnvironment(name) {
   if (!ENVS[name]) name = 'light';
@@ -965,16 +1161,16 @@ async function setEnvironment(name) {
     try { hdr = await loadHDRI(name); }
     catch (err) {
       delete hdriCache[name];
-      if (req === envRequest) { setEnvStatus('✖ Gagal memuat environment, cek koneksi internet.'); setEnvironment(state.env === name ? 'studio' : state.env); }
+      if (req === envRequest) { setEnvStatus('✖ Gagal memuat environment, cek koneksi internet.'); setEnvironment(view.env === name ? 'studio' : view.env); }
       return;
     }
     if (req !== envRequest) return; // a newer choice was made while loading
   }
   setEnvStatus(isHdri ? 'HDRI: Poly Haven (CC0)' : '');
-  state.env = name;
+  view.env = name;
   scene.background = isHdri ? hdr : new THREE.Color(isStudio ? '#000000' : '#f3e9ff');
   scene.environment = isHdri ? hdr : ROOM_ENV;
-  scene.backgroundBlurriness = isHdri ? state.blur : 0;
+  scene.backgroundBlurriness = isHdri ? view.blur : 0;
   wall.visible = isLight;
   hemi.intensity = isLight ? 0.6 : isStudio ? 0.15 : 0.1;
   sun.intensity = isLight ? 2.2 : isStudio ? 1.6 : 1.0;
@@ -982,7 +1178,8 @@ async function setEnvironment(name) {
   rimB.intensity = isStudio ? 10 : 0;
   renderer.toneMappingExposure = isLight ? 0.85 : isStudio ? 0.95 : 0.9;
   // Darker, higher-contrast reflections so chrome reads as mirror metal on black
-  for (const m of [chromeMat, charmMat, textMat, goldReliefMat, pegMat]) m.envMapIntensity = isStudio ? 0.55 : 1;
+  view.envIntensity = isStudio ? 0.55 : 1;
+  for (const m of [chromeMat, pegMat, ...allCharmMats()]) m.envMapIntensity = view.envIntensity;
   setBloom(isStudio);
   document.body.classList.toggle('light-review', isLight);
 }
@@ -995,7 +1192,10 @@ $('presetBtn').onclick = () => {
 };
 
 // --- Custom asset upload ---
-function setStatus(msg, cls = '') { const el = $('assetStatus'); el.textContent = msg; el.className = cls; }
+function setStatus(msg, cls = '') {
+  custom.status = msg; custom.statusCls = cls;
+  const el = $('assetStatus'); el.textContent = msg; el.className = cls;
+}
 
 function updateCustomUI() {
   $('borderVal').textContent = custom.border + ' px';
@@ -1025,7 +1225,11 @@ function runProcess() {
 }
 
 let processTimer = 0;
-function scheduleProcess() { clearTimeout(processTimer); processTimer = setTimeout(runProcess, 60); }
+function scheduleProcess() {
+  clearTimeout(processTimer);
+  const c = active;
+  processTimer = setTimeout(() => { if (active === c) runProcess(); }, 60);
+}
 
 function loadImage(url) {
   return new Promise((resolve, reject) => {
@@ -1037,20 +1241,21 @@ function loadImage(url) {
 }
 
 async function useAsset(url, name) {
+  const c = active; // the charm that receives this image, even if the user switches while it loads
   setStatus('Memproses gambar...');
-  try {
-    custom.img = await loadImage(url);
-  } catch (err) { setStatus('✖ ' + err.message, 'err'); return; }
+  let img;
+  try { img = await loadImage(url); }
+  catch (err) { withCharm(c, () => setStatus('✖ ' + err.message, 'err')); if (active === c) syncUI(); return; }
+  if (active !== c) selectCharm(c);
+  custom.img = img;
   custom.name = name;
   custom.holePos = null;
-  $('assetThumb').src = url;
-  $('assetThumb').style.display = 'block';
-  if (!runProcess()) return;
-  const opt = $('shapeSelect').querySelector('option[value=custom]');
-  opt.disabled = false; opt.textContent = '🖼️ Asset Custom';
+  custom.thumb = url;
+  if (!runProcess()) { syncUI(); return; }
   setFinish('clear');
   setColor('#ffffff');
   setShape('custom');
+  syncUI();
   impulse(0.8);
 }
 
@@ -1115,9 +1320,9 @@ addEventListener('pointermove', e => {
   const dx = e.clientX - grab.lx, dy = e.clientY - grab.ly;
   grab.lx = e.clientX; grab.ly = e.clientY;
   camRight.setFromMatrixColumn(camera.matrixWorld, 0);
-  swing.vz[0] += dx * 0.012 * camRight.x;
-  swing.vx[0] += -dx * 0.012 * camRight.z + dy * 0.004;
-  swing.vt += dx * 0.01;
+  ring.vz += dx * 0.012 * camRight.x;
+  ring.vx += -dx * 0.012 * camRight.z + dy * 0.004;
+  for (const c of charms) c.phys.vt += dx * 0.01;
 });
 addEventListener('pointerup', e => {
   if (!grab || e.pointerId !== grab.id) return;
@@ -1209,7 +1414,7 @@ function enterReview() {
   if (document.body.classList.contains('reviewing')) return;
   document.body.classList.add('reviewing');
   $('review').hidden = false;
-  if (state.env === 'light') setEnvironment('studio');
+  if (view.env === 'light') setEnvironment('studio');
   setAutoRotate($('rvAuto').checked);
   // Frame the keychain a bit higher & further so the bottom toolbar doesn't cover the charm
   savedView = { pos: camera.position.clone(), target: controls.target.clone() };
@@ -1255,9 +1460,9 @@ function updateSpeed() {
   $('rvSpeedVal').textContent = `≈ ${Math.round(rotationSeconds())} dtk / putaran`;
 }
 function updateBlur() {
-  state.blur = $('rvBlur').value / 100;
+  view.blur = $('rvBlur').value / 100;
   $('rvBlurVal').textContent = $('rvBlur').value + '%';
-  if (ENVS[state.env].hdri) scene.backgroundBlurriness = state.blur;
+  if (ENVS[view.env].hdri) scene.backgroundBlurriness = view.blur;
 }
 $('rvRotate').onclick = () => setAutoRotate(!controls.autoRotate);
 $('rvAuto').onchange = e => setAutoRotate(e.target.checked);
@@ -1273,7 +1478,7 @@ $('rvSettingsBtn').onclick = () => {
   $('rvSettings').hidden = !open;
   $('rvSettingsBtn').classList.toggle('on', open);
 };
-$('rvBg').onclick = () => setEnvironment(ENV_KEYS[(ENV_KEYS.indexOf(state.env) + 1) % ENV_KEYS.length]);
+$('rvBg').onclick = () => setEnvironment(ENV_KEYS[(ENV_KEYS.indexOf(view.env) + 1) % ENV_KEYS.length]);
 $('rvRec360').onclick = () => {
   if (isRecording()) return;
   setAutoRotate(true);
@@ -1284,8 +1489,11 @@ updateBlur();
 
 // 3D model (GLB) – exported in rest pose
 $('glbBtn').onclick = () => {
-  joints.forEach(j => { j.rotation.x = 0; j.rotation.z = 0; });
-  charmTwist.rotation.y = 0;
+  ringGroup.rotation.set(0, 0, 0);
+  for (const c of charms) {
+    c.rig.joints.forEach((j, i) => { j.rotation.z = 0; j.rotation.x = i === 0 ? c.baseX : 0; });
+    c.rig.twist.rotation.y = c.baseTwist;
+  }
   root.updateMatrixWorld(true);
   new GLTFExporter().parse(
     root,
@@ -1303,7 +1511,7 @@ $('pngBtn').onclick = () => {
 
 // Cut line + artwork (SVG, in millimetres)
 $('svgBtn').onclick = () => {
-  const def = currentDef;
+  const def = active.def; // cut line is per acrylic piece: exports the active charm
   const outer = def.shape.getPoints(64);
   const holes = def.shape.holes.map(h => h.getPoints(64));
   let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
@@ -1339,7 +1547,7 @@ addEventListener('resize', () => {
 });
 
 function renderFrame() {
-  if (state.bloom) composer.render();
+  if (view.bloom) composer.render();
   else renderer.render(scene, camera);
   captureRecFrame(); // copy the finished frame to the recorder canvas (same task, buffer still valid)
 }

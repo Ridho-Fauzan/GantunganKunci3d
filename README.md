@@ -27,6 +27,15 @@ Upload (atau drag & drop) logo/artwork kamu, lalu bentuk akriliknya otomatis **m
 - Artwork dicetak di kedua sisi. Bagian dalam yang bolong otomatis diisi supaya akriliknya solid.
 - Opsi **miring sesuai titik berat**: bandul menggantung miring seperti aslinya kalau lubangnya tidak di tengah.
 
+### Stack: banyak gantungan di satu ring
+<img src="docs/stack.png" alt="Stack gantungan" width="560" />
+
+- Bagian **Gantungan di ring** (paling atas panel): **➕ Tambah**, **⧉ Duplikat**, **🗑️ Hapus**, maksimal 6 gantungan
+- Klik nomor untuk memilih gantungan. Semua pengaturan (bentuk, tulisan, asset custom, material, warna, ukuran, ketebalan) berlaku untuk gantungan yang dipilih saja
+- **Panjang rantai** (0–8 mata) per gantungan, supaya posisinya bisa dibuat bertingkat
+- Gantungan disebar di sepanjang ring, berselang depan/belakang, dan semuanya ikut berayun
+- Export GLB berisi seluruh stack. Export SVG cut line berisi gantungan yang sedang dipilih (satu potongan akrilik)
+
 ### Gaya Chrome + Emas (studio)
 - Material **Chrome + Emas Timbul**: badan chrome, dan bagian artwork yang dipilih (terang, gelap, atau semua) jadi timbul emas
 - **Latar Studio**: background hitam, rim light, dan efek glow (bloom)
