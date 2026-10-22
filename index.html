@@ -102,11 +102,64 @@
   #rvSettings select { background: rgba(255,255,255,.95); color: #3a2a4d; }
   #rvSettings .rvNote { font-size: 11px; opacity: .75; margin-top: 4px; min-height: 0; }
   #review button.ghost.on { background: #7b3fe4; border-color: #7b3fe4; color: #fff; }
-  @media (max-width: 600px) {
-    #panel { width: calc(100% - 24px); left: 12px; top: auto; bottom: 12px; max-height: 50vh; }
+  /* ---------- Shop nav + panel header ---------- */
+  #shopNav {
+    position: fixed; top: 16px; right: 16px; z-index: 6; display: flex; gap: 4px; padding: 4px;
+    background: rgba(255,255,255,.88); backdrop-filter: blur(10px); border-radius: 999px; box-shadow: 0 6px 22px rgba(80,40,120,.15);
+  }
+  #shopNav a { color: #3a2a4d; text-decoration: none; font-weight: 600; font-size: 13px; padding: 8px 12px; border-radius: 999px; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+  #shopNav a:hover { background: #ece2fb; }
+  #shopNav a.active { background: #7b3fe4; color: #fff; }
+  #shopNav svg { width: 16px; height: 16px; }
+  body.reviewing #shopNav { display: none; }
+  .sheetHead .grab { display: none; }
+  .headRow { display: flex; align-items: center; gap: 8px; }
+  .headRow h1 { flex: 1; margin: 0 !important; }
+  #sheetToggle { display: none; flex: none; width: 40px; height: 40px; padding: 0; border-radius: 12px; background: #ece2fb; color: #5a2db0; place-items: center; }
+  #sheetToggle svg { transition: transform .25s; }
+  #sheetToggle[aria-expanded="true"] svg { transform: rotate(180deg); }
+  .quick { margin: 10px 0 2px; }
+  .quick button { min-height: 40px; }
+  #orderBtn { background: linear-gradient(135deg, #7b3fe4, #c04fd8); }
+
+  /* ---------- Mobile: panel becomes a bottom sheet ---------- */
+  @media (max-width: 700px) {
+    #shopNav { top: 0; left: 0; right: 0; border-radius: 0 0 16px 16px; justify-content: space-around; padding: 6px;
+      padding-top: max(6px, env(safe-area-inset-top)); }
+    #shopNav a { font-size: 13px; padding: 8px 10px; }
+    #panel {
+      top: auto; left: 0; right: 0; bottom: 0; width: 100%; max-height: 64vh; max-height: 64dvh;
+      border-radius: 20px 20px 0 0; padding: 0 14px calc(16px + env(safe-area-inset-bottom));
+      box-shadow: 0 -8px 30px rgba(80,40,120,.2); overscroll-behavior: contain;
+      transition: max-height .28s ease;
+    }
+    #panel.collapsed { max-height: 132px; overflow: hidden; }
+    .sheetHead { position: sticky; top: 0; z-index: 2; background: rgba(255,255,255,.97); margin: 0 -14px; padding: 6px 14px 8px; cursor: pointer; }
+    .sheetHead .grab { display: block; width: 42px; height: 5px; border-radius: 3px; background: #d6c5ea; margin: 2px auto 8px; }
+    .headRow h1 { font-size: 16px !important; }
+    #sheetToggle { display: grid; }
+    #panel h2 { font-size: 12px; margin-top: 14px; }
+    input[type=text], input[type=number], select { font-size: 16px; padding: 10px 12px; } /* 16px: no iOS auto-zoom */
+    button { min-height: 42px; font-size: 14px; }
+    .swatch { width: 32px; height: 32px; }
+    input[type=color] { width: 36px; height: 36px; }
+    .chip { width: 48px; height: 48px; }
+    input[type=range] { height: 28px; }
+    .check { min-height: 36px; }
+    .check input { width: 20px; height: 20px; }
     #hint { display: none; }
+
+    #reviewTop { top: max(12px, env(safe-area-inset-top)); left: 12px; right: 12px; }
+    #reviewBar { bottom: calc(16px + env(safe-area-inset-bottom)); gap: 8px; }
+    #reviewBar button.ghost { width: 54px; font-size: 18px; }
+    #rvRecord { width: 64px; height: 64px; }
+    #rvRecord .recIcon { width: 46px; height: 46px; }
+    #reviewHint { display: none; }
+    #rvSettings { top: auto; left: 8px; right: 8px; width: auto; bottom: calc(100px + env(safe-area-inset-bottom)); max-height: 56vh; max-height: 56dvh; }
+    #rvSettings select { font-size: 16px; }
   }
 </style>
+<script src="assets/shop.js"></script>
 <script type="importmap">
 {
   "imports": {
@@ -117,8 +170,27 @@
 </script>
 </head>
 <body>
+<nav id="shopNav" aria-label="Menu toko">
+  <a href="katalog.html">🛍️ Katalog</a>
+  <a href="index.html" class="active">🧊 Desain 3D</a>
+  <a href="preorder.html">🛒 Pre-order</a>
+  <a class="igLink" target="_blank" rel="noopener" aria-label="Instagram">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>
+    <span>Instagram</span>
+  </a>
+</nav>
 <div id="panel">
-  <h1>🔑 Gantungan Kunci 3D</h1>
+  <div class="sheetHead" id="sheetHead">
+    <div class="grab" aria-hidden="true"></div>
+    <div class="headRow">
+      <h1>🔑 Gantungan Kunci 3D</h1>
+      <button id="sheetToggle" aria-expanded="false" aria-label="Buka/tutup pengaturan"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg></button>
+    </div>
+    <div class="row quick">
+      <button id="quickReviewBtn" class="secondary">🎬 Review</button>
+      <button id="orderBtn">🛒 Pre-order desain ini</button>
+    </div>
+  </div>
 
   <h2 style="margin-top:0;padding-top:0;border-top:none">Gantungan di ring <span class="val" id="stackCount"></span></h2>
   <div id="stackList" class="stackList"></div>
@@ -231,7 +303,10 @@
   <div id="reviewTop">
     <button id="backBtn" class="ghost">← Editor</button>
     <div id="recBadge" hidden><span class="dot"></span><span id="recTime">00:00</span></div>
-    <button id="rvSettingsBtn" class="ghost">⚙️ Atur</button>
+    <div style="display:flex;gap:6px">
+      <button id="rvOrderBtn" class="ghost">🛒 Pre-order</button>
+      <button id="rvSettingsBtn" class="ghost">⚙️ Atur</button>
+    </div>
   </div>
   <div id="rvSettings" hidden>
     <div class="rvTitle">Pengaturan Review</div>
@@ -1676,7 +1751,8 @@ function enterReview() {
   controls.target.set(0, -0.7, 0);
   camera.position.copy(controls.target).add(offset.setLength(Math.max(offset.length(), 11.5)));
   controls.update();
-  if (location.hash !== '#review') history.pushState(null, '', '#review');
+  updateFraming();
+  if (location.hash !== '#review') history.pushState(null, '', location.pathname + location.search + '#review');
   impulse(0.8);
 }
 function exitReview() {
@@ -1687,6 +1763,7 @@ function exitReview() {
   controls.autoRotate = false;
   $('rvSettings').hidden = true; $('rvSettingsBtn').classList.remove('on');
   if (savedView) { camera.position.copy(savedView.pos); controls.target.copy(savedView.target); controls.update(); savedView = null; }
+  updateFraming();
   if (location.hash === '#review') history.pushState(null, '', location.pathname + location.search);
 }
 $('reviewBtn').onclick = enterReview;
@@ -1786,13 +1863,108 @@ $('svgBtn').onclick = () => {
   download(new Blob([svg], { type: 'image/svg+xml' }), baseName() + '-cutline.svg');
 };
 
+// ---------- Shop: nav links, mobile bottom sheet, pre-order hand-off, catalog presets ----------
+document.querySelectorAll('.igLink').forEach(a => { a.href = SHOP_UTIL.igUrl(); });
+const isMobile = () => innerWidth <= 700;
+const panel = $('panel');
+
+// Keep the keychain visible above the bottom sheet and fit it on narrow portrait screens
+function updateFraming() {
+  const mobile = isMobile(), reviewing = document.body.classList.contains('reviewing');
+  camera.aspect = innerWidth / innerHeight;
+  camera.zoom = mobile ? THREE.MathUtils.clamp(camera.aspect * 1.45, 0.6, 1) : 1;
+  let shiftY = 0;
+  if (mobile && !reviewing) {
+    const sheet = panel.getBoundingClientRect().height, nav = $('shopNav').getBoundingClientRect().height;
+    shiftY = (sheet - nav) / 2; // move the picture up by half of what the sheet covers
+  }
+  camera.setViewOffset(innerWidth, innerHeight, 0, shiftY, innerWidth, innerHeight);
+  camera.updateProjectionMatrix();
+  view.shiftY = shiftY;
+}
+function setSheet(open) {
+  panel.classList.toggle('collapsed', !open);
+  $('sheetToggle').setAttribute('aria-expanded', String(open));
+  if (!open) panel.scrollTop = 0;
+  updateFraming();
+}
+$('sheetHead').addEventListener('click', e => {
+  if (!isMobile() || e.target.closest('.quick')) return;
+  setSheet(panel.classList.contains('collapsed'));
+});
+panel.addEventListener('transitionend', e => { if (e.propertyName === 'max-height') updateFraming(); });
+$('quickReviewBtn').onclick = () => enterReview();
+if (isMobile()) setSheet(false);
+
+// Save a summary + thumbnail of the current design for preorder.html
+const SHAPE_LABELS = { heart: 'Hati', star: 'Bintang', tag: 'Tag', circle: 'Bulat', custom: 'Custom logo' };
+function finishLabel(v) { return $('finishSelect').querySelector(`option[value="${v}"]`)?.textContent || v; }
+function designThumb() {
+  renderFrame();
+  const src = renderer.domElement, H = src.height, W = Math.round(H * 0.8);
+  const cy = H / 2 - (view.shiftY || 0) * renderer.getPixelRatio();
+  const out = document.createElement('canvas');
+  out.width = 480; out.height = 600;
+  const g = out.getContext('2d');
+  g.fillStyle = '#' + scene.background.getHexString(); g.fillRect(0, 0, 480, 600);
+  const sw = Math.min(W, src.width), sh = Math.min(H, Math.round(sw / 0.8));
+  g.drawImage(src, (src.width - sw) / 2, THREE.MathUtils.clamp(cy - sh / 2, 0, H - sh), sw, sh, 0, 0, 480, 600);
+  return out.toDataURL('image/jpeg', 0.85);
+}
+function orderDesign() {
+  const items = charms.map(c => ({
+    bentuk: SHAPE_LABELS[c.state.shape] || c.state.shape,
+    tulisan: c.state.shape === 'custom' ? '' : c.state.text.trim(),
+    asset: c.state.shape === 'custom' ? c.custom.name : '',
+    material: finishLabel(c.state.finish), warna: c.state.color,
+    ukuran: c.state.sizeMm, tebal: c.state.thickMm
+  }));
+  const data = { items, at: Date.now(), thumb: '' };
+  try { data.thumb = designThumb(); } catch (e) { console.warn(e); }
+  try { localStorage.setItem('gk_design', JSON.stringify(data)); }
+  catch { data.thumb = ''; localStorage.setItem('gk_design', JSON.stringify(data)); } // storage full: drop the image
+  location.href = 'preorder.html?dari=editor';
+}
+$('orderBtn').onclick = orderDesign;
+$('rvOrderBtn').onclick = orderDesign;
+
+// Catalog presets: index.html?preset=hati|bintang|tag|bulat|custom|chrome-emas|bundle
+function setupCharm(shape, text, color, finish) {
+  state.text = text;
+  setFinish(finish);
+  setColor(color);
+  setShape(shape);
+  syncUI();
+}
+async function applyPreset(name) {
+  switch (name) {
+    case 'hati': setupCharm('heart', 'NAMAMU', '#ff4f8b', 'glossy'); break;
+    case 'bintang': setupCharm('star', 'STAR', '#ffd23f', 'metal'); break;
+    case 'tag': setupCharm('tag', 'RUMAH', '#3fa7ff', 'glossy'); break;
+    case 'bulat': setupCharm('circle', 'BFF', '#ffffff', 'clear'); break;
+    case 'custom': await useAsset(makeSampleAsset(), 'contoh'); break;
+    case 'chrome-emas':
+      await useAsset(makeSampleAsset(), 'contoh');
+      setFinish('chromegold'); setColor('#e6e6ec'); setEnvironment('studio');
+      break;
+    case 'bundle':
+      setupCharm('heart', 'A', '#ff4f8b', 'glossy');
+      addCharm(); setupCharm('star', 'B', '#3fa7ff', 'glossy');
+      addCharm(); setupCharm('circle', 'C', '#ffd23f', 'glossy');
+      selectCharm(charms[0]);
+      break;
+    default: return;
+  }
+  impulse(0.8);
+}
+
 // ---------- Loop ----------
 addEventListener('resize', () => {
-  camera.aspect = innerWidth / innerHeight;
-  camera.updateProjectionMatrix();
   renderer.setSize(innerWidth, innerHeight);
   composer.setSize(innerWidth, innerHeight);
+  updateFraming();
 });
+updateFraming();
 
 function renderFrame() {
   if (view.bloom) composer.render();
@@ -1816,7 +1988,11 @@ renderer.setAnimationLoop(() => {
   controls.update();
   renderFrame();
 });
-if (location.hash === '#review') enterReview();
+{
+  const preset = new URLSearchParams(location.search).get('preset');
+  if (preset) applyPreset(preset).then(() => { if (location.hash === '#review') enterReview(); });
+  else if (location.hash === '#review') enterReview();
+}
 if (new URLSearchParams(location.search).has('debug')) {
   // simulate(): run the exact same loop as the renderer at a fixed 60 fps (no drawing) and report
   // how deep charms penetrate each other – a deterministic test independent of the device's frame rate

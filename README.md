@@ -63,6 +63,21 @@ Klik **🎬 Buka Halaman Review** (atau buka `index.html#review`). Hasilnya tamp
 - ✂️ **Cut line `.svg`**: garis potong merah (outline + lubang) dan artwork dalam ukuran mm, siap dikirim ke vendor akrilik
 - 🎥 **Video `.webm`**: rekam animasi 6 detik
 
+## Halaman toko
+| Halaman | Isi |
+|---|---|
+| `katalog.html` | Daftar produk dengan filter kategori, tombol **Coba 3D** (buka editor dengan preset produk) dan **Pre-order** |
+| `index.html` | Editor 3D. Tombol **🛒 Pre-order desain ini** membawa desain (ringkasan + gambar) ke form pre-order |
+| `preorder.html` | Form pre-order dengan validasi, ringkasan pesanan, lalu **Salin & kirim via DM Instagram** (atau WhatsApp kalau nomornya diisi) |
+
+<img src="docs/katalog.png" alt="Katalog" width="560" /> <img src="docs/mobile-editor.png" alt="Editor di HP" width="150" /> <img src="docs/mobile-preorder.png" alt="Pre-order di HP" width="150" />
+
+Semua halaman punya menu atas dan link ke Instagram [@toko.aksesoris.persahabatan](https://www.instagram.com/toko.aksesoris.persahabatan/).
+
+**Mengatur toko:** edit `assets/shop.js`, berisi nama toko, username Instagram, nomor WhatsApp (opsional), catatan pre-order, dan daftar produk (nama, harga, spek, gambar, preset 3D). Harga `null` akan tampil sebagai "Harga via DM". Gambar produk ada di folder `katalog/`.
+
+**Tampilan HP:** panel editor menjadi *bottom sheet* yang bisa dibuka/tutup (tap judul atau tombol panah), kamera otomatis menyesuaikan layar portrait, dan halaman Review memakai toolbar & panel pengaturan yang lebih ringkas.
+
 ## Cara menjalankan
 Buka `index.html` di browser modern (Chrome, Edge, Firefox, Safari). Perlu koneksi internet karena Three.js dimuat dari CDN.
 
