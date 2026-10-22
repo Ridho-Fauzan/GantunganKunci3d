@@ -13,7 +13,7 @@
 </head>
 <body>
 <header class="topnav">
-  <a class="brand" href="katalog.html">🎸 <span class="shopName"></span></a>
+  <a class="brand" href="katalog.html"><span class="shopName"></span></a>
   <nav>
     <a href="katalog.html">Katalog</a>
     <a href="index.html">Desain 3D</a>
@@ -65,8 +65,8 @@
               <strong>Desain tersimpan</strong> <span class="hint" id="designTime"></span>
               <ul id="designList"></ul>
               <div class="btn-row" style="margin-top:8px">
-                <a class="btn ghost" href="index.html" style="min-height:36px;padding:6px 10px">✏️ Ubah</a>
-                <button type="button" class="btn ghost" id="designRemove" style="min-height:36px;padding:6px 10px">✖ Lepas</button>
+                <a class="btn ghost" href="index.html" style="min-height:36px;padding:6px 10px">Ubah</a>
+                <button type="button" class="btn ghost" id="designRemove" style="min-height:36px;padding:6px 10px">Lepas</button>
               </div>
             </div>
           </div>
@@ -117,8 +117,8 @@
         <legend>Pengiriman</legend>
         <div class="field">
           <div class="radio-row">
-            <label><input type="radio" name="kirim" value="Dikirim" checked /> 📦 Dikirim</label>
-            <label><input type="radio" name="kirim" value="Ambil sendiri / COD" /> 🤝 Ambil / COD</label>
+            <label><input type="radio" name="kirim" value="Dikirim" checked /> Dikirim</label>
+            <label><input type="radio" name="kirim" value="Ambil sendiri / COD" /> Ambil / COD</label>
           </div>
         </div>
         <div class="field" id="alamatField">
@@ -136,7 +136,7 @@
         </div>
       </fieldset>
 
-      <button class="btn" type="submit" style="width:100%">✅ Buat ringkasan pesanan</button>
+      <button class="btn" type="submit" style="width:100%">Buat ringkasan pesanan</button>
       <p class="hint" id="poNote"></p>
     </form>
 
@@ -144,10 +144,10 @@
       <h2>Ringkasan pesanan</h2>
       <p class="hint">Ringkasan ini yang dikirim ke admin. Belum ada pembayaran di sini.</p>
       <pre id="summaryText"></pre>
-      <button type="button" class="btn" id="sendIg">📩 Salin &amp; kirim via DM Instagram</button>
-      <a class="btn secondary" id="sendWa" target="_blank" rel="noopener" hidden>💬 Kirim via WhatsApp</a>
-      <button type="button" class="btn secondary" id="copyBtn">📋 Salin ringkasan</button>
-      <button type="button" class="btn ghost" id="dlDesign" hidden>⬇️ Unduh gambar desain</button>
+      <button type="button" class="btn" id="sendIg">Salin &amp; kirim via DM Instagram</button>
+      <a class="btn secondary" id="sendWa" target="_blank" rel="noopener" hidden>Kirim via WhatsApp</a>
+      <button type="button" class="btn secondary" id="copyBtn">Salin ringkasan</button>
+      <button type="button" class="btn ghost" id="dlDesign" hidden>Unduh gambar desain</button>
       <ol class="steps">
         <li>Klik <b>Salin &amp; kirim via DM Instagram</b>. Ringkasan otomatis tersalin.</li>
         <li>Di DM, tempel (paste) ringkasannya<span id="stepImg">, lalu lampirkan gambar desain yang sudah diunduh</span>.</li>
@@ -158,7 +158,7 @@
 </main>
 
 <footer>
-  <span class="tag">Stay loud. 🤘</span>
+  <span class="tag">Stay loud.</span>
   Ada pertanyaan? DM <a class="igLink igHandle" target="_blank" rel="noopener"></a>
 </footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -185,7 +185,7 @@
     $('dlDesign').hidden = !(has && design.thumb);
     $('stepImg').hidden = !has;
     let opt = sel.querySelector(`option[value="${DESIGN_OPT}"]`);
-    if (has && !opt) { opt = new Option('🎨 Desain saya dari editor 3D', DESIGN_OPT); sel.add(opt, 1); }
+    if (has && !opt) { opt = new Option('Desain saya dari editor 3D', DESIGN_OPT); sel.add(opt, 1); }
     if (!has && opt) opt.remove();
     if (!has) return;
     $('designThumb').src = design.thumb || '';
@@ -255,11 +255,11 @@
   function summaryText() {
     const v = id => $(id).value.trim();
     const p = SHOP_UTIL.produk(sel.value);
-    const lines = [`Halo ${SHOP.nama}! Saya mau PRE-ORDER 🙌`, ''];
-    lines.push(`👤 Nama: ${v('nama') || '-'}`);
-    lines.push(`📷 IG: ${v('ig') ? '@' + v('ig').replace(/^@/, '') : '-'}`);
-    if (v('hp')) lines.push(`📱 WA: ${v('hp')}`);
-    lines.push('', '🛒 Pesanan');
+    const lines = [`Halo ${SHOP.nama}! Saya mau PRE-ORDER.`, ''];
+    lines.push(`Nama: ${v('nama') || '-'}`);
+    lines.push(`IG: ${v('ig') ? '@' + v('ig').replace(/^@/, '') : '-'}`);
+    if (v('hp')) lines.push(`WA: ${v('hp')}`);
+    lines.push('', 'PESANAN');
     if (sel.value === DESIGN_OPT && design) {
       lines.push('• Produk: Desain custom dari editor 3D');
       design.items.forEach((it, i) => lines.push(`   ${design.items.length > 1 ? `#${i + 1}` : '-'} ${it.bentuk}${it.tulisan ? ` "${it.tulisan}"` : ''}${it.asset ? ` (file: ${it.asset})` : ''}, ${it.material}, warna ${it.warna}`));
@@ -270,10 +270,10 @@
     lines.push(`• Ukuran: ${v('ukuran')} · Tebal: ${v('tebal')} · Cetak: ${v('sisi')}`);
     if (v('teks')) lines.push(`• Tulisan: ${v('teks')}`);
     if (v('warna')) lines.push(`• Warna: ${v('warna')}`);
-    lines.push('', `🚚 ${kirimVal()}`);
+    lines.push('', `Pengiriman: ${kirimVal()}`);
     if (kirimVal() === 'Dikirim' && v('alamat')) lines.push(`Alamat: ${v('alamat')}`);
     if (v('tanggal')) lines.push(`Dibutuhkan sebelum: ${new Date(v('tanggal') + 'T00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`);
-    if (v('catatan')) lines.push('', `📝 Catatan: ${v('catatan')}`);
+    if (v('catatan')) lines.push('', `Catatan: ${v('catatan')}`);
     if (sel.value === DESIGN_OPT && design) lines.push('', '(Gambar desain saya lampirkan di chat ini)');
     return lines.join('\n');
   }

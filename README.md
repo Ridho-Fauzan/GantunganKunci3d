@@ -1,4 +1,4 @@
-# 🎸 Band Keychain 3D
+# Band Keychain 3D
 
 Web merch band untuk **Toko Aksesoris Persahabatan**: preview 3D gantungan kunci interaktif ([Three.js](https://threejs.org/)), katalog, dan form pre-order. Tema gelap ala poster band (merah, hitam, krem). Website statis, tidak perlu build atau install apa pun.
 
@@ -30,7 +30,7 @@ Upload (atau drag & drop) logo/artwork kamu, lalu bentuk akriliknya otomatis **m
 ### Stack: banyak gantungan di satu ring
 <img src="docs/stack.jpg" alt="Stack gantungan" width="320" />
 
-- Bagian **Gantungan di ring** (paling atas panel): **➕ Tambah**, **⧉ Duplikat**, **🗑️ Hapus**, maksimal 6 gantungan
+- Bagian **Gantungan di ring** (paling atas panel): **Tambah**, **⧉ Duplikat**, **Hapus**, maksimal 6 gantungan
 - Klik nomor untuk memilih gantungan. Semua pengaturan (bentuk, tulisan, asset custom, material, warna, ukuran, ketebalan) berlaku untuk gantungan yang dipilih saja
 - **Panjang rantai** (0–8 mata) per gantungan, supaya posisinya bisa dibuat bertingkat
 - Gantungan disebar di sepanjang ring, berselang depan/belakang, dan semuanya ikut berayun
@@ -40,16 +40,16 @@ Upload (atau drag & drop) logo/artwork kamu, lalu bentuk akriliknya otomatis **m
 ### Gaya Chrome + Emas (studio)
 - Material **Chrome + Emas Timbul**: badan chrome, dan bagian artwork yang dipilih (terang, gelap, atau semua) jadi timbul emas
 - **Latar Studio**: background hitam, rim light, dan efek glow (bloom)
-- Tombol **✨ Preset Chrome + Emas** untuk mengaktifkan semuanya sekaligus
+- Tombol **Preset Chrome + Emas** untuk mengaktifkan semuanya sekaligus
 
 ### Halaman Review
 <img src="docs/review.png" alt="Halaman Review" width="420" />
 
-Klik **🎬 Buka Halaman Review** (atau buka `index.html#review`). Hasilnya tampilan layar penuh tanpa panel editor:
+Klik **Buka Halaman Review** (atau buka `index.html#review`). Hasilnya tampilan layar penuh tanpa panel editor:
 - **Tarik gantungan** untuk mengayun, **drag latar** untuk memutar kamera, scroll/pinch untuk zoom
-- 🔄 Putar otomatis 360°, 💨 Goyang, 🌄 Ganti environment, 📸 Foto PNG
-- ⏺ **Rekam bebas**: tekan untuk mulai dan tekan lagi untuk berhenti (maks. 60 detik). Video langsung terunduh sebagai `.webm`
-- ⚙️ **Atur**:
+- Putar otomatis 360°, Goyang, Ganti pencahayaan, Foto PNG
+- **Rekam bebas**: tekan untuk mulai dan tekan lagi untuk berhenti (maks. 60 detik). Video langsung terunduh sebagai `.webm`
+- **Atur**:
   - **Pencahayaan & pantulan**: Terang, Studio Hitam + Glow, atau 7 gaya cahaya HDRI ([Poly Haven](https://polyhaven.com/hdris), CC0): Studio Foto, Neon, Sunset, Langit Cerah, Hutan, Malam Kota, Kota. HDRI hanya dipakai untuk cahaya dan pantulan di chrome/akrilik. **Latarnya tetap polos.**
   - **Warna latar**: Otomatis (ikut gaya cahaya), 7 warna siap pakai, atau color picker. Tombol dan teks UI menyesuaikan latar gelap/terang.
   - Efek glow, tampilkan/sembunyikan paku
@@ -58,16 +58,16 @@ Klik **🎬 Buka Halaman Review** (atau buka `index.html#review`). Hasilnya tamp
 - Shortcut: `Spasi` untuk rekam/stop, `Esc` untuk kembali ke editor
 
 ### Export
-- 🧊 **Model 3D `.glb`**: bisa dibuka di Blender, viewer 3D, atau dipakai di web/AR
-- 📸 **Gambar `.png`**: screenshot tampilan saat ini
-- ✂️ **Cut line `.svg`**: garis potong merah (outline + lubang) dan artwork dalam ukuran mm, siap dikirim ke vendor akrilik
-- 🎥 **Video `.webm`**: rekam animasi 6 detik
+- **Model 3D `.glb`**: bisa dibuka di Blender, viewer 3D, atau dipakai di web/AR
+- **Gambar `.png`**: screenshot tampilan saat ini
+- **Cut line `.svg`**: garis potong merah (outline + lubang) dan artwork dalam ukuran mm, siap dikirim ke vendor akrilik
+- **Video `.webm`**: rekam animasi 6 detik
 
 ## Halaman toko
 | Halaman | Isi |
 |---|---|
 | `katalog.html` | Daftar produk dengan filter kategori, tombol **Coba 3D** (buka editor dengan preset produk) dan **Pre-order** |
-| `index.html` | Editor 3D. Tombol **🛒 Pre-order desain ini** membawa desain (ringkasan + gambar) ke form pre-order |
+| `index.html` | Editor 3D. Tombol **Pre-order desain ini** membawa desain (ringkasan + gambar) ke form pre-order |
 | `preorder.html` | Form pre-order dengan validasi, ringkasan pesanan, lalu **Salin & kirim via DM Instagram** (atau WhatsApp kalau nomornya diisi) |
 
 <img src="docs/katalog.png" alt="Katalog" width="560" /> <img src="docs/mobile-editor.png" alt="Editor di HP" width="150" /> <img src="docs/mobile-preorder.png" alt="Pre-order di HP" width="150" />

@@ -155,7 +155,8 @@
 
     #reviewTop { top: max(12px, env(safe-area-inset-top)); left: 12px; right: 12px; }
     #reviewBar { bottom: calc(16px + env(safe-area-inset-bottom)); gap: 8px; }
-    #reviewBar button.ghost { width: 54px; font-size: 18px; }
+    #reviewBar button.ghost { width: 62px; font-size: 18px; }
+    #reviewBar button.ghost span { font-size: 10.5px; letter-spacing: .02em; }
     #rvRecord { width: 64px; height: 64px; }
     #rvRecord .recIcon { width: 46px; height: 46px; }
     #reviewHint { display: none; }
@@ -221,6 +222,10 @@
   body.light-review #rvSettings .rvTitle { color: var(--red); }
   body.light-review #rvSettings select { background: #fff; color: #111; }
   #recBadge { background: var(--red); }
+  /* text-only controls (no emoji) */
+  #reviewBar button.ghost { min-height: 52px; justify-content: center; }
+  #reviewBar button.ghost span { font-size: 12px; letter-spacing: .06em; }
+  .chip .chipTxt { font-family: "Bebas Neue", Impact, sans-serif; font-size: 15px; letter-spacing: .03em; color: var(--paper); line-height: 1; padding: 0 2px; text-align: center; word-break: break-all; }
 
   @media (max-width: 700px) {
     .sheetHead { background: rgba(18,17,21,.98); }
@@ -243,9 +248,9 @@
 </head>
 <body>
 <nav id="shopNav" aria-label="Menu toko">
-  <a href="katalog.html">🛍️ Katalog</a>
-  <a href="index.html" class="active">🎛️ Desain 3D</a>
-  <a href="preorder.html">🛒 Pre-order</a>
+  <a href="katalog.html">Katalog</a>
+  <a href="index.html" class="active">Desain 3D</a>
+  <a href="preorder.html">Pre-order</a>
   <a class="igLink" target="_blank" rel="noopener" aria-label="Instagram">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>
     <span>Instagram</span>
@@ -255,21 +260,21 @@
   <div class="sheetHead" id="sheetHead">
     <div class="grab" aria-hidden="true"></div>
     <div class="headRow">
-      <h1>🎸 Band Keychain 3D</h1>
+      <h1>Band Keychain 3D</h1>
       <button id="sheetToggle" aria-expanded="false" aria-label="Buka/tutup pengaturan"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg></button>
     </div>
     <div class="row quick">
-      <button id="quickReviewBtn" class="secondary">🎬 Review</button>
-      <button id="orderBtn">🛒 Pre-order desain ini</button>
+      <button id="quickReviewBtn" class="secondary">Review</button>
+      <button id="orderBtn">Pre-order desain ini</button>
     </div>
   </div>
 
   <h2 style="margin-top:0;padding-top:0;border-top:none">Gantungan di ring <span class="val" id="stackCount"></span></h2>
   <div id="stackList" class="stackList"></div>
   <div class="row" style="margin-top:8px">
-    <button id="addCharmBtn" class="secondary" title="Tambah gantungan baru">➕ Tambah</button>
+    <button id="addCharmBtn" class="secondary" title="Tambah gantungan baru">Tambah</button>
     <button id="dupCharmBtn" class="secondary" title="Duplikat gantungan aktif">⧉ Duplikat</button>
-    <button id="delCharmBtn" class="secondary" title="Hapus gantungan aktif">🗑️ Hapus</button>
+    <button id="delCharmBtn" class="secondary" title="Hapus gantungan aktif">Hapus</button>
   </div>
   <label for="linksRange">Panjang rantai <span class="val" id="linksVal"></span></label>
   <input type="range" id="linksRange" min="0" max="8" step="1" value="4" />
@@ -278,12 +283,12 @@
 
   <label for="shapeSelect">Bentuk</label>
   <select id="shapeSelect">
-    <option value="custom" disabled>🖼️ Asset Custom (upload dulu)</option>
-    <option value="heart" selected>❤️ Hati</option>
-    <option value="star">⭐ Bintang</option>
-    <option value="tag">🏷️ Tag</option>
-    <option value="circle">⚪ Bulat</option>
-    <option value="pick">🎸 Pick Gitar</option>
+    <option value="custom" disabled>Asset Custom (upload dulu)</option>
+    <option value="heart" selected>Hati</option>
+    <option value="star">Bintang</option>
+    <option value="tag">Tag</option>
+    <option value="circle">Bulat</option>
+    <option value="pick">Pick Gitar</option>
   </select>
 
   <div id="textBox">
@@ -294,7 +299,7 @@
   <h2>Asset Custom</h2>
   <input type="file" id="assetInput" accept="image/png,image/jpeg,image/webp,image/svg+xml" hidden />
   <div class="row" style="margin-top:0">
-    <button id="uploadBtn">📁 Upload gambar</button>
+    <button id="uploadBtn">Upload gambar</button>
     <button id="sampleBtn" class="secondary">Contoh</button>
   </div>
   <div class="note">PNG transparan hasilnya paling rapi. JPG dengan latar polos, latarnya dihapus otomatis. Bisa juga drag &amp; drop gambar ke layar.</div>
@@ -325,11 +330,11 @@
   <div class="check"><input type="checkbox" id="tiltCheck" checked /><label for="tiltCheck">Miring sesuai titik berat</label></div>
 
   <h2>Review</h2>
-  <button id="reviewBtn" style="width:100%">🎬 Buka Halaman Review</button>
+  <button id="reviewBtn" style="width:100%">Buka Halaman Review</button>
   <div class="note">Layar penuh tanpa panel: putar, tarik &amp; ayunkan gantungan dengan bebas, lalu rekam videonya.</div>
 
   <h2>Tampilan</h2>
-  <button id="presetBtn" class="secondary" style="width:100%">✨ Preset Chrome + Emas (gaya studio)</button>
+  <button id="presetBtn" class="secondary" style="width:100%">Preset Chrome + Emas (gaya studio)</button>
   <label for="envSelect">Pencahayaan &amp; pantulan</label>
   <select id="envSelect" class="envSelect"></select>
   <div class="note" id="envStatus"></div>
@@ -358,15 +363,15 @@
   <div class="check"><input type="checkbox" id="autoSwing" checked /><label for="autoSwing">Goyang otomatis</label></div>
   <div class="row">
     <button id="swingBtn">Goyangkan!</button>
-    <button id="recordBtn" class="secondary">🎥 Rekam 6 dtk</button>
+    <button id="recordBtn" class="secondary">Rekam 6 dtk</button>
   </div>
 
   <h2>Export</h2>
   <div class="row" style="margin-top:0">
-    <button id="glbBtn" class="secondary">🧊 Model 3D (.glb)</button>
-    <button id="pngBtn" class="secondary">📸 Gambar (.png)</button>
+    <button id="glbBtn" class="secondary">Model 3D (.glb)</button>
+    <button id="pngBtn" class="secondary">Gambar (.png)</button>
   </div>
-  <button id="svgBtn" class="secondary" style="width:100%;margin-top:8px">✂️ Cut line (.svg)</button>
+  <button id="svgBtn" class="secondary" style="width:100%;margin-top:8px">Cut line (.svg)</button>
   <div class="note">SVG berisi garis potong merah (outline + lubang) dan artwork sesuai ukuran asli &amp; ketebalan di bagian Tampilan, siap dikirim ke vendor akrilik.</div>
 </div>
 <div id="hint">Drag latar untuk memutar kamera • Scroll untuk zoom • Tarik gantungan untuk mengayun</div>
@@ -377,8 +382,8 @@
     <button id="backBtn" class="ghost">← Editor</button>
     <div id="recBadge" hidden><span class="dot"></span><span id="recTime">00:00</span></div>
     <div style="display:flex;gap:6px">
-      <button id="rvOrderBtn" class="ghost">🛒 Pre-order</button>
-      <button id="rvSettingsBtn" class="ghost">⚙️ Atur</button>
+      <button id="rvOrderBtn" class="ghost">Pre-order</button>
+      <button id="rvSettingsBtn" class="ghost">Atur</button>
     </div>
   </div>
   <div id="rvSettings" hidden>
@@ -401,18 +406,18 @@
       <option value="-1">⟲ Berlawanan jarum jam</option>
     </select>
     <div class="check"><input type="checkbox" id="rvAutoSwing" checked /><label for="rvAutoSwing">Goyang otomatis</label></div>
-    <button id="rvRec360" style="width:100%;margin-top:12px">⏺ Rekam tepat 1 putaran 360°</button>
+    <button id="rvRec360" style="width:100%;margin-top:12px">Rekam tepat 1 putaran 360°</button>
   </div>
   <div id="reviewHint">Tarik gantungan untuk mengayun • Drag latar untuk memutar • Scroll / pinch untuk zoom</div>
   <div id="reviewBar">
-    <button id="rvRotate" class="ghost toggle" title="Putar otomatis 360°">🔄<span>Putar</span></button>
-    <button id="rvSwing" class="ghost" title="Goyangkan">💨<span>Goyang</span></button>
+    <button id="rvRotate" class="ghost toggle" title="Putar otomatis 360°"><span>Putar</span></button>
+    <button id="rvSwing" class="ghost" title="Goyangkan"><span>Goyang</span></button>
     <button id="rvRecord" class="rec" title="Mulai / berhenti rekam"><span class="recIcon"></span></button>
-    <button id="rvPhoto" class="ghost" title="Ambil foto PNG">📸<span>Foto</span></button>
-    <button id="rvBg" class="ghost" title="Gaya pencahayaan berikutnya">💡<span>Cahaya</span></button>
+    <button id="rvPhoto" class="ghost" title="Ambil foto PNG"><span>Foto</span></button>
+    <button id="rvBg" class="ghost" title="Gaya pencahayaan berikutnya"><span>Cahaya</span></button>
   </div>
 </div>
-<div id="dropOverlay">Lepaskan gambar untuk dijadikan gantungan 🔑</div>
+<div id="dropOverlay">Lepaskan gambar untuk dijadikan gantungan</div>
 
 <script type="module">
 import * as THREE from 'three';
@@ -1366,7 +1371,7 @@ function setShape(shape) {
 }
 
 $('colorPicker').oninput = e => setColor(e.target.value);
-$('nameInput').oninput = e => { state.text = e.target.value; buildCharm(); };
+$('nameInput').oninput = e => { state.text = e.target.value; buildCharm(); renderStack(); };
 $('shapeSelect').onchange = e => { setShape(e.target.value); renderStack(); impulse(0.6); };
 $('finishSelect').onchange = e => applyFinish(e.target.value);
 $('swingBtn').onclick = () => impulse(1);
@@ -1380,14 +1385,14 @@ $('sizeMm').oninput = e => {
 $('reliefSelect').onchange = e => { custom.relief = e.target.value; if (custom.data) runProcess(); };
 
 // --- Stack: several charms on one ring ---
-const SHAPE_ICONS = { heart: '❤️', star: '⭐', tag: '🏷️', circle: '⚪', pick: '🎸', custom: '🖼️' };
+const SHAPE_ABBR = { heart: 'HATI', star: 'STAR', tag: 'TAG', circle: 'BULAT', pick: 'PICK', custom: 'LOGO' };
 const STACK_COLORS = ['#e11d2e', '#111111', '#f5c400', '#ffffff', '#ff6a00', '#8a8a8f'];
 
 // Push the active charm's settings into every editor control
 function syncUI() {
   const opt = $('shapeSelect').querySelector('option[value=custom]');
   opt.disabled = !custom.data;
-  opt.textContent = custom.data ? '🖼️ Asset Custom' : '🖼️ Asset Custom (upload dulu)';
+  opt.textContent = custom.data ? 'Asset Custom' : 'Asset Custom (upload dulu)';
   $('shapeSelect').value = state.shape;
   $('textBox').hidden = state.shape === 'custom';
   $('nameInput').value = state.text;
@@ -1419,7 +1424,8 @@ function renderStack() {
     if (c.state.shape === 'custom' && c.custom.thumb) {
       const im = document.createElement('img'); im.src = c.custom.thumb; im.alt = ''; b.append(im);
     } else {
-      const s = document.createElement('span'); s.textContent = SHAPE_ICONS[c.state.shape] || '🔑'; b.append(s);
+      const s = document.createElement('span'); s.className = 'chipTxt';
+      s.textContent = (c.state.text.trim() || SHAPE_ABBR[c.state.shape] || '?').slice(0, 4); b.append(s);
     }
     const n = document.createElement('small'); n.textContent = k + 1; b.append(n);
     b.style.setProperty('--chip', c.state.color);
@@ -1499,15 +1505,15 @@ $('collisionCheck').onchange = e => { collision.enabled = e.target.checked; impu
 // `bg` = the automatic background colour that suits each style.
 const ROOM_ENV = scene.environment;
 const ENVS = {
-  light: { label: '🎸 Panggung (dinding)', bg: '#1c1b20' },
-  studio: { label: '⬛ Studio Hitam + Glow', bg: '#000000' },
-  studio_small_09: { label: '📷 Cahaya Studio Foto', hdri: true, bg: '#ececf1' },
-  neon_photostudio: { label: '💡 Cahaya Neon', hdri: true, bg: '#120a1f' },
-  venice_sunset: { label: '🌇 Cahaya Sunset', hdri: true, bg: '#2a1a22' },
-  kloppenheim_06_puresky: { label: '☁️ Cahaya Langit Cerah', hdri: true, bg: '#dfeaf5' },
-  forest_slope: { label: '🌲 Cahaya Hutan', hdri: true, bg: '#16201a' },
-  rooftop_night: { label: '🌃 Cahaya Malam Kota', hdri: true, bg: '#0b0d14' },
-  shanghai_bund: { label: '🏙️ Cahaya Kota', hdri: true, bg: '#14141c' }
+  light: { label: 'Panggung (dinding)', bg: '#1c1b20' },
+  studio: { label: 'Studio Hitam + Glow', bg: '#000000' },
+  studio_small_09: { label: 'Cahaya Studio Foto', hdri: true, bg: '#ececf1' },
+  neon_photostudio: { label: 'Cahaya Neon', hdri: true, bg: '#120a1f' },
+  venice_sunset: { label: 'Cahaya Sunset', hdri: true, bg: '#2a1a22' },
+  kloppenheim_06_puresky: { label: 'Cahaya Langit Cerah', hdri: true, bg: '#dfeaf5' },
+  forest_slope: { label: 'Cahaya Hutan', hdri: true, bg: '#16201a' },
+  rooftop_night: { label: 'Cahaya Malam Kota', hdri: true, bg: '#0b0d14' },
+  shanghai_bund: { label: 'Cahaya Kota', hdri: true, bg: '#14141c' }
 };
 const ENV_KEYS = Object.keys(ENVS);
 for (const sel of document.querySelectorAll('.envSelect')) {
@@ -1535,11 +1541,11 @@ async function setEnvironment(name) {
   const isHdri = !!ENVS[name].hdri, isStudio = name === 'studio', isLight = name === 'light';
   let hdr = null;
   if (isHdri) {
-    setEnvStatus('⏳ Memuat environment...');
+    setEnvStatus('Memuat pencahayaan...');
     try { hdr = await loadHDRI(name); }
     catch (err) {
       delete hdriCache[name];
-      if (req === envRequest) { setEnvStatus('✖ Gagal memuat environment, cek koneksi internet.'); setEnvironment(view.env === name ? 'studio' : view.env); }
+      if (req === envRequest) { setEnvStatus('Gagal memuat pencahayaan, cek koneksi internet.'); setEnvironment(view.env === name ? 'studio' : view.env); }
       return;
     }
     if (req !== envRequest) return; // a newer choice was made while loading
@@ -1624,15 +1630,15 @@ function runProcess() {
     processAsset();
     updateCustomUI();
     const d = custom.data;
-    let msg = `✔ "${custom.name}" → outline ${d.outline.length} titik. ` +
+    let msg = `OK: "${custom.name}", outline ${d.outline.length} titik. ` +
       (d.keepBg ? 'Latar gambar dipertahankan.' : d.keyed ? 'Latar polos dihapus otomatis.' : 'Pakai transparansi gambar.');
-    if (d.droppedPieces > 0) msg += ` ⚠ ${d.droppedPieces} bagian terpisah dibuang, naikkan border supaya menyatu.`;
+    if (d.droppedPieces > 0) msg += ` Perhatian: ${d.droppedPieces} bagian terpisah dibuang, naikkan border supaya menyatu.`;
     setStatus(msg, d.droppedPieces > 0 ? '' : 'ok');
     if (state.shape === 'custom') buildCharm();
     return true;
   } catch (err) {
     console.error(err);
-    setStatus('✖ ' + err.message, 'err');
+    setStatus('Gagal: ' + err.message, 'err');
     return false;
   }
 }
@@ -1658,7 +1664,7 @@ async function useAsset(url, name) {
   setStatus('Memproses gambar...');
   let img;
   try { img = await loadImage(url); }
-  catch (err) { withCharm(c, () => setStatus('✖ ' + err.message, 'err')); if (active === c) syncUI(); return; }
+  catch (err) { withCharm(c, () => setStatus('Gagal: ' + err.message, 'err')); if (active === c) syncUI(); return; }
   if (active !== c) selectCharm(c);
   custom.img = img;
   custom.name = name;
@@ -1673,7 +1679,7 @@ async function useAsset(url, name) {
 }
 
 function handleFile(file) {
-  if (!file || !file.type.startsWith('image/')) { setStatus('✖ Pilih file gambar (PNG, JPG, WebP, SVG).', 'err'); return; }
+  if (!file || !file.type.startsWith('image/')) { setStatus('Gagal: pilih file gambar (PNG, JPG, WebP, SVG).', 'err'); return; }
   useAsset(URL.createObjectURL(file), file.name);
 }
 
@@ -1824,7 +1830,7 @@ function updateRecUI() {
   $('recBadge').hidden = !on;
   $('rvRecord').classList.toggle('recording', on);
   $('recordBtn').disabled = on;
-  $('recordBtn').textContent = on ? '⏺ Merekam...' : '🎥 Rekam 6 dtk';
+  $('recordBtn').textContent = on ? 'Merekam...' : 'Rekam 6 dtk';
 }
 $('recordBtn').onclick = () => { if (startRecording(6000)) impulse(1); };
 
