@@ -3,14 +3,17 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>Pre-order Gantungan Kunci · Toko Aksesoris Persahabatan</title>
-<meta name="theme-color" content="#7b3fe4" />
+<title>Pre-order Band Merch · Toko Aksesoris Persahabatan</title>
+<meta name="theme-color" content="#0d0d10" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;800&family=Permanent+Marker&display=swap" />
 <link rel="stylesheet" href="assets/site.css" />
 <script src="assets/shop.js"></script>
 </head>
 <body>
 <header class="topnav">
-  <a class="brand" href="katalog.html">🔑 <span class="shopName"></span></a>
+  <a class="brand" href="katalog.html">🎸 <span class="shopName"></span></a>
   <nav>
     <a href="katalog.html">Katalog</a>
     <a href="index.html">Desain 3D</a>
@@ -24,7 +27,8 @@
 
 <main class="wrap">
   <section class="hero">
-    <h1>Form Pre-order</h1>
+    <div class="kicker">get on the list</div>
+    <h1>Pre-order</h1>
     <p>Isi form di bawah, lalu kirim ringkasan pesananmu ke DM Instagram kami untuk konfirmasi harga &amp; pembayaran.</p>
   </section>
 
@@ -101,11 +105,11 @@
         </div>
         <div class="field">
           <label for="teks">Tulisan / nama di gantungan</label>
-          <input id="teks" name="teks" placeholder="mis. RARA, Bestie 4ever" />
+          <input id="teks" name="teks" placeholder="mis. nama band, nama personel, judul lagu" />
         </div>
         <div class="field">
           <label for="warna">Warna yang diinginkan</label>
-          <input id="warna" name="warna" placeholder="mis. pink pastel, bening, chrome" />
+          <input id="warna" name="warna" placeholder="mis. hitam doff, merah, chrome" />
         </div>
       </fieldset>
 
@@ -128,7 +132,7 @@
         </div>
         <div class="field">
           <label for="catatan">Catatan</label>
-          <textarea id="catatan" name="catatan" placeholder="Detail lain: font, posisi lubang, kado, dll."></textarea>
+          <textarea id="catatan" name="catatan" placeholder="Detail lain: font, logo, tanggal gig, posisi lubang, dll."></textarea>
         </div>
       </fieldset>
 
@@ -154,6 +158,7 @@
 </main>
 
 <footer>
+  <span class="tag">Stay loud. 🤘</span>
   Ada pertanyaan? DM <a class="igLink igHandle" target="_blank" rel="noopener"></a>
 </footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>

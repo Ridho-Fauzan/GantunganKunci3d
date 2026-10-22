@@ -3,15 +3,18 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>Katalog Gantungan Kunci · Toko Aksesoris Persahabatan</title>
-<meta name="description" content="Katalog gantungan kunci akrilik custom: hati, bintang, tag, logo custom, chrome + emas, dan bundle. Pre-order via Instagram." />
-<meta name="theme-color" content="#7b3fe4" />
+<title>Band Merch Keychain · Toko Aksesoris Persahabatan</title>
+<meta name="description" content="Gantungan kunci band merch custom: pick gitar, logo band, backstage pass, chrome + emas, bundle personel. Pre-order via Instagram." />
+<meta name="theme-color" content="#0d0d10" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;800&family=Permanent+Marker&display=swap" />
 <link rel="stylesheet" href="assets/site.css" />
 <script src="assets/shop.js"></script>
 </head>
 <body>
 <header class="topnav">
-  <a class="brand" href="katalog.html">🔑 <span class="shopName"></span></a>
+  <a class="brand" href="katalog.html">🎸 <span class="shopName"></span></a>
   <nav>
     <a href="katalog.html" class="active">Katalog</a>
     <a href="index.html">Desain 3D</a>
@@ -25,8 +28,9 @@
 
 <main class="wrap">
   <section class="hero">
-    <h1>Katalog Gantungan Kunci</h1>
-    <p>Semua bisa dikustom: nama, warna, bentuk, sampai logo sendiri. Coba dulu di 3D, lalu pre-order.</p>
+    <div class="kicker">band merch · keychain custom</div>
+    <h1>Loud &amp; Proud<br />Keychain</h1>
+    <p>Pick gitar, logo band, backstage pass, sampai bundle satu personel. Semua bisa dikustom. Coba dulu di 3D, lalu pre-order.</p>
   </section>
 
   <div class="filters" id="filters" role="tablist" aria-label="Filter kategori"></div>
@@ -34,19 +38,20 @@
 
   <section class="cta">
     <div>
-      <h2>Punya desain sendiri?</h2>
-      <p>Upload logo atau gambarmu di editor 3D, bentuk akriliknya mengikuti outline gambar.</p>
+      <h2>Punya logo band sendiri?</h2>
+      <p>Upload logo bandmu di editor 3D, bentuk akriliknya dipotong mengikuti outline logo.</p>
     </div>
-    <a class="btn" href="index.html?preset=custom">🎨 Buat desain custom</a>
+    <a class="btn" href="index.html?preset=custom">🤘 Bikin merch bandmu</a>
   </section>
 </main>
 
 <footer>
+  <span class="tag">Stay loud. 🤘</span>
   Pesan &amp; tanya-tanya via Instagram <a class="igLink igHandle" target="_blank" rel="noopener"></a>
 </footer>
 
 <script>
-  const CATS = { semua: 'Semua', akrilik: 'Akrilik', metal: 'Metalik', custom: 'Custom', bundle: 'Bundle' };
+  const CATS = { semua: 'Semua', akrilik: 'Akrilik', metal: 'Metalik', custom: 'Logo Custom', bundle: 'Bundle' };
   document.querySelectorAll('.shopName').forEach(e => e.textContent = SHOP.nama);
   document.querySelectorAll('.igLink').forEach(a => a.href = SHOP_UTIL.igUrl());
   document.querySelectorAll('.igHandle').forEach(a => a.textContent = '@' + SHOP.instagram);
@@ -59,20 +64,21 @@
       const card = document.createElement('article');
       card.className = 'card';
       card.innerHTML = `
-        <div class="thumb"><img loading="lazy" alt=""></div>
+        <div class="thumb"><img loading="lazy" alt=""><span class="badge" hidden></span></div>
         <div class="body">
           <h3></h3>
           <div class="spek"></div>
           <p class="desc"></p>
           <div class="price"></div>
           <div class="btn-row">
-            <a class="btn secondary try">🧊 Coba 3D</a>
+            <a class="btn secondary try">🎛️ Coba 3D</a>
             <a class="btn order">🛒 Pre-order</a>
           </div>
         </div>`;
       const img = card.querySelector('img');
       img.src = p.gambar; img.alt = p.nama;
       card.querySelector('h3').textContent = p.nama;
+      if (p.badge) { const bd = card.querySelector('.badge'); bd.textContent = p.badge; bd.hidden = false; }
       card.querySelector('.spek').textContent = p.spek;
       card.querySelector('.desc').textContent = p.deskripsi;
       card.querySelector('.price').textContent = SHOP_UTIL.harga(p.harga);

@@ -3,7 +3,11 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Gantungan Kunci 3D</title>
+<title>Band Keychain 3D · Toko Aksesoris Persahabatan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;800&family=Permanent+Marker&display=swap" />
+<meta name="theme-color" content="#0d0d10" />
 <style>
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; overflow: hidden; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: #f3e9ff; }
@@ -158,6 +162,74 @@
     #rvSettings { top: auto; left: 8px; right: 8px; width: auto; bottom: calc(100px + env(safe-area-inset-bottom)); max-height: 56vh; max-height: 56dvh; }
     #rvSettings select { font-size: 16px; }
   }
+
+  /* =================== BAND THEME (overrides the defaults above) =================== */
+  :root { --red: #e11d2e; --red-hi: #ff3b4a; --amber: #ff6a00; --ink: #0d0d10; --paper: #f2ece0; --muted: #9a958c;
+          --card: rgba(18,17,21,.94); --line: #2e2c33; --field: #1b1a1f; }
+  html, body { background: var(--ink); font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  #panel {
+    background: var(--card); color: var(--paper); border: 1px solid var(--line);
+    box-shadow: 0 10px 40px rgba(0,0,0,.55); backdrop-filter: blur(12px);
+  }
+  #panel h1, .headRow h1 { font-family: "Bebas Neue", Impact, sans-serif; font-weight: 400; font-size: 28px !important; letter-spacing: .04em; line-height: 1; }
+  #panel h2 {
+    font-family: "Bebas Neue", Impact, sans-serif; font-weight: 400; font-size: 19px; letter-spacing: .08em;
+    color: var(--red-hi); border-top: 1px dashed var(--line);
+  }
+  #panel h2 .val, label .val, .note { color: var(--muted); }
+  label { color: var(--paper); }
+  input[type=text], input[type=number], select {
+    background: var(--field); color: var(--paper); border: 1px solid var(--line); border-radius: 6px;
+  }
+  input[type=text]:focus, input[type=number]:focus, select:focus { outline: 2px solid var(--red); outline-offset: 0; }
+  input[type=range], .check input { accent-color: var(--red); }
+  button {
+    background: var(--red); color: #fff; border-radius: 6px; text-transform: uppercase; letter-spacing: .05em;
+    font-weight: 800; font-size: 12px; box-shadow: 3px 3px 0 #000;
+  }
+  button:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 #000; }
+  button.secondary { background: #2a282f; color: var(--paper); border: 1px solid #3c3a42; }
+  #orderBtn { background: linear-gradient(135deg, var(--red), var(--amber)); }
+  .swatch { border-color: #111; box-shadow: 0 0 0 1px #444; }
+  .swatch.active { box-shadow: 0 0 0 2px var(--red-hi); }
+  .chip { background: var(--field); border-color: var(--line); border-radius: 8px; }
+  .chip.active { border-color: var(--red); box-shadow: 0 0 0 2px rgba(225,29,46,.3), inset 0 -4px 0 var(--chip, #ccc); }
+  .chip small { background: var(--red); }
+  #assetThumb { background: repeating-conic-gradient(#222 0 25%, #2c2c30 0 50%) 0 0 / 14px 14px; }
+  #assetStatus.ok { color: #6ee787; }
+  #assetStatus.err { color: #ff6b75; }
+  #hint { background: rgba(0,0,0,.6); color: var(--muted); border: 1px solid var(--line); }
+  #dropOverlay { color: var(--paper); background: rgba(13,13,16,.9); border-color: var(--red); font-family: "Bebas Neue", Impact, sans-serif; font-size: 34px; letter-spacing: .06em; }
+  .bgSwatches .swatch.auto { background: #1b1a1f; color: var(--red-hi); }
+  #sheetToggle { background: #2a282f; color: var(--paper); box-shadow: none; }
+  #quickReviewBtn { background: #2a282f; color: var(--paper); }
+
+  #shopNav { background: rgba(13,13,16,.88); border: 1px solid var(--line); box-shadow: 0 8px 28px rgba(0,0,0,.5); }
+  #shopNav a { color: var(--paper); font-family: "Bebas Neue", Impact, sans-serif; font-size: 18px; letter-spacing: .06em; font-weight: 400; }
+  #shopNav a:hover { background: #2a282f; }
+  #shopNav a.active { background: var(--red); color: #fff; }
+
+  #review button.ghost { box-shadow: none; text-transform: none; letter-spacing: 0; font-weight: 700; font-size: 14px; border-radius: 999px; }
+  #review button.ghost.on { background: var(--red); border-color: var(--red); }
+  #reviewBar button.ghost { border-radius: 12px; }
+  #reviewBar button.ghost span { font-weight: 700; text-transform: uppercase; letter-spacing: .04em; font-size: 10px; }
+  #rvRecord { box-shadow: none; background: transparent; }
+  #rvRecord .recIcon { background: var(--red); }
+  #rvSettings { background: rgba(13,13,16,.92); border-color: var(--line); }
+  #rvSettings .rvTitle { color: var(--red-hi); font-family: "Bebas Neue", Impact, sans-serif; font-size: 18px; font-weight: 400; letter-spacing: .08em; }
+  #rvSettings select { background: var(--field); color: var(--paper); }
+  body.light-review #rvSettings .rvTitle { color: var(--red); }
+  body.light-review #rvSettings select { background: #fff; color: #111; }
+  #recBadge { background: var(--red); }
+
+  @media (max-width: 700px) {
+    .sheetHead { background: rgba(18,17,21,.98); }
+    .sheetHead .grab { background: #4a4750; }
+    #shopNav { border-radius: 0 0 12px 12px; border-top: none; }
+    #shopNav a { font-size: 17px; }
+    #shopNav .igLink span { display: none; } /* icon only: keeps 4 items on one row */
+    #panel { border-radius: 14px 14px 0 0; }
+  }
 </style>
 <script src="assets/shop.js"></script>
 <script type="importmap">
@@ -172,7 +244,7 @@
 <body>
 <nav id="shopNav" aria-label="Menu toko">
   <a href="katalog.html">🛍️ Katalog</a>
-  <a href="index.html" class="active">🧊 Desain 3D</a>
+  <a href="index.html" class="active">🎛️ Desain 3D</a>
   <a href="preorder.html">🛒 Pre-order</a>
   <a class="igLink" target="_blank" rel="noopener" aria-label="Instagram">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>
@@ -183,7 +255,7 @@
   <div class="sheetHead" id="sheetHead">
     <div class="grab" aria-hidden="true"></div>
     <div class="headRow">
-      <h1>🔑 Gantungan Kunci 3D</h1>
+      <h1>🎸 Band Keychain 3D</h1>
       <button id="sheetToggle" aria-expanded="false" aria-label="Buka/tutup pengaturan"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg></button>
     </div>
     <div class="row quick">
@@ -211,11 +283,12 @@
     <option value="star">⭐ Bintang</option>
     <option value="tag">🏷️ Tag</option>
     <option value="circle">⚪ Bulat</option>
+    <option value="pick">🎸 Pick Gitar</option>
   </select>
 
   <div id="textBox">
     <label for="nameInput">Tulisan</label>
-    <input id="nameInput" type="text" maxlength="12" value="KIRO" />
+    <input id="nameInput" type="text" maxlength="12" value="ROCK" />
   </div>
 
   <h2>Asset Custom</h2>
@@ -366,7 +439,7 @@ renderer.outputColorSpace = THREE.SRGBColorSpace;
 document.body.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
-scene.background = new THREE.Color('#f3e9ff');
+scene.background = new THREE.Color('#141317');
 const pmrem = new THREE.PMREMGenerator(renderer);
 scene.environment = pmrem.fromScene(new RoomEnvironment(renderer), 0.04).texture;
 
@@ -389,7 +462,7 @@ composer.addPass(bloom);
 composer.addPass(new OutputPass());
 
 // Lights
-scene.add(new THREE.HemisphereLight(0xffffff, 0xd9c6f0, 0.6));
+scene.add(new THREE.HemisphereLight(0xffffff, 0x3a3436, 0.6));
 const sun = new THREE.DirectionalLight(0xffffff, 2.2);
 sun.position.set(3, 5, 6);
 sun.castShadow = true;
@@ -411,7 +484,7 @@ scene.add(rimA, rimB);
 // Wall behind
 const wall = new THREE.Mesh(
   new THREE.PlaneGeometry(40, 30),
-  new THREE.MeshStandardMaterial({ color: '#efe3fb', roughness: 0.95 })
+  new THREE.MeshStandardMaterial({ color: '#26242a', roughness: 0.95 })
 );
 wall.position.z = -1.3;
 wall.receiveShadow = true;
@@ -425,7 +498,7 @@ let charmMat, textMat, artMat, artBackMat, goldReliefMat;
 const view = { env: 'light', bloom: false, envIntensity: 1, bgColor: null }; // scene-wide settings
 function makeMats() {
   const m = {
-    charm: new THREE.MeshPhysicalMaterial({ color: '#ff4f8b' }),
+    charm: new THREE.MeshPhysicalMaterial({ color: '#e11d2e' }),
     text: new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.3, clearcoat: 1 }),
     art: new THREE.MeshStandardMaterial({ roughness: 0.35, alphaTest: 0.4 }),
     // Back print: same plane/UVs as the front (so it stays inside the outline), rendered from behind
@@ -586,7 +659,16 @@ function circleShape() {
   s.absarc(0, 0, 1.05, 0, Math.PI * 2, false);
   return { shape: s, holeX: 0, holeY: 0.78, holeR: 0.13, textY: -0.12, maxW: 1.45, maxH: 0.45 };
 }
-const SHAPES = { heart: heartShape, star: starShape, tag: tagShape, circle: circleShape };
+// Guitar pick: rounded triangle pointing down
+function pickShape() {
+  const s = new THREE.Shape();
+  s.moveTo(0, -1.25);
+  s.bezierCurveTo(0.55, -0.9, 1.15, 0.25, 1.05, 0.75);
+  s.bezierCurveTo(0.95, 1.18, -0.95, 1.18, -1.05, 0.75);
+  s.bezierCurveTo(-1.15, 0.25, -0.55, -0.9, 0, -1.25);
+  return { shape: s, holeX: 0, holeY: 0.72, holeR: 0.12, textY: -0.08, maxW: 1.25, maxH: 0.42 };
+}
+const SHAPES = { heart: heartShape, star: starShape, tag: tagShape, circle: circleShape, pick: pickShape };
 
 // ---------- Custom asset → acrylic outline ----------
 // Pipeline: image → foreground mask (alpha or background key) → dilate (acrylic border)
@@ -871,7 +953,7 @@ function newCharm(from) {
   const c = {
     id: ++charmSeq,
     state: from ? { ...from.state }
-      : { shape: 'heart', text: 'KIRO', tilt: true, finish: 'glossy', sizeMm: 60, thickMm: 4, color: '#ff4f8b' },
+      : { shape: 'heart', text: 'ROCK', tilt: true, finish: 'glossy', sizeMm: 60, thickMm: 4, color: '#e11d2e' },
     custom: from ? { ...from.custom }
       : { img: null, name: '', border: 14, tol: 40, holePos: null, relief: 'light', bgMode: 'auto', data: null, thumb: '', status: '', statusCls: '' },
     links: from ? from.links : 4,
@@ -1256,7 +1338,7 @@ function applyPhysics() {
 
 // ---------- UI ----------
 const $ = id => document.getElementById(id);
-const PRESETS = ['#ffffff', '#ff4f8b', '#ff8a3d', '#ffd23f', '#3ddc97', '#3fa7ff', '#7b3fe4', '#222233'];
+const PRESETS = ['#ffffff', '#111111', '#e11d2e', '#ff6a00', '#f5c400', '#8a8a8f', '#2f6bff', '#7a2cff'];
 const swatches = $('swatches');
 function setColor(hex) {
   state.color = hex;
@@ -1298,8 +1380,8 @@ $('sizeMm').oninput = e => {
 $('reliefSelect').onchange = e => { custom.relief = e.target.value; if (custom.data) runProcess(); };
 
 // --- Stack: several charms on one ring ---
-const SHAPE_ICONS = { heart: '❤️', star: '⭐', tag: '🏷️', circle: '⚪', custom: '🖼️' };
-const STACK_COLORS = ['#ff4f8b', '#3fa7ff', '#ffd23f', '#3ddc97', '#7b3fe4', '#ff8a3d'];
+const SHAPE_ICONS = { heart: '❤️', star: '⭐', tag: '🏷️', circle: '⚪', pick: '🎸', custom: '🖼️' };
+const STACK_COLORS = ['#e11d2e', '#111111', '#f5c400', '#ffffff', '#ff6a00', '#8a8a8f'];
 
 // Push the active charm's settings into every editor control
 function syncUI() {
@@ -1417,7 +1499,7 @@ $('collisionCheck').onchange = e => { collision.enabled = e.target.checked; impu
 // `bg` = the automatic background colour that suits each style.
 const ROOM_ENV = scene.environment;
 const ENVS = {
-  light: { label: '🟪 Terang (dinding)', bg: '#f3e9ff' },
+  light: { label: '🎸 Panggung (dinding)', bg: '#1c1b20' },
   studio: { label: '⬛ Studio Hitam + Glow', bg: '#000000' },
   studio_small_09: { label: '📷 Cahaya Studio Foto', hdri: true, bg: '#ececf1' },
   neon_photostudio: { label: '💡 Cahaya Neon', hdri: true, bg: '#120a1f' },
@@ -1471,8 +1553,10 @@ async function setEnvironment(name) {
   applyBackground();
   hemi.intensity = isLight ? 0.6 : isStudio ? 0.15 : 0.1;
   sun.intensity = isLight ? 2.2 : isStudio ? 1.6 : 1.0;
-  rimA.intensity = isStudio ? 18 : 0;
-  rimB.intensity = isStudio ? 10 : 0;
+  // Stage: red + amber backlights; studio: white rim lights
+  rimA.color.set(isLight ? 0xff2a3a : 0xffffff); rimB.color.set(isLight ? 0xffa040 : 0xfff2dd);
+  rimA.intensity = isLight ? 14 : isStudio ? 18 : 0;
+  rimB.intensity = isLight ? 9 : isStudio ? 10 : 0;
   renderer.toneMappingExposure = isLight ? 0.85 : isStudio ? 0.95 : 0.9;
   // Darker, higher-contrast reflections so chrome reads as mirror metal on black
   view.envIntensity = isStudio ? 0.55 : 1;
@@ -1482,7 +1566,7 @@ async function setEnvironment(name) {
 for (const sel of document.querySelectorAll('.envSelect')) sel.onchange = e => setEnvironment(e.target.value);
 
 // --- Plain background colour: "Auto" follows the lighting style, or pick any colour ---
-const BG_PRESETS = ['#000000', '#1a1a24', '#ffffff', '#f3e9ff', '#ffd6e7', '#d6ecff', '#e3f7dc'];
+const BG_PRESETS = ['#000000', '#1c1b20', '#2b0a0e', '#3a3a40', '#f2ece0', '#ffffff', '#e11d2e'];
 view.bgColor = null; // null = automatic (matches the lighting style)
 function applyBackground() {
   const hex = view.bgColor || ENVS[view.env].bg;
@@ -1611,19 +1695,26 @@ addEventListener('drop', e => {
   handleFile(e.dataTransfer.files[0]);
 });
 
-// Sample graffiti-style logo (white letters, black outline + 3D drop) on a transparent background
+// Sample band logo (grunge "ROCK": white letters, black outline, red drop) on a transparent background
 function makeSampleAsset() {
   const c = document.createElement('canvas');
   c.width = 900; c.height = 420;
   const g = c.getContext('2d');
-  g.translate(450, 210); g.rotate(-0.12);
-  g.font = 'italic 900 200px "Arial Black", Impact, sans-serif';
-  g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'round';
-  g.fillStyle = '#111'; g.strokeStyle = '#111'; g.lineWidth = 30;
-  for (let i = 14; i > 0; i--) { g.strokeText('Kiro', i * 1.2, i * 1.8); g.fillText('Kiro', i * 1.2, i * 1.8); }
-  g.strokeText('Kiro', 0, 0);
-  g.fillStyle = '#fff'; g.fillText('Kiro', 0, 0);
-  g.lineWidth = 5; g.strokeStyle = '#7b3fe4'; g.strokeText('Kiro', 0, 0);
+  g.translate(450, 210); g.rotate(-0.1);
+  g.font = '900 210px Impact, "Arial Black", sans-serif';
+  g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'miter';
+  g.fillStyle = '#e11d2e'; g.strokeStyle = '#e11d2e'; g.lineWidth = 30;
+  for (let i = 12; i > 0; i--) { g.strokeText('ROCK', i * 1.4, i * 1.6); g.fillText('ROCK', i * 1.4, i * 1.6); }
+  g.strokeStyle = '#111'; g.lineWidth = 26; g.strokeText('ROCK', 0, 0);
+  g.fillStyle = '#fff'; g.fillText('ROCK', 0, 0);
+  // worn/grunge scratches through the letters
+  g.globalCompositeOperation = 'source-atop';
+  g.strokeStyle = 'rgba(17,17,17,.55)'; g.lineWidth = 3;
+  for (let i = 0; i < 26; i++) {
+    const x = -330 + ((i * 97) % 660), y = -80 + ((i * 53) % 160);
+    g.beginPath(); g.moveTo(x, y); g.lineTo(x + 26 + (i % 5) * 9, y + 8 - (i % 3) * 7); g.stroke();
+  }
+  g.globalCompositeOperation = 'source-over';
   return c.toDataURL('image/png');
 }
 
@@ -1810,7 +1901,7 @@ $('rvRec360').onclick = () => {
   if (startRecording(rotationSeconds() * 1000 + 200)) $('rvSettings').hidden = true, $('rvSettingsBtn').classList.remove('on');
 };
 updateSpeed();
-applyBackground();
+setEnvironment(view.env); // stage lighting from the start
 
 // 3D model (GLB) – exported in rest pose
 $('glbBtn').onclick = () => {
@@ -1897,7 +1988,7 @@ $('quickReviewBtn').onclick = () => enterReview();
 if (isMobile()) setSheet(false);
 
 // Save a summary + thumbnail of the current design for preorder.html
-const SHAPE_LABELS = { heart: 'Hati', star: 'Bintang', tag: 'Tag', circle: 'Bulat', custom: 'Custom logo' };
+const SHAPE_LABELS = { heart: 'Hati', star: 'Bintang', tag: 'Tag', circle: 'Bulat', pick: 'Pick Gitar', custom: 'Custom logo' };
 function finishLabel(v) { return $('finishSelect').querySelector(`option[value="${v}"]`)?.textContent || v; }
 function designThumb() {
   renderFrame();
@@ -1938,19 +2029,21 @@ function setupCharm(shape, text, color, finish) {
 }
 async function applyPreset(name) {
   switch (name) {
-    case 'hati': setupCharm('heart', 'NAMAMU', '#ff4f8b', 'glossy'); break;
-    case 'bintang': setupCharm('star', 'STAR', '#ffd23f', 'metal'); break;
-    case 'tag': setupCharm('tag', 'RUMAH', '#3fa7ff', 'glossy'); break;
-    case 'bulat': setupCharm('circle', 'BFF', '#ffffff', 'clear'); break;
-    case 'custom': await useAsset(makeSampleAsset(), 'contoh'); break;
+    case 'pick': setupCharm('pick', 'ROCK', '#111111', 'glossy'); break;
+    case 'hati': setupCharm('heart', 'ROCK', '#e11d2e', 'glossy'); break;
+    case 'bintang': setupCharm('star', 'STAR', '#8a8a8f', 'metal'); break;
+    case 'tag': setupCharm('tag', 'CREW', '#f5c400', 'glossy'); break;
+    case 'bulat': setupCharm('circle', 'ENCORE', '#111111', 'glossy'); break;
+    case 'custom': await useAsset(makeSampleAsset(), 'logo-band'); break;
     case 'chrome-emas':
-      await useAsset(makeSampleAsset(), 'contoh');
+      await useAsset(makeSampleAsset(), 'logo-band');
       setFinish('chromegold'); setColor('#e6e6ec'); setEnvironment('studio');
       break;
-    case 'bundle':
-      setupCharm('heart', 'A', '#ff4f8b', 'glossy');
-      addCharm(); setupCharm('star', 'B', '#3fa7ff', 'glossy');
-      addCharm(); setupCharm('circle', 'C', '#ffd23f', 'glossy');
+    case 'bundle': // one pick per band member
+      setupCharm('pick', 'VOX', '#e11d2e', 'glossy');
+      addCharm(); setupCharm('pick', 'GTR', '#111111', 'glossy');
+      addCharm(); setupCharm('pick', 'BASS', '#f5c400', 'glossy');
+      addCharm(); setupCharm('circle', 'DRUM', '#ffffff', 'glossy');
       selectCharm(charms[0]);
       break;
     default: return;

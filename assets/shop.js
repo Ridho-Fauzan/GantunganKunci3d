@@ -4,6 +4,7 @@
 // ===================================================================
 window.SHOP = {
   nama: 'Toko Aksesoris Persahabatan',
+  tagline: 'Band Merch · Keychain Custom',
   instagram: 'toko.aksesoris.persahabatan',
   // Nomor WhatsApp format internasional tanpa "+" atau spasi, contoh: '6281234567890'.
   // Kosongkan ('') kalau pesanan hanya lewat DM Instagram.
@@ -13,41 +14,47 @@ window.SHOP = {
 
 // harga: angka dalam Rupiah (contoh 15000), atau null untuk menampilkan "Harga via DM"
 // preset: tampilan yang dibuka di editor 3D (index.html?preset=...)
+// badge: label kecil di pojok gambar (opsional)
 window.KATALOG = [
   {
-    id: 'hati', nama: 'Akrilik Hati + Nama', kategori: 'akrilik', preset: 'hati', harga: null,
-    gambar: 'katalog/hati.jpg', spek: '60 mm · tebal 4 mm · glossy',
-    deskripsi: 'Bentuk hati dengan tulisan nama timbul di kedua sisi. Pilih warna sesukamu.'
+    id: 'pick', nama: 'Pick Gitar + Nama Band', kategori: 'akrilik', preset: 'pick', harga: null, badge: 'Best seller',
+    gambar: 'katalog/pick.jpg', spek: '50–60 mm · tebal 3–4 mm · glossy',
+    deskripsi: 'Bentuk pick gitar dengan nama band atau nama kamu timbul di kedua sisi.'
   },
   {
-    id: 'bintang', nama: 'Bintang Metalik', kategori: 'metal', preset: 'bintang', harga: null,
-    gambar: 'katalog/bintang.jpg', spek: '60 mm · tebal 4 mm · metalik',
-    deskripsi: 'Bintang dengan finishing metalik mengilap dan tulisan timbul.'
-  },
-  {
-    id: 'tag', nama: 'Tag Nama', kategori: 'akrilik', preset: 'tag', harga: null,
-    gambar: 'katalog/tag.jpg', spek: '60 mm · tebal 4 mm · glossy',
-    deskripsi: 'Tag persegi rounded, cocok untuk nama, inisial, atau kode kelas.'
-  },
-  {
-    id: 'bulat', nama: 'Bulat Bening', kategori: 'akrilik', preset: 'bulat', harga: null,
-    gambar: 'katalog/bulat.jpg', spek: '60 mm · tebal 4 mm · bening',
-    deskripsi: 'Akrilik bening bentuk bulat dengan tulisan putih.'
-  },
-  {
-    id: 'custom', nama: 'Akrilik Custom Logo', kategori: 'custom', preset: 'custom', harga: null,
+    id: 'custom', nama: 'Logo Band Custom', kategori: 'custom', preset: 'custom', harga: null, badge: 'Custom',
     gambar: 'katalog/custom.jpg', spek: 'ukuran bebas · bentuk ikut outline',
-    deskripsi: 'Kirim logo / gambarmu, bentuk akrilik dipotong mengikuti outline gambar.'
+    deskripsi: 'Kirim logo bandmu, akrilik dipotong mengikuti outline logo. Cocok untuk merch gig.'
   },
   {
-    id: 'chrome-emas', nama: 'Chrome + Emas Timbul', kategori: 'metal', preset: 'chrome-emas', harga: null,
+    id: 'chrome-emas', nama: 'Chrome + Emas Timbul', kategori: 'metal', preset: 'chrome-emas', harga: null, badge: 'Premium',
     gambar: 'katalog/chrome-emas.jpg', spek: 'ukuran bebas · chrome + emas',
-    deskripsi: 'Badan chrome mengilap dengan artwork emas timbul. Paling premium.'
+    deskripsi: 'Badan chrome mengilap dengan logo emas timbul. Vibes rockstar.'
   },
   {
-    id: 'bundle', nama: 'Bundle Bestie (3 gantungan)', kategori: 'bundle', preset: 'bundle', harga: null,
-    gambar: 'katalog/bundle.jpg', spek: '3 gantungan · 1 ring',
-    deskripsi: 'Tiga gantungan berbeda dalam satu ring. Cocok buat kado persahabatan.'
+    id: 'tag', nama: 'Backstage Pass', kategori: 'akrilik', preset: 'tag', harga: null,
+    gambar: 'katalog/tag.jpg', spek: '60 mm · tebal 4 mm · glossy',
+    deskripsi: 'Tag ala kartu backstage: CREW, VIP, nama, atau tanggal konser.'
+  },
+  {
+    id: 'bintang', nama: 'Rockstar Metalik', kategori: 'metal', preset: 'bintang', harga: null,
+    gambar: 'katalog/bintang.jpg', spek: '60 mm · tebal 4 mm · metalik',
+    deskripsi: 'Bintang finishing metalik dengan tulisan timbul.'
+  },
+  {
+    id: 'hati', nama: 'Love Rock', kategori: 'akrilik', preset: 'hati', harga: null,
+    gambar: 'katalog/hati.jpg', spek: '60 mm · tebal 4 mm · glossy',
+    deskripsi: 'Hati merah dengan tulisan timbul, buat kamu yang cinta musik keras.'
+  },
+  {
+    id: 'bulat', nama: 'Encore Badge', kategori: 'akrilik', preset: 'bulat', harga: null,
+    gambar: 'katalog/bulat.jpg', spek: '60 mm · tebal 4 mm · glossy',
+    deskripsi: 'Akrilik bulat hitam glossy, cocok untuk nama lagu, setlist, atau tanggal gig.'
+  },
+  {
+    id: 'bundle', nama: 'Bundle Personel Band (4 pcs)', kategori: 'bundle', preset: 'bundle', harga: null, badge: 'Bundle',
+    gambar: 'katalog/bundle.jpg', spek: '4 gantungan · 1 ring',
+    deskripsi: 'Satu ring isi 4: VOX, GTR, BASS, DRUM. Bisa diganti nama personel bandmu.'
   }
 ];
 

@@ -1,16 +1,16 @@
-# 🔑 Gantungan Kunci 3D
+# 🎸 Band Keychain 3D
 
-Animasi 3D gantungan kunci interaktif yang dibuat dengan [Three.js](https://threejs.org/). Semuanya ada dalam satu file HTML, jadi tidak perlu build atau install apa pun.
+Web merch band untuk **Toko Aksesoris Persahabatan**: preview 3D gantungan kunci interaktif ([Three.js](https://threejs.org/)), katalog, dan form pre-order. Tema gelap ala poster band (merah, hitam, krem). Website statis, tidak perlu build atau install apa pun.
 
-| Hati – Akrilik Glossy | Bintang – Akrilik Bening | Tag – Metalik |
+| Pick Gitar | Logo Band Custom | Chrome + Emas Timbul |
 |---|---|---|
-| ![Hati](docs/hati.png) | ![Bintang](docs/bintang.png) | ![Tag](docs/tag.png) |
+| ![Pick gitar](katalog/pick.jpg) | ![Logo band](katalog/custom.jpg) | ![Chrome + emas](katalog/chrome-emas.jpg) |
 
 ## Fitur
 - Rantai yang berayun dengan fisika pendulum sederhana, plus bandul yang ikut berputar
 - Goyang otomatis, tombol **Goyangkan!**, atau klik langsung gantungannya
 - Tulisan custom yang timbul di kedua sisi bandul
-- 4 bentuk: Hati, Bintang, Tag, Bulat
+- 5 bentuk: **Pick Gitar**, Hati, Bintang, Tag, Bulat
 - 4 material: Akrilik Glossy, Akrilik Bening, Metalik, Doff
 - Pilihan warna siap pakai dan color picker
 - **Ukuran asli (mm)** dan **ketebalan akrilik (1–15 mm)**. Tebal di preview 3D proporsional dengan ukuran aslinya.
@@ -28,7 +28,7 @@ Upload (atau drag & drop) logo/artwork kamu, lalu bentuk akriliknya otomatis **m
 - Opsi **miring sesuai titik berat**: bandul menggantung miring seperti aslinya kalau lubangnya tidak di tengah.
 
 ### Stack: banyak gantungan di satu ring
-<img src="docs/stack.png" alt="Stack gantungan" width="560" />
+<img src="docs/stack.jpg" alt="Stack gantungan" width="320" />
 
 - Bagian **Gantungan di ring** (paling atas panel): **➕ Tambah**, **⧉ Duplikat**, **🗑️ Hapus**, maksimal 6 gantungan
 - Klik nomor untuk memilih gantungan. Semua pengaturan (bentuk, tulisan, asset custom, material, warna, ukuran, ketebalan) berlaku untuk gantungan yang dipilih saja
@@ -43,7 +43,7 @@ Upload (atau drag & drop) logo/artwork kamu, lalu bentuk akriliknya otomatis **m
 - Tombol **✨ Preset Chrome + Emas** untuk mengaktifkan semuanya sekaligus
 
 ### Halaman Review
-<img src="docs/review.png" alt="Halaman Review" width="420" /> <img src="docs/review-env.png" alt="Review dengan cahaya HDRI dan latar polos" width="420" />
+<img src="docs/review.png" alt="Halaman Review" width="420" />
 
 Klik **🎬 Buka Halaman Review** (atau buka `index.html#review`). Hasilnya tampilan layar penuh tanpa panel editor:
 - **Tarik gantungan** untuk mengayun, **drag latar** untuk memutar kamera, scroll/pinch untuk zoom
