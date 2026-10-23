@@ -1,8 +1,8 @@
 # Band Keychain 3D
 
-Web merch band untuk **Toko Aksesoris Persahabatan**: preview 3D gantungan kunci interaktif ([Three.js](https://threejs.org/)), katalog, dan form pre-order. Tema gelap ala poster band (merah, hitam, krem). Website statis, tidak perlu build atau install apa pun.
+Web merch band untuk **Toko Aksesoris "Persahabatan"**: preview 3D gantungan kunci interaktif ([Three.js](https://threejs.org/)), katalog, dan form pre-order. Tema gelap ala poster band (merah, hitam, krem). Website statis, tidak perlu build atau install apa pun.
 
-| Feast | Bunny Skate | Radiohead Bear | Club | The 1975 |
+| Feast | NewJeans Bunny | Radiohead Bear | Reality Club | The 1975 |
 |---|---|---|---|---|
 | ![Feast](katalog/feast.jpg) | ![Bunny](katalog/bunny.jpg) | ![Radiohead](katalog/radiohead.jpg) | ![Club](katalog/club.jpg) | ![The 1975](katalog/the1975.jpg) |
 
@@ -17,7 +17,7 @@ Web merch band untuk **Toko Aksesoris Persahabatan**: preview 3D gantungan kunci
 - Kamera bisa diputar (drag) dan di-zoom (scroll)
 
 ### Asset custom
-- Tulisan tetap bisa ditambahkan di atas artwork (ukuran, posisi atas/tengah/bawah, warna).
+- **Tulisan tambahan** (opsional) ditaruh di bawah atau di atas logo dan **ikut membentuk akrilik**: outline membungkus logo + tulisan, logo tidak tertimpa. Ukuran dan warna tulisan bisa diatur.
 <img src="docs/custom.png" alt="Asset custom" width="560" />
 
 Upload (atau drag & drop) logo/artwork kamu, lalu bentuk akriliknya otomatis **mengikuti outline gambar**:
@@ -70,7 +70,7 @@ Klik **Buka Halaman Review** (atau buka `desain.html#review`). Hasilnya tampilan
 
 **Mengatur toko:** edit `assets/shop.js`: nama toko, Instagram, WhatsApp (opsional), info event/booth, dan daftar produk (nama, harga, aset logo, gambar, video, tampilan awal di editor). Harga `null` tampil "Harga via DM".
 
-**Aset produk:** taruh logo di `katalog/aset/<id>.png` (PNG transparan paling rapi, latar putih polos juga bisa).
+**Aset produk:** taruh logo di `katalog/asetAsli/` dan isi path-nya di `assets/shop.js` (PNG transparan paling rapi, latar putih polos juga bisa).
 
 **Membuat ulang poster + video 360°** (setelah mengganti aset atau menambah produk):
 ```bash

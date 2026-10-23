@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Band Keychain 3D · Toko Aksesoris Persahabatan</title>
+<title>Band Keychain 3D · Toko Aksesoris "Persahabatan"</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;800&family=Permanent+Marker&display=swap" />
@@ -298,8 +298,12 @@
       <label for="textSize">Ukuran tulisan <span class="val" id="textSizeVal"></span></label>
       <input type="range" id="textSize" min="40" max="160" value="100" />
       <div id="textPosBox" hidden>
-        <label for="textPos">Posisi tulisan <span class="val" id="textPosVal"></span></label>
-        <input type="range" id="textPos" min="0" max="100" value="12" />
+        <label for="textPlace">Posisi tulisan</label>
+        <select id="textPlace">
+          <option value="bawah">Di bawah logo (akrilik ikut memanjang)</option>
+          <option value="atas">Di atas logo (akrilik ikut memanjang)</option>
+        </select>
+        <div class="note">Tulisan jadi bagian bentuk akrilik, tidak menimpa logo.</div>
       </div>
       <label>Warna tulisan</label>
       <div class="swatches" id="textSwatches"><input type="color" id="textColorPicker" value="#ffffff" title="Warna tulisan" /></div>
@@ -733,32 +737,95 @@ function chaikin(pts, iterations) {
   return pts;
 }
 
+// Text label for custom assets: bold poster type with a contrasting outline (sticker style)
+const LABEL_FONT = '"Bebas Neue", Impact, "Arial Narrow Bold", sans-serif';
+function textLayout(label, iw, ih) {
+  const g = document.createElement('canvas').getContext('2d');
+  let size = Math.max(iw, ih) * 0.2 * (state.textSize || 1);
+  g.font = `${size}px ${LABEL_FONT}`;
+  let m = g.measureText(label), w = m.width;
+  const maxW = Math.max(iw, ih) * 1.6;            // very long text gets smaller instead of very wide
+  if (w > maxW) { size *= maxW / w; g.font = `${size}px ${LABEL_FONT}`; m = g.measureText(label); w = m.width; }
+  const stroke = Math.max(3, size * 0.09);
+  // exact ink height (cap height etc.) so the gap to the logo is what we intend
+  const asc = m.actualBoundingBoxAscent || size * 0.75, desc = m.actualBoundingBoxDescent || 0;
+  const B = Math.max(2, custom.border);
+  return { size, stroke, asc, w: Math.ceil(w + stroke * 2), h: Math.ceil(asc + desc + stroke * 2), gap: Math.round(B * 0.5) };
+}
+function drawTextLabel(label, tf, W, H, cx, top) {
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const g = c.getContext('2d');
+  g.font = `${tf.size}px ${LABEL_FONT}`; g.textAlign = 'center'; g.textBaseline = 'alphabetic'; g.lineJoin = 'round';
+  const fill = new THREE.Color(state.textColor || '#ffffff');
+  const light = 0.2126 * fill.r + 0.7152 * fill.g + 0.0722 * fill.b > 0.5;
+  g.strokeStyle = light ? '#111111' : '#ffffff'; g.lineWidth = tf.stroke * 2;
+  const y = top + tf.stroke + tf.asc;
+  g.strokeText(label, cx, y);
+  g.fillStyle = state.textColor || '#ffffff';
+  g.fillText(label, cx, y);
+  return c;
+}
+document.fonts?.load(`40px ${LABEL_FONT}`).then(() => { for (const c of charms) if (c.custom.data && c.state.text.trim()) withCharm(c, runProcess); });
+
+// Bounding box of the real artwork inside the image (skips transparent or plain-colour margins),
+// so added text sits right next to the logo instead of next to the empty canvas edge.
+function trimRect(img) {
+  const w0 = img.naturalWidth || img.width || 512, h0 = img.naturalHeight || img.height || 512;
+  if (custom.bgMode === 'keep') return { sx: 0, sy: 0, sw: w0, sh: h0 };
+  const k = Math.min(1, 400 / Math.max(w0, h0)), w = Math.max(1, Math.round(w0 * k)), h = Math.max(1, Math.round(h0 * k));
+  const c = document.createElement('canvas'); c.width = w; c.height = h;
+  const g = c.getContext('2d', { willReadFrequently: true });
+  g.drawImage(img, 0, 0, w, h);
+  const d = g.getImageData(0, 0, w, h).data;
+  const cr = [0, w - 1, (h - 1) * w, h * w - 1].map(i => [d[i * 4], d[i * 4 + 1], d[i * 4 + 2], d[i * 4 + 3]]);
+  const opaqueCorners = cr.every(p => p[3] > 200);
+  const bgc = opaqueCorners ? cr.reduce((a, p) => a.map((v, j) => v + p[j] / 4), [0, 0, 0, 0]) : null;
+  const tol2 = custom.tol * custom.tol;
+  let x0 = w, y0 = h, x1 = -1, y1 = -1;
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const o = (y * w + x) * 4;
+    if (d[o + 3] < 128) continue;
+    if (bgc) { const dr = d[o] - bgc[0], dg = d[o + 1] - bgc[1], db = d[o + 2] - bgc[2]; if (dr * dr + dg * dg + db * db <= tol2) continue; }
+    if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
+  }
+  if (x1 < 0) return { sx: 0, sy: 0, sw: w0, sh: h0 };
+  const m = 3; // keep a few pixels of margin (anti-aliased edges)
+  x0 = Math.max(0, x0 - m); y0 = Math.max(0, y0 - m); x1 = Math.min(w - 1, x1 + m); y1 = Math.min(h - 1, y1 + m);
+  return { sx: x0 / k, sy: y0 / k, sw: (x1 - x0 + 1) / k, sh: (y1 - y0 + 1) / k };
+}
+
 function processAsset() {
   const img = custom.img;
-  const w0 = img.naturalWidth || img.width || 512, h0 = img.naturalHeight || img.height || 512;
+  const crop = trimRect(img);
+  const w0 = crop.sw, h0 = crop.sh;
   const k = WORK / Math.max(w0, h0);
   const iw = Math.max(1, Math.round(w0 * k)), ih = Math.max(1, Math.round(h0 * k));
-  const W = iw + PAD * 2, H = ih + PAD * 2, N = W * H;
+  // Optional text, added to the acrylic below/above the artwork (it becomes part of the cut shape)
+  const labelText = (state.text || '').trim();
+  const tf = labelText ? textLayout(labelText, iw, ih) : null;
+  const contentW = Math.max(iw, tf ? tf.w : 0), contentH = ih + (tf ? tf.gap + tf.h : 0);
+  const W = contentW + PAD * 2, H = contentH + PAD * 2, N = W * H;
+  const ax = PAD + Math.round((contentW - iw) / 2), ay = PAD + (tf && state.textPlace === 'atas' ? tf.gap + tf.h : 0);
   const cv = document.createElement('canvas');
   cv.width = W; cv.height = H;
   const ctx = cv.getContext('2d', { willReadFrequently: true });
   ctx.imageSmoothingQuality = 'high';
-  ctx.drawImage(img, PAD, PAD, iw, ih);
+  ctx.drawImage(img, crop.sx, crop.sy, crop.sw, crop.sh, ax, ay, iw, ih);
   const id = ctx.getImageData(0, 0, W, H), px = id.data;
 
   // 1. Foreground mask
   const fg = new Uint8Array(N);
   let transparent = 0;
-  for (let y = PAD; y < PAD + ih; y++) for (let x = PAD; x < PAD + iw; x++) if (px[(y * W + x) * 4 + 3] < 200) transparent++;
+  for (let y = ay; y < ay + ih; y++) for (let x = ax; x < ax + iw; x++) if (px[(y * W + x) * 4 + 3] < 200) transparent++;
   const keepBg = custom.bgMode === 'keep';
   const keyed = !keepBg && transparent < iw * ih * 0.01; // no real transparency → remove a solid background
   if (keepBg) {
     // Keep the whole picture (incl. its background): the acrylic follows the image rectangle
-    for (let y = PAD; y < PAD + ih; y++) for (let x = PAD; x < PAD + iw; x++) fg[y * W + x] = 1;
+    for (let y = ay; y < ay + ih; y++) for (let x = ax; x < ax + iw; x++) fg[y * W + x] = 1;
   } else if (!keyed) {
     for (let i = 0; i < N; i++) fg[i] = px[i * 4 + 3] >= 128 ? 1 : 0;
   } else {
-    const corners = [[PAD, PAD], [PAD + iw - 1, PAD], [PAD, PAD + ih - 1], [PAD + iw - 1, PAD + ih - 1]];
+    const corners = [[ax, ay], [ax + iw - 1, ay], [ax, ay + ih - 1], [ax + iw - 1, ay + ih - 1]];
     let br = 0, bgc = 0, bb = 0;
     for (const [x, y] of corners) { const o = (y * W + x) * 4; br += px[o]; bgc += px[o + 1]; bb += px[o + 2]; }
     br /= 4; bgc /= 4; bb /= 4;
@@ -771,20 +838,27 @@ function processAsset() {
       const o = i * 4, dr = px[o] - br, dg = px[o + 1] - bgc, db = px[o + 2] - bb;
       if (dr * dr + dg * dg + db * db <= tol2) { bg[i] = 1; q[qt++] = i; }
     };
-    for (let x = PAD; x < PAD + iw; x++) { push(x, PAD); push(x, PAD + ih - 1); }
-    for (let y = PAD; y < PAD + ih; y++) { push(PAD, y); push(PAD + iw - 1, y); }
+    for (let x = ax; x < ax + iw; x++) { push(x, ay); push(x, ay + ih - 1); }
+    for (let y = ay; y < ay + ih; y++) { push(ax, y); push(ax + iw - 1, y); }
     while (qh < qt) {
       const i = q[qh++], x = i % W, y = (i / W) | 0;
-      if (x > PAD) push(x - 1, y);
-      if (x < PAD + iw - 1) push(x + 1, y);
-      if (y > PAD) push(x, y - 1);
-      if (y < PAD + ih - 1) push(x, y + 1);
+      if (x > ax) push(x - 1, y);
+      if (x < ax + iw - 1) push(x + 1, y);
+      if (y > ay) push(x, y - 1);
+      if (y < ay + ih - 1) push(x, y + 1);
     }
-    for (let y = PAD; y < PAD + ih; y++) for (let x = PAD; x < PAD + iw; x++) {
+    for (let y = ay; y < ay + ih; y++) for (let x = ax; x < ax + iw; x++) {
       const i = y * W + x;
       if (bg[i]) px[i * 4 + 3] = 0; else fg[i] = 1;
     }
     ctx.putImageData(id, 0, 0);
+  }
+  if (tf) { // draw the text and add its pixels to the acrylic mask
+    const ty = state.textPlace === 'atas' ? PAD : ay + ih + tf.gap;
+    const tc = drawTextLabel(labelText, tf, W, H, PAD + contentW / 2, ty);
+    ctx.drawImage(tc, 0, 0);
+    const ta = tc.getContext('2d').getImageData(0, 0, W, H).data;
+    for (let i = 0; i < N; i++) if (ta[i * 4 + 3] >= 128) fg[i] = 1;
   }
 
   let minX = W, minY = H, maxX = -1, maxY = -1, topX = 0;
@@ -952,7 +1026,7 @@ function newCharm(from) {
   const c = {
     id: ++charmSeq,
     state: from ? { ...from.state }
-      : { shape: 'heart', text: 'ROCK', tilt: true, finish: 'glossy', sizeMm: 60, thickMm: 4, color: '#e11d2e', textColor: '#ffffff', textSize: 1, textPos: 0.12 },
+      : { shape: 'heart', text: 'ROCK', tilt: true, finish: 'glossy', sizeMm: 60, thickMm: 4, color: '#e11d2e', textColor: '#ffffff', textSize: 1, textPlace: 'bawah' },
     custom: from ? { ...from.custom }
       : { img: null, name: '', border: 14, tol: 40, holePos: null, relief: 'light', bgMode: 'auto', data: null, thumb: '', status: '', statusCls: '' },
     links: from ? from.links : 4,
@@ -1030,11 +1104,7 @@ function buildCharm() {
   }
   {
     const txt = state.text.trim();
-    if (def.art) { // custom asset: text sits over the artwork, position chosen by the user
-      def.textY = by0 + (by1 - by0) * state.textPos;
-      def.maxW = (bx1 - bx0) * 0.7; def.maxH = (by1 - by0) * 0.2;
-    }
-    if (font && txt) {
+    if (font && txt && !def.art) { // custom assets: the text is already printed + cut in processAsset()
       const tg = new TextGeometry(txt, {
         font, size: 0.4, height: 0.04, depth: 0.04, curveSegments: 8,
         bevelEnabled: true, bevelThickness: 0.01, bevelSize: 0.008, bevelSegments: 2
@@ -1370,7 +1440,7 @@ function setShape(shape) {
 }
 
 $('colorPicker').oninput = e => setColor(e.target.value);
-$('nameInput').oninput = e => { state.text = e.target.value; buildCharm(); renderStack(); };
+$('nameInput').oninput = e => { state.text = e.target.value; textChanged(); renderStack(); };
 $('shapeSelect').onchange = e => { setShape(e.target.value); renderStack(); impulse(0.6); };
 $('finishSelect').onchange = e => applyFinish(e.target.value);
 $('swingBtn').onclick = () => impulse(1);
@@ -1386,13 +1456,13 @@ const TEXT_COLORS = ['#ffffff', '#111111', '#e11d2e', '#f5c400', '#0b2a8f', '#2f
 function syncTextUI() {
   $('textSizeVal').textContent = Math.round(state.textSize * 100) + '%';
   $('textSize').value = Math.round(state.textSize * 100);
-  $('textPos').value = Math.round(state.textPos * 100);
-  $('textPosVal').textContent = state.textPos < 0.34 ? 'bawah' : state.textPos > 0.66 ? 'atas' : 'tengah';
-  $('textHint').textContent = state.shape === 'custom' ? 'opsional, di atas artwork' : '';
+  $('textPlace').value = state.textPlace || 'bawah';
+  $('textHint').textContent = state.shape === 'custom' ? 'opsional, ditambahkan ke bentuk akrilik' : '';
   $('textColorPicker').value = state.textColor;
   $('textSwatches').querySelectorAll('.swatch').forEach(s => s.classList.toggle('active', s.dataset.c === state.textColor));
 }
-function setTextColor(hex) { state.textColor = hex; textMat.color.set(hex); syncTextUI(); }
+function textChanged() { if (state.shape === 'custom' && custom.data) scheduleProcess(); else buildCharm(); }
+function setTextColor(hex) { state.textColor = hex; textMat.color.set(hex); syncTextUI(); if (state.shape === 'custom' && custom.data) scheduleProcess(); }
 for (const c of TEXT_COLORS) {
   const d = document.createElement('div');
   d.className = 'swatch'; d.style.background = c; d.dataset.c = c;
@@ -1400,8 +1470,8 @@ for (const c of TEXT_COLORS) {
   $('textSwatches').insertBefore(d, $('textColorPicker'));
 }
 $('textColorPicker').oninput = e => setTextColor(e.target.value);
-$('textSize').oninput = e => { state.textSize = e.target.value / 100; syncTextUI(); buildCharm(); };
-$('textPos').oninput = e => { state.textPos = e.target.value / 100; syncTextUI(); buildCharm(); };
+$('textSize').oninput = e => { state.textSize = e.target.value / 100; syncTextUI(); textChanged(); };
+$('textPlace').onchange = e => { state.textPlace = e.target.value; syncTextUI(); textChanged(); };
 
 // --- Stack: several charms on one ring ---
 const SHAPE_ABBR = { heart: 'HATI', star: 'STAR', tag: 'TAG', circle: 'BULAT', pick: 'PICK', custom: 'LOGO' };
@@ -2047,6 +2117,9 @@ function setupCharm(shape, text, color, finish) {
 }
 async function applyProduct(p) {
   const d = p.desain || {};
+  state.text = d.tulisan || '';
+  state.textColor = d.warnaTulisan || '#ffffff';
+  state.textPlace = d.posisiTulisan || 'bawah';
   if (p.aset) {
     custom.border = d.border ?? custom.border;
     custom.bgMode = d.latar || 'auto';
@@ -2055,9 +2128,6 @@ async function applyProduct(p) {
   } else {
     setShape(d.bentuk || 'pick');
   }
-  state.text = d.tulisan || '';
-  state.textColor = d.warnaTulisan || '#ffffff';
-  state.textPos = d.posisiTulisan ?? state.textPos;
   state.thickMm = d.tebal || state.thickMm;
   state.sizeMm = d.ukuran || state.sizeMm;
   setFinish(d.material || 'clear');
