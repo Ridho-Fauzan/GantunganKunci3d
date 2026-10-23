@@ -63,7 +63,10 @@
       <h2>Punya logo band sendiri?</h2>
       <p>Upload logo bandmu di editor 3D, tambahkan tulisan, dan bentuk akriliknya dipotong mengikuti outline logo.</p>
     </div>
-    <a class="btn" href="desain.html">Bikin merch bandmu</a>
+    <div class="cta-actions">
+      <a class="btn" href="desain.html">Bikin merch bandmu</a>
+      <button class="btn ghost" id="shareBtn" type="button">Bagikan toko</button>
+    </div>
   </section>
 </main>
 
@@ -77,6 +80,19 @@
   document.querySelectorAll('.igLink').forEach(a => a.href = SHOP_UTIL.igUrl());
   document.querySelectorAll('.igHandle').forEach(a => a.textContent = '@' + SHOP.instagram);
   for (const k of ['nama', 'lokasi', 'hari', 'jam']) document.querySelectorAll('.js-event-' + k).forEach(e => e.textContent = SHOP.event[k]);
+
+  // Share button: native share sheet on phones, otherwise copy the link
+  const shareBtn = document.getElementById('shareBtn');
+  if (shareBtn) {
+    const url = location.href.split(/[?#]/)[0];
+    const data = { title: SHOP.nama, text: 'Gantungan kunci akrilik logo band custom - ' + SHOP.nama, url };
+    shareBtn.onclick = async () => {
+      if (navigator.share) { try { await navigator.share(data); return; } catch (e) { if (e.name === 'AbortError') return; } }
+      try { await navigator.clipboard.writeText(url); shareBtn.textContent = 'Link tersalin!'; }
+      catch { shareBtn.textContent = url; }
+      setTimeout(() => (shareBtn.textContent = 'Bagikan toko'), 2500);
+    };
+  }
 
   // Videos play (muted, looping) only while visible, to save battery/data on phones
   const io = 'IntersectionObserver' in window ? new IntersectionObserver(entries => {

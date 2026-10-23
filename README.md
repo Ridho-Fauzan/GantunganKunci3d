@@ -100,6 +100,8 @@ Atau aktifkan **GitHub Pages** (Settings → Pages → Deploy from branch `main`
 - **QR code** (di folder `docs/`): `qr-poster.png` (poster siap cetak, ke katalog) dan `qr-preorder-poster.png` (langsung ke form pre-order). Versi tanpa teks: `qr-plain.png` / `qr-preorder-plain.png`. Tinggal cetak buat booth atau taruh di story.
 - **Preview sosmed (Open Graph):** `og-image.png` (1200x630) muncul saat link di-share di Instagram/WhatsApp/X. Judul & deskripsi diatur lewat meta tag di tiap halaman.
 - **Favicon & icon:** `favicon.svg`, `icon-180.png`, `icon-512.png`.
-- Semua di-generate dari `.kiro/artifacts/compose.py` + `make-assets.cjs` — jalankan ulang kalau ganti link atau desain.
+- **SEO:** `sitemap.xml` + `robots.txt` (daftarkan di [Google Search Console](https://search.google.com/search-console) biar keindeks).
+- **Tombol "Bagikan toko"** di katalog: share sheet HP, atau fallback salin link.
+- Semua gambar di-generate dari `.kiro/artifacts/compose.py` + `make-assets.cjs` — jalankan ulang kalau ganti link atau desain.
 
 > Ganti link: cari `friendshipmerch.vercel.app` di `index.html`, `desain.html`, `preorder.html`, lalu generate ulang QR.
