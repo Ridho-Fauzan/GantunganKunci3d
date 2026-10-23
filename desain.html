@@ -1,0 +1,2167 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Band Keychain 3D · Toko Aksesoris Persahabatan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;800&family=Permanent+Marker&display=swap" />
+<meta name="theme-color" content="#0d0d10" />
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; background: #f3e9ff; }
+  canvas { display: block; touch-action: none; }
+  #panel {
+    position: fixed; top: 16px; left: 16px; width: 280px; max-height: calc(100vh - 32px); overflow-y: auto;
+    background: rgba(255,255,255,0.88); backdrop-filter: blur(10px);
+    border-radius: 16px; padding: 16px; box-shadow: 0 8px 30px rgba(80,40,120,0.18);
+    color: #3a2a4d; font-size: 14px;
+  }
+  #panel h1 { font-size: 18px; margin: 0 0 12px; }
+  #panel h2 { font-size: 13px; margin: 16px 0 6px; padding-top: 12px; border-top: 1px solid #e6dbf5; text-transform: uppercase; letter-spacing: .04em; color: #7b3fe4; }
+  label { display: block; margin: 10px 0 4px; font-weight: 600; font-size: 13px; }
+  label .val { float: right; font-weight: 500; color: #7b6a90; }
+  input[type=text], input[type=number], select {
+    width: 100%; padding: 8px 10px; border-radius: 10px; border: 1px solid #d6c5ea; font-size: 14px; background: #fff;
+  }
+  input[type=range] { width: 100%; accent-color: #7b3fe4; }
+  .swatches { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .swatch { width: 26px; height: 26px; border-radius: 50%; border: 2px solid #fff; cursor: pointer; box-shadow: 0 0 0 1px #ccc; }
+  .swatch.active { box-shadow: 0 0 0 2px #7b3fe4; }
+  input[type=color] { width: 30px; height: 30px; border: none; background: none; padding: 0; cursor: pointer; }
+  .row { display: flex; gap: 8px; margin-top: 10px; align-items: center; }
+  button {
+    flex: 1; padding: 9px 10px; border: none; border-radius: 10px; cursor: pointer;
+    background: #7b3fe4; color: #fff; font-weight: 600; font-size: 13px;
+  }
+  button.secondary { background: #ece2fb; color: #5a2db0; }
+  button:disabled { opacity: .6; cursor: wait; }
+  .check { display: flex; align-items: center; gap: 6px; margin-top: 10px; }
+  .check label { margin: 0; font-weight: 500; }
+  .note { font-size: 12px; color: #7b6a90; margin-top: 6px; line-height: 1.4; }
+  #assetStatus { font-size: 12px; margin-top: 8px; line-height: 1.4; }
+  #assetStatus.err { color: #c62828; }
+  #assetStatus.ok { color: #2e7d32; }
+  #assetThumb { display: none; width: 100%; max-height: 90px; object-fit: contain; margin-top: 8px; border-radius: 8px;
+    background: repeating-conic-gradient(#eee 0 25%, #fff 0 50%) 0 0 / 14px 14px; }
+  #dropOverlay { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; font-size: 22px; font-weight: 700;
+    color: #5a2db0; background: rgba(243,233,255,.85); border: 4px dashed #7b3fe4; z-index: 10; pointer-events: none; }
+  #hint { position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%); font-size: 12px; color: #6b5a80; background: rgba(255,255,255,.7); padding: 6px 12px; border-radius: 20px; }
+  [hidden] { display: none !important; }
+  #panel h2 .val { float: right; text-transform: none; letter-spacing: 0; color: #7b6a90; font-weight: 500; }
+  .stackList { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    flex: none; position: relative; width: 44px; height: 44px; padding: 0; border-radius: 12px;
+    background: #fff; border: 2px solid #e6dbf5; display: grid; place-items: center; font-size: 20px;
+    box-shadow: inset 0 -4px 0 var(--chip, #ccc);
+  }
+  .chip img { width: 34px; height: 30px; object-fit: contain; }
+  .chip small { position: absolute; top: -6px; right: -6px; background: #7b3fe4; color: #fff; font-size: 10px; font-weight: 700;
+    width: 17px; height: 17px; border-radius: 50%; display: grid; place-items: center; }
+  .chip.active { border-color: #7b3fe4; box-shadow: 0 0 0 2px rgba(123,63,228,.25), inset 0 -4px 0 var(--chip, #ccc); }
+  .row button.secondary:disabled { opacity: .45; cursor: not-allowed; }
+
+  /* ---------- Review page ---------- */
+  body.reviewing #panel, body.reviewing #hint { display: none; }
+  #review { position: fixed; inset: 0; pointer-events: none; z-index: 5; color: #fff; }
+  #review > * { pointer-events: auto; }
+  #reviewTop { position: absolute; top: 16px; left: 16px; right: 16px; display: flex; justify-content: space-between; align-items: center; pointer-events: none; }
+  #reviewTop > * { pointer-events: auto; }
+  #review button.ghost {
+    flex: none; background: rgba(255,255,255,.12); color: #fff; backdrop-filter: blur(8px);
+    border: 1px solid rgba(255,255,255,.18); border-radius: 999px; padding: 9px 14px; font-size: 14px;
+  }
+  body.light-review #review button.ghost { background: rgba(60,30,90,.08); color: #3a2a4d; border-color: rgba(60,30,90,.15); }
+  #review button.ghost.on { background: #7b3fe4; border-color: #7b3fe4; color: #fff; }
+  #reviewBar {
+    position: absolute; bottom: 28px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 14px; align-items: center;
+  }
+  #reviewBar button.ghost { display: flex; flex-direction: column; align-items: center; gap: 2px; width: 62px; padding: 8px 0; border-radius: 16px; font-size: 20px; }
+  #reviewBar button.ghost span { font-size: 11px; font-weight: 600; }
+  #rvRecord { flex: none; width: 72px; height: 72px; border-radius: 50%; padding: 0; background: transparent; border: 4px solid #fff; display: grid; place-items: center; }
+  body.light-review #rvRecord { border-color: #3a2a4d; }
+  #rvRecord .recIcon { width: 52px; height: 52px; border-radius: 50%; background: #ff2d55; transition: all .2s; }
+  #rvRecord.recording .recIcon { width: 26px; height: 26px; border-radius: 6px; }
+  #recBadge { display: flex; align-items: center; gap: 8px; background: rgba(255,45,85,.9); padding: 6px 12px; border-radius: 999px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  #recBadge .dot { width: 9px; height: 9px; border-radius: 50%; background: #fff; animation: blink 1s infinite; }
+  @keyframes blink { 50% { opacity: .2; } }
+  #reviewHint { position: absolute; bottom: 118px; left: 50%; transform: translateX(-50%); font-size: 12px; opacity: .7; white-space: nowrap; pointer-events: none; }
+  body.light-review #reviewHint { color: #3a2a4d; }
+  body.grabbing canvas { cursor: grabbing; }
+  .bgSwatches .swatch { width: 24px; height: 24px; }
+  .bgSwatches .swatch.auto { background: #fff; color: #7b3fe4; font-size: 10px; font-weight: 800; display: grid; place-items: center; }
+  .bgSwatches input[type=color] { width: 28px; height: 28px; }
+  #rvSettings {
+    position: absolute; top: 64px; right: 16px; width: 280px; max-height: calc(100vh - 200px); overflow-y: auto;
+    background: rgba(20,16,28,.78); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,.12);
+    border-radius: 16px; padding: 14px 16px; font-size: 13px; color: #fff;
+  }
+  body.light-review #rvSettings { background: rgba(255,255,255,.9); color: #3a2a4d; border-color: rgba(60,30,90,.12); }
+  #rvSettings .rvTitle { font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: .05em; color: #b892ff; }
+  body.light-review #rvSettings .rvTitle { color: #7b3fe4; }
+  #rvSettings label { font-size: 12px; }
+  #rvSettings label .val { color: inherit; opacity: .7; }
+  #rvSettings select { background: rgba(255,255,255,.95); color: #3a2a4d; }
+  #rvSettings .rvNote { font-size: 11px; opacity: .75; margin-top: 4px; min-height: 0; }
+  #review button.ghost.on { background: #7b3fe4; border-color: #7b3fe4; color: #fff; }
+  /* ---------- Shop nav + panel header ---------- */
+  #shopNav {
+    position: fixed; top: 16px; right: 16px; z-index: 6; display: flex; gap: 4px; padding: 4px;
+    background: rgba(255,255,255,.88); backdrop-filter: blur(10px); border-radius: 999px; box-shadow: 0 6px 22px rgba(80,40,120,.15);
+  }
+  #shopNav a { color: #3a2a4d; text-decoration: none; font-weight: 600; font-size: 13px; padding: 8px 12px; border-radius: 999px; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+  #shopNav a:hover { background: #ece2fb; }
+  #shopNav a.active { background: #7b3fe4; color: #fff; }
+  #shopNav svg { width: 16px; height: 16px; }
+  body.reviewing #shopNav { display: none; }
+  .sheetHead .grab { display: none; }
+  .headRow { display: flex; align-items: center; gap: 8px; }
+  .headRow h1 { flex: 1; margin: 0 !important; }
+  #sheetToggle { display: none; flex: none; width: 40px; height: 40px; padding: 0; border-radius: 12px; background: #ece2fb; color: #5a2db0; place-items: center; }
+  #sheetToggle svg { transition: transform .25s; }
+  #sheetToggle[aria-expanded="true"] svg { transform: rotate(180deg); }
+  .quick { margin: 10px 0 2px; }
+  .quick button { min-height: 40px; }
+  #orderBtn { background: linear-gradient(135deg, #7b3fe4, #c04fd8); }
+
+  /* ---------- Mobile: panel becomes a bottom sheet ---------- */
+  @media (max-width: 700px) {
+    #shopNav { top: 0; left: 0; right: 0; border-radius: 0 0 16px 16px; justify-content: space-around; padding: 6px;
+      padding-top: max(6px, env(safe-area-inset-top)); }
+    #shopNav a { font-size: 13px; padding: 8px 10px; }
+    #panel {
+      top: auto; left: 0; right: 0; bottom: 0; width: 100%; max-height: 64vh; max-height: 64dvh;
+      border-radius: 20px 20px 0 0; padding: 0 14px calc(16px + env(safe-area-inset-bottom));
+      box-shadow: 0 -8px 30px rgba(80,40,120,.2); overscroll-behavior: contain;
+      transition: max-height .28s ease;
+    }
+    #panel.collapsed { max-height: 132px; overflow: hidden; }
+    .sheetHead { position: sticky; top: 0; z-index: 2; background: rgba(255,255,255,.97); margin: 0 -14px; padding: 6px 14px 8px; cursor: pointer; }
+    .sheetHead .grab { display: block; width: 42px; height: 5px; border-radius: 3px; background: #d6c5ea; margin: 2px auto 8px; }
+    .headRow h1 { font-size: 16px !important; }
+    #sheetToggle { display: grid; }
+    #panel h2 { font-size: 12px; margin-top: 14px; }
+    input[type=text], input[type=number], select { font-size: 16px; padding: 10px 12px; } /* 16px: no iOS auto-zoom */
+    button { min-height: 42px; font-size: 14px; }
+    .swatch { width: 32px; height: 32px; }
+    input[type=color] { width: 36px; height: 36px; }
+    .chip { width: 48px; height: 48px; }
+    input[type=range] { height: 28px; }
+    .check { min-height: 36px; }
+    .check input { width: 20px; height: 20px; }
+    #hint { display: none; }
+
+    #reviewTop { top: max(12px, env(safe-area-inset-top)); left: 12px; right: 12px; }
+    #reviewBar { bottom: calc(16px + env(safe-area-inset-bottom)); gap: 8px; }
+    #reviewBar button.ghost { width: 62px; font-size: 18px; }
+    #reviewBar button.ghost span { font-size: 10.5px; letter-spacing: .02em; }
+    #rvRecord { width: 64px; height: 64px; }
+    #rvRecord .recIcon { width: 46px; height: 46px; }
+    #reviewHint { display: none; }
+    #rvSettings { top: auto; left: 8px; right: 8px; width: auto; bottom: calc(100px + env(safe-area-inset-bottom)); max-height: 56vh; max-height: 56dvh; }
+    #rvSettings select { font-size: 16px; }
+  }
+
+  /* =================== BAND THEME (overrides the defaults above) =================== */
+  :root { --red: #e11d2e; --red-hi: #ff3b4a; --amber: #ff6a00; --ink: #0d0d10; --paper: #f2ece0; --muted: #9a958c;
+          --card: rgba(18,17,21,.94); --line: #2e2c33; --field: #1b1a1f; }
+  html, body { background: var(--ink); font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif; }
+  #panel {
+    background: var(--card); color: var(--paper); border: 1px solid var(--line);
+    box-shadow: 0 10px 40px rgba(0,0,0,.55); backdrop-filter: blur(12px);
+  }
+  #panel h1, .headRow h1 { font-family: "Bebas Neue", Impact, sans-serif; font-weight: 400; font-size: 28px !important; letter-spacing: .04em; line-height: 1; }
+  #panel h2 {
+    font-family: "Bebas Neue", Impact, sans-serif; font-weight: 400; font-size: 19px; letter-spacing: .08em;
+    color: var(--red-hi); border-top: 1px dashed var(--line);
+  }
+  #panel h2 .val, label .val, .note { color: var(--muted); }
+  label { color: var(--paper); }
+  input[type=text], input[type=number], select {
+    background: var(--field); color: var(--paper); border: 1px solid var(--line); border-radius: 6px;
+  }
+  input[type=text]:focus, input[type=number]:focus, select:focus { outline: 2px solid var(--red); outline-offset: 0; }
+  input[type=range], .check input { accent-color: var(--red); }
+  button {
+    background: var(--red); color: #fff; border-radius: 6px; text-transform: uppercase; letter-spacing: .05em;
+    font-weight: 800; font-size: 12px; box-shadow: 3px 3px 0 #000;
+  }
+  button:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 #000; }
+  button.secondary { background: #2a282f; color: var(--paper); border: 1px solid #3c3a42; }
+  #orderBtn { background: linear-gradient(135deg, var(--red), var(--amber)); }
+  .swatch { border-color: #111; box-shadow: 0 0 0 1px #444; }
+  .swatch.active { box-shadow: 0 0 0 2px var(--red-hi); }
+  .chip { background: var(--field); border-color: var(--line); border-radius: 8px; }
+  .chip.active { border-color: var(--red); box-shadow: 0 0 0 2px rgba(225,29,46,.3), inset 0 -4px 0 var(--chip, #ccc); }
+  .chip small { background: var(--red); }
+  #assetThumb { background: repeating-conic-gradient(#222 0 25%, #2c2c30 0 50%) 0 0 / 14px 14px; }
+  #assetStatus.ok { color: #6ee787; }
+  #assetStatus.err { color: #ff6b75; }
+  #hint { background: rgba(0,0,0,.6); color: var(--muted); border: 1px solid var(--line); }
+  #dropOverlay { color: var(--paper); background: rgba(13,13,16,.9); border-color: var(--red); font-family: "Bebas Neue", Impact, sans-serif; font-size: 34px; letter-spacing: .06em; }
+  .bgSwatches .swatch.auto { background: #1b1a1f; color: var(--red-hi); }
+  #sheetToggle { background: #2a282f; color: var(--paper); box-shadow: none; }
+  #quickReviewBtn { background: #2a282f; color: var(--paper); }
+
+  #shopNav { background: rgba(13,13,16,.88); border: 1px solid var(--line); box-shadow: 0 8px 28px rgba(0,0,0,.5); }
+  #shopNav a { color: var(--paper); font-family: "Bebas Neue", Impact, sans-serif; font-size: 18px; letter-spacing: .06em; font-weight: 400; }
+  #shopNav a:hover { background: #2a282f; }
+  #shopNav a.active { background: var(--red); color: #fff; }
+
+  #review button.ghost { box-shadow: none; text-transform: none; letter-spacing: 0; font-weight: 700; font-size: 14px; border-radius: 999px; }
+  #review button.ghost.on { background: var(--red); border-color: var(--red); }
+  #reviewBar button.ghost { border-radius: 12px; }
+  #reviewBar button.ghost span { font-weight: 700; text-transform: uppercase; letter-spacing: .04em; font-size: 10px; }
+  #rvRecord { box-shadow: none; background: transparent; }
+  #rvRecord .recIcon { background: var(--red); }
+  #rvSettings { background: rgba(13,13,16,.92); border-color: var(--line); }
+  #rvSettings .rvTitle { color: var(--red-hi); font-family: "Bebas Neue", Impact, sans-serif; font-size: 18px; font-weight: 400; letter-spacing: .08em; }
+  #rvSettings select { background: var(--field); color: var(--paper); }
+  body.light-review #rvSettings .rvTitle { color: var(--red); }
+  body.light-review #rvSettings select { background: #fff; color: #111; }
+  #recBadge { background: var(--red); }
+  /* text-only controls (no emoji) */
+  #reviewBar button.ghost { min-height: 52px; justify-content: center; }
+  #reviewBar button.ghost span { font-size: 12px; letter-spacing: .06em; }
+  .chip .chipTxt { font-family: "Bebas Neue", Impact, sans-serif; font-size: 15px; letter-spacing: .03em; color: var(--paper); line-height: 1; padding: 0 2px; text-align: center; word-break: break-all; }
+
+  @media (max-width: 700px) {
+    .sheetHead { background: rgba(18,17,21,.98); }
+    .sheetHead .grab { background: #4a4750; }
+    #shopNav { border-radius: 0 0 12px 12px; border-top: none; }
+    #shopNav a { font-size: 17px; }
+    #shopNav .igLink span { display: none; } /* icon only: keeps 4 items on one row */
+    #panel { border-radius: 14px 14px 0 0; }
+  }
+</style>
+<script src="assets/shop.js"></script>
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+</head>
+<body>
+<nav id="shopNav" aria-label="Menu toko">
+  <a href="index.html">Katalog</a>
+  <a href="desain.html" class="active">Desain 3D</a>
+  <a href="preorder.html">Pre-order</a>
+  <a class="igLink" target="_blank" rel="noopener" aria-label="Instagram">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>
+    <span>Instagram</span>
+  </a>
+</nav>
+<div id="panel">
+  <div class="sheetHead" id="sheetHead">
+    <div class="grab" aria-hidden="true"></div>
+    <div class="headRow">
+      <h1>Band Keychain 3D</h1>
+      <button id="sheetToggle" aria-expanded="false" aria-label="Buka/tutup pengaturan"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg></button>
+    </div>
+    <div class="row quick">
+      <button id="quickReviewBtn" class="secondary">Review</button>
+      <button id="orderBtn">Pre-order desain ini</button>
+    </div>
+  </div>
+
+  <h2 style="margin-top:0;padding-top:0;border-top:none">Gantungan di ring <span class="val" id="stackCount"></span></h2>
+  <div id="stackList" class="stackList"></div>
+  <div class="row" style="margin-top:8px">
+    <button id="addCharmBtn" class="secondary" title="Tambah gantungan baru">Tambah</button>
+    <button id="dupCharmBtn" class="secondary" title="Duplikat gantungan aktif">⧉ Duplikat</button>
+    <button id="delCharmBtn" class="secondary" title="Hapus gantungan aktif">Hapus</button>
+  </div>
+  <label for="linksRange">Panjang rantai <span class="val" id="linksVal"></span></label>
+  <input type="range" id="linksRange" min="0" max="8" step="1" value="4" />
+  <div class="check"><input type="checkbox" id="collisionCheck" checked /><label for="collisionCheck">Tabrakan antar gantungan (solid)</label></div>
+  <div class="note">Klik nomor untuk memilih gantungan. Semua pengaturan di bawah berlaku untuk gantungan yang dipilih.</div>
+
+  <label for="shapeSelect">Bentuk</label>
+  <select id="shapeSelect">
+    <option value="custom" disabled>Asset Custom (upload dulu)</option>
+    <option value="heart" selected>Hati</option>
+    <option value="star">Bintang</option>
+    <option value="tag">Tag</option>
+    <option value="circle">Bulat</option>
+    <option value="pick">Pick Gitar</option>
+  </select>
+
+  <div id="textBox">
+    <label for="nameInput">Tulisan <span class="val" id="textHint"></span></label>
+    <input id="nameInput" type="text" maxlength="16" value="ROCK" placeholder="Kosongkan kalau tanpa tulisan" />
+    <div id="textOpts">
+      <label for="textSize">Ukuran tulisan <span class="val" id="textSizeVal"></span></label>
+      <input type="range" id="textSize" min="40" max="160" value="100" />
+      <div id="textPosBox" hidden>
+        <label for="textPos">Posisi tulisan <span class="val" id="textPosVal"></span></label>
+        <input type="range" id="textPos" min="0" max="100" value="12" />
+      </div>
+      <label>Warna tulisan</label>
+      <div class="swatches" id="textSwatches"><input type="color" id="textColorPicker" value="#ffffff" title="Warna tulisan" /></div>
+    </div>
+  </div>
+
+  <h2>Asset Custom</h2>
+  <input type="file" id="assetInput" accept="image/png,image/jpeg,image/webp,image/svg+xml" hidden />
+  <div class="row" style="margin-top:0">
+    <button id="uploadBtn">Upload gambar</button>
+    <button id="sampleBtn" class="secondary">Contoh</button>
+  </div>
+  <div class="note">PNG transparan hasilnya paling rapi. JPG dengan latar polos, latarnya dihapus otomatis. Bisa juga drag &amp; drop gambar ke layar.</div>
+  <img id="assetThumb" alt="Preview asset" />
+  <div id="assetStatus"></div>
+
+  <div id="customOpts" hidden>
+    <label for="bgModeSelect">Latar gambar</label>
+    <select id="bgModeSelect">
+      <option value="auto">Hapus otomatis (bentuk ikut outline)</option>
+      <option value="keep">Pertahankan latar (bentuk persegi)</option>
+    </select>
+    <label for="borderRange">Border akrilik <span class="val" id="borderVal"></span></label>
+    <input type="range" id="borderRange" min="0" max="40" value="14" />
+    <label for="holeRange">Posisi lubang <span class="val" id="holeVal"></span></label>
+    <input type="range" id="holeRange" min="0" max="100" value="50" />
+    <div id="tolBox" hidden>
+      <label for="tolRange">Toleransi hapus latar <span class="val" id="tolVal"></span></label>
+      <input type="range" id="tolRange" min="5" max="150" value="40" />
+    </div>
+  </div>
+  <div class="check"><input type="checkbox" id="tiltCheck" checked /><label for="tiltCheck">Miring sesuai titik berat</label></div>
+
+  <h2>Review</h2>
+  <button id="reviewBtn" style="width:100%">Buka Halaman Review</button>
+  <div class="note">Layar penuh tanpa panel: putar, tarik &amp; ayunkan gantungan dengan bebas, lalu rekam videonya.</div>
+
+  <h2>Tampilan</h2>
+  <label for="envSelect">💡 Pencahayaan &amp; pantulan</label>
+  <select id="envSelect" class="envSelect"></select>
+  <div class="note" id="envStatus"></div>
+  <label>Warna latar</label>
+  <div class="swatches bgSwatches"></div>
+  <label for="finishSelect">Material</label>
+  <select id="finishSelect">
+    <option value="glossy">Akrilik Glossy</option>
+    <option value="clear">Akrilik Bening</option>
+    <option value="matte">Doff (Matte)</option>
+  </select>
+
+  <label for="sizeMm">Ukuran asli: tinggi/lebar maks. (mm)</label>
+  <input type="number" id="sizeMm" min="10" max="300" value="60" />
+  <label for="thickRange">Ketebalan akrilik <span class="val" id="thickVal"></span></label>
+  <input type="range" id="thickRange" min="1" max="15" step="0.5" value="4" />
+  <div class="note">Ketebalan umum akrilik: 2, 3, atau 5 mm. Proporsinya mengikuti ukuran asli di atas.</div>
+
+  <label>Warna</label>
+  <div class="swatches" id="swatches">
+    <input type="color" id="colorPicker" value="#ff4f8b" title="Pilih warna" />
+  </div>
+
+  <div class="check"><input type="checkbox" id="autoSwing" checked /><label for="autoSwing">Goyang otomatis</label></div>
+  <div class="row">
+    <button id="swingBtn">Goyangkan!</button>
+    <button id="recordBtn" class="secondary">Rekam 6 dtk</button>
+  </div>
+
+  <h2>Export</h2>
+  <div class="row" style="margin-top:0">
+    <button id="glbBtn" class="secondary">Model 3D (.glb)</button>
+    <button id="pngBtn" class="secondary">Gambar (.png)</button>
+  </div>
+  <button id="svgBtn" class="secondary" style="width:100%;margin-top:8px">Cut line (.svg)</button>
+  <div class="note">SVG berisi garis potong merah (outline + lubang) dan artwork sesuai ukuran asli &amp; ketebalan di bagian Tampilan, siap dikirim ke vendor akrilik.</div>
+</div>
+<div id="hint">Drag latar untuk memutar kamera • Scroll untuk zoom • Tarik gantungan untuk mengayun</div>
+
+<!-- Review page (fullscreen, editor hidden) -->
+<div id="review" hidden>
+  <div id="reviewTop">
+    <button id="backBtn" class="ghost">← Editor</button>
+    <div id="recBadge" hidden><span class="dot"></span><span id="recTime">00:00</span></div>
+    <div style="display:flex;gap:6px">
+      <button id="rvOrderBtn" class="ghost">Pre-order</button>
+      <button id="rvSettingsBtn" class="ghost">⚙️ Atur</button>
+    </div>
+  </div>
+  <div id="rvSettings" hidden>
+    <div class="rvTitle">⚙️ Pengaturan Review</div>
+    <label for="rvEnvSelect">💡 Pencahayaan &amp; pantulan</label>
+    <select id="rvEnvSelect" class="envSelect"></select>
+    <div class="rvNote" id="rvEnvStatus"></div>
+    <label>Warna latar</label>
+    <div class="swatches bgSwatches"></div>
+    <div class="check"><input type="checkbox" id="rvBloom" /><label for="rvBloom">Efek glow</label></div>
+    <div class="check"><input type="checkbox" id="rvPeg" checked /><label for="rvPeg">Tampilkan paku gantungan</label></div>
+
+    <div class="rvTitle" style="margin-top:14px">Putar 360°</div>
+    <div class="check"><input type="checkbox" id="rvAuto" checked /><label for="rvAuto">Putar 360° otomatis</label></div>
+    <label for="rvSpeed">Kecepatan <span class="val" id="rvSpeedVal"></span></label>
+    <input type="range" id="rvSpeed" min="0.5" max="12" step="0.5" value="2.5" />
+    <label for="rvDir">Arah</label>
+    <select id="rvDir">
+      <option value="1">⟳ Searah jarum jam</option>
+      <option value="-1">⟲ Berlawanan jarum jam</option>
+    </select>
+    <div class="check"><input type="checkbox" id="rvAutoSwing" checked /><label for="rvAutoSwing">Goyang otomatis</label></div>
+    <button id="rvRec360" style="width:100%;margin-top:12px">Rekam tepat 1 putaran 360°</button>
+  </div>
+  <div id="reviewHint">Tarik gantungan untuk mengayun • Drag latar untuk memutar • Scroll / pinch untuk zoom</div>
+  <div id="reviewBar">
+    <button id="rvRotate" class="ghost toggle" title="Putar otomatis 360°"><span>Putar</span></button>
+    <button id="rvSwing" class="ghost" title="Goyangkan"><span>Goyang</span></button>
+    <button id="rvRecord" class="rec" title="Mulai / berhenti rekam"><span class="recIcon"></span></button>
+    <button id="rvPhoto" class="ghost" title="Ambil foto PNG"><span>Foto</span></button>
+    <button id="rvBg" class="ghost" title="Gaya pencahayaan berikutnya">💡<span>Cahaya</span></button>
+  </div>
+</div>
+<div id="dropOverlay">Lepaskan gambar untuk dijadikan gantungan</div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+import { FontLoader } from 'three/addons/loaders/FontLoader.js';
+import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
+import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
+
+// ---------- Renderer / Scene ----------
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 0.85;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+document.body.appendChild(renderer.domElement);
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color('#141317');
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(renderer), 0.04).texture;
+
+const camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 100);
+camera.position.set(1.5, 0.3, 9.5);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(0, -0.2, 0);
+controls.enableDamping = true;
+controls.minDistance = 4;
+controls.maxDistance = 16;
+controls.autoRotateSpeed = 2.5;
+controls.update();
+
+// Post-processing (bloom/glow) – used in Studio mode
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(new THREE.Vector2(innerWidth, innerHeight), 0.32, 0.35, 0.92);
+composer.addPass(bloom);
+composer.addPass(new OutputPass());
+
+// Lights
+scene.add(new THREE.HemisphereLight(0xffffff, 0x3a3436, 0.6));
+const sun = new THREE.DirectionalLight(0xffffff, 2.2);
+sun.position.set(3, 5, 6);
+sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+sun.shadow.camera.left = -5; sun.shadow.camera.right = 5;
+sun.shadow.camera.top = 5; sun.shadow.camera.bottom = -5;
+sun.shadow.radius = 6;
+sun.shadow.bias = -0.0005;
+scene.add(sun);
+const hemi = scene.children.find(o => o.isHemisphereLight);
+
+// Rim lights for Studio mode (off by default)
+const rimA = new THREE.PointLight(0xffffff, 0, 30);
+rimA.position.set(-4, 2.5, -3);
+const rimB = new THREE.PointLight(0xfff2dd, 0, 30);
+rimB.position.set(4, -1.5, -2.5);
+scene.add(rimA, rimB);
+
+// Wall behind
+const wall = new THREE.Mesh(
+  new THREE.PlaneGeometry(40, 30),
+  new THREE.MeshStandardMaterial({ color: '#26242a', roughness: 0.95 })
+);
+wall.position.z = -1.3;
+wall.receiveShadow = true;
+scene.add(wall);
+
+// ---------- Materials ----------
+const chromeMat = new THREE.MeshStandardMaterial({ color: 0xe8e8ee, metalness: 1, roughness: 0.18 });
+const pegMat = new THREE.MeshStandardMaterial({ color: 0xc9a46a, metalness: 0.9, roughness: 0.3 });
+// Each charm on the ring owns its own material set; these globals point at the *active* charm (see bind()).
+let charmMat, textMat, artMat, artBackMat, goldReliefMat;
+const view = { env: 'light', bloom: false, envIntensity: 1, bgColor: null }; // scene-wide settings
+function makeMats() {
+  const m = {
+    charm: new THREE.MeshPhysicalMaterial({ color: '#e11d2e' }),
+    text: new THREE.MeshPhysicalMaterial({ color: 0xffffff, roughness: 0.3, clearcoat: 1 }),
+    art: new THREE.MeshStandardMaterial({ roughness: 0.35, alphaTest: 0.4 }),
+    // Back print: same plane/UVs as the front (so it stays inside the outline), rendered from behind
+    // → mirrored like a real printed acrylic seen from the back
+    artBack: new THREE.MeshStandardMaterial({ roughness: 0.35, alphaTest: 0.4, side: THREE.BackSide }),
+    gold: new THREE.MeshStandardMaterial({ color: 0xf5bd4f, metalness: 1, roughness: 0.18, alphaTest: 0.5, side: THREE.DoubleSide })
+  };
+  for (const k in m) m[k].envMapIntensity = view.envIntensity;
+  return m;
+}
+
+function applyFinish(finish) {
+  Object.assign(charmMat, {
+    metalness: 0, roughness: 0.25, clearcoat: 1, clearcoatRoughness: 0.05,
+    transmission: 0, thickness: 0, ior: 1.5, transparent: false, opacity: 1
+  });
+  if (!['glossy', 'clear', 'matte'].includes(finish)) finish = 'glossy'; // old designs (metal/chrome) → glossy
+  textMat.metalness = 0; textMat.roughness = 0.3; textMat.color.set(state.textColor || '#ffffff');
+  if (finish === 'clear') {
+    charmMat.transmission = 0.92; charmMat.thickness = 0.6; charmMat.roughness = 0.05;
+  } else if (finish === 'matte') {
+    charmMat.roughness = 0.85; charmMat.clearcoat = 0;
+  }
+  charmMat.needsUpdate = true; textMat.needsUpdate = true;
+  state.finish = finish;
+}
+
+// ---------- Build keychain hierarchy ----------
+// Peg (paku) in wall
+const peg = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 1.8, 24), pegMat);
+peg.rotation.x = Math.PI / 2;
+peg.position.set(0, 2.6, -0.4);
+peg.castShadow = true;
+scene.add(peg);
+const pegCap = new THREE.Mesh(new THREE.SphereGeometry(0.12, 24, 16), pegMat);
+pegCap.position.set(0, 2.6, 0.5);
+pegCap.castShadow = true;
+scene.add(pegCap);
+
+const root = new THREE.Group();
+root.name = 'GantunganKunci';
+root.position.set(0, 2.6, 0);
+scene.add(root);
+
+function addShadow(o) { o.traverse(m => { if (m.isMesh) { m.castShadow = true; m.receiveShadow = true; } }); return o; }
+
+// Split ring (double coil)
+const R = 0.75, TUBE = 0.055;
+const ringGroup = new THREE.Group(); // joint 0
+root.add(ringGroup);
+const ringGeo = new THREE.TorusGeometry(R, TUBE, 24, 120);
+const ringCenterY = 0.07 + TUBE - R;
+for (const dz of [-0.055, 0.055]) {
+  const r = new THREE.Mesh(ringGeo, chromeMat);
+  r.position.set(0, ringCenterY, dz);
+  ringGroup.add(addShadow(r));
+}
+
+// Each charm hangs from the ring on its own chain: rig.root (on the ring) → link joints → charm joint
+// (jump ring) → twist (spin) → hang (centre-of-mass tilt) → charm mesh group.
+const PITCH = 0.38, MAX_CHARMS = 6;
+const linkGeo = new THREE.TorusGeometry(0.16, 0.042, 16, 48);
+const jumpGeo = new THREE.TorusGeometry(0.15, 0.036, 16, 48);
+function createRig(c) {
+  const rig = { root: new THREE.Group(), joints: [] };
+  ringGroup.add(rig.root);
+  let parent = rig.root, y = 0;
+  for (let i = 0; i < c.links; i++) {
+    const j = new THREE.Group();
+    j.position.y = y;
+    parent.add(j);
+    const link = new THREE.Mesh(linkGeo, chromeMat);
+    link.scale.set(1, 1.6, 1);
+    link.position.y = -PITCH / 2;
+    if (i % 2 === 0) link.rotation.y = Math.PI / 2; // alternate orientation
+    j.add(addShadow(link));
+    rig.joints.push(j);
+    parent = j;
+    y = -PITCH;
+  }
+  const charmJoint = new THREE.Group();
+  charmJoint.position.y = c.links ? -PITCH - 0.02 : 0.02;
+  parent.add(charmJoint);
+  rig.joints.push(charmJoint);
+  const jumpRing = new THREE.Mesh(jumpGeo, chromeMat);
+  jumpRing.rotation.y = c.links % 2 ? 0 : Math.PI / 2; // perpendicular to the last link
+  jumpRing.position.y = -0.13;
+  charmJoint.add(addShadow(jumpRing));
+  rig.twist = new THREE.Group();
+  rig.twist.position.y = -0.28;
+  charmJoint.add(rig.twist);
+  rig.hang = new THREE.Group();
+  rig.twist.add(rig.hang);
+  if (c.group) rig.hang.add(c.group);
+  c.rig = rig;
+  const n = rig.joints.length;
+  c.phys = { n, wz: new Float32Array(n), vz: new Float32Array(n), wx: new Float32Array(n), vx: new Float32Array(n), twist: 0, vt: 0 };
+}
+function destroyRig(c) {
+  if (c.group) c.rig.hang.remove(c.group);
+  ringGroup.remove(c.rig.root); // link/jump geometries are shared, so nothing to dispose here
+}
+// Spread charms along the bottom arc of the ring, fanning them front/back and facing different ways
+function layoutRigs() {
+  const n = charms.length;
+  const spread = n > 1 ? Math.min(0.45, 1.6 / (n - 1)) : 0;
+  charms.forEach((c, k) => {
+    const phi = (k - (n - 1) / 2) * spread;
+    c.rig.root.position.set(R * Math.sin(phi), ringCenterY - R * Math.cos(phi), 0);
+    // Rest pose: plates parallel, fanned alternately front/back (a non-intersecting pose, so the
+    // springs never fight the collision solver). Collisions provide the rest of the separation.
+    // per side, each further charm leans ~0.14 rad more, so their rest poses never intersect
+    c.baseX = n > 1 ? (k % 2 ? 1 : -1) * (0.12 + 0.14 * Math.floor(k / 2)) : 0;
+    c.baseTwist = 0;
+  });
+}
+
+// ---------- Built-in charm shapes ----------
+function heartShape() {
+  const s = new THREE.Shape(), k = 0.075, n = 160;
+  for (let i = 0; i <= n; i++) {
+    const t = (i / n) * Math.PI * 2;
+    const x = 16 * Math.sin(t) ** 3 * k;
+    const y = (13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t)) * k;
+    i === 0 ? s.moveTo(x, y) : s.lineTo(x, y);
+  }
+  return { shape: s, holeX: 0, holeY: 0.12, holeR: 0.13, textY: -0.45, maxW: 1.35, maxH: 0.42 };
+}
+function starShape() {
+  const s = new THREE.Shape(), outer = 1.35, inner = 0.62;
+  for (let i = 0; i < 10; i++) {
+    const r = i % 2 ? inner : outer;
+    const a = Math.PI / 2 + (i * Math.PI) / 5;
+    const x = Math.cos(a) * r, y = Math.sin(a) * r;
+    i === 0 ? s.moveTo(x, y) : s.lineTo(x, y);
+  }
+  s.closePath();
+  return { shape: s, holeX: 0, holeY: 0.82, holeR: 0.12, textY: -0.08, maxW: 0.95, maxH: 0.32 };
+}
+function tagShape() {
+  const s = new THREE.Shape(), w = 1.4, h = 2.2, r = 0.38, x = -w / 2, y = -h / 2;
+  s.moveTo(x + r, y);
+  s.lineTo(x + w - r, y); s.quadraticCurveTo(x + w, y, x + w, y + r);
+  s.lineTo(x + w, y + h - r); s.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  s.lineTo(x + r, y + h); s.quadraticCurveTo(x, y + h, x, y + h - r);
+  s.lineTo(x, y + r); s.quadraticCurveTo(x, y, x + r, y);
+  return { shape: s, holeX: 0, holeY: 0.78, holeR: 0.15, textY: -0.2, maxW: 1.1, maxH: 0.42 };
+}
+function circleShape() {
+  const s = new THREE.Shape();
+  s.absarc(0, 0, 1.05, 0, Math.PI * 2, false);
+  return { shape: s, holeX: 0, holeY: 0.78, holeR: 0.13, textY: -0.12, maxW: 1.45, maxH: 0.45 };
+}
+// Guitar pick: rounded triangle pointing down
+function pickShape() {
+  const s = new THREE.Shape();
+  s.moveTo(0, -1.25);
+  s.bezierCurveTo(0.55, -0.9, 1.15, 0.25, 1.05, 0.75);
+  s.bezierCurveTo(0.95, 1.18, -0.95, 1.18, -1.05, 0.75);
+  s.bezierCurveTo(-1.15, 0.25, -0.55, -0.9, 0, -1.25);
+  return { shape: s, holeX: 0, holeY: 0.72, holeR: 0.12, textY: -0.08, maxW: 1.25, maxH: 0.42 };
+}
+const SHAPES = { heart: heartShape, star: starShape, tag: tagShape, circle: circleShape, pick: pickShape };
+
+// ---------- Custom asset → acrylic outline ----------
+// Pipeline: image → foreground mask (alpha or background key) → dilate (acrylic border)
+// → add a tab with a hole at the top → fill holes → keep largest piece → trace contour → smooth.
+const WORK = 560;   // working resolution (px) of the artwork's longest side
+const PAD = 120;    // transparent padding around the artwork (room for border + tab)
+const CHARM_SIZE = 2.8; // longest side of the acrylic in world units
+let custom = null; // custom-asset settings of the active charm (see bind())
+
+function traceContour(mask, W, H) {
+  // Moore-neighbour boundary following (8-connected), starting at the first pixel in raster order.
+  const DX = [1, 1, 0, -1, -1, -1, 0, 1], DY = [0, -1, -1, -1, 0, 1, 1, 1];
+  let start = -1;
+  for (let i = 0; i < W * H; i++) if (mask[i]) { start = i; break; }
+  if (start < 0) return [];
+  const sx = start % W, sy = (start / W) | 0;
+  const pts = [[sx, sy]];
+  let x = sx, y = sy, dir = 7, prevStart = true;
+  for (let it = 0, max = W * H * 4; it < max; it++) {
+    const d0 = dir % 2 === 0 ? (dir + 7) % 8 : (dir + 6) % 8;
+    let found = false;
+    for (let k = 0; k < 8; k++) {
+      const d = (d0 + k) % 8, nx = x + DX[d], ny = y + DY[d];
+      if (nx >= 0 && ny >= 0 && nx < W && ny < H && mask[ny * W + nx]) { x = nx; y = ny; dir = d; found = true; break; }
+    }
+    if (!found) break;
+    if (prevStart && pts.length > 1 && x === pts[1][0] && y === pts[1][1]) { pts.pop(); break; }
+    pts.push([x, y]);
+    prevStart = x === sx && y === sy;
+  }
+  return pts;
+}
+
+function simplifyRDP(pts, eps) {
+  if (pts.length < 4) return pts;
+  const keep = new Uint8Array(pts.length);
+  keep[0] = keep[pts.length - 1] = 1;
+  const stack = [[0, pts.length - 1]];
+  while (stack.length) {
+    const [a, b] = stack.pop();
+    const [ax, ay] = pts[a], [bx, by] = pts[b];
+    const dx = bx - ax, dy = by - ay, len = Math.hypot(dx, dy) || 1;
+    let maxD = 0, idx = -1;
+    for (let i = a + 1; i < b; i++) {
+      const d = Math.abs(dy * pts[i][0] - dx * pts[i][1] + bx * ay - by * ax) / len;
+      if (d > maxD) { maxD = d; idx = i; }
+    }
+    if (maxD > eps && idx > 0) { keep[idx] = 1; stack.push([a, idx], [idx, b]); }
+  }
+  return pts.filter((_, i) => keep[i]);
+}
+
+function chaikin(pts, iterations) {
+  for (let n = 0; n < iterations; n++) {
+    const out = [];
+    for (let i = 0; i < pts.length; i++) {
+      const p = pts[i], q = pts[(i + 1) % pts.length];
+      out.push([p[0] * 0.75 + q[0] * 0.25, p[1] * 0.75 + q[1] * 0.25]);
+      out.push([p[0] * 0.25 + q[0] * 0.75, p[1] * 0.25 + q[1] * 0.75]);
+    }
+    pts = out;
+  }
+  return pts;
+}
+
+function processAsset() {
+  const img = custom.img;
+  const w0 = img.naturalWidth || img.width || 512, h0 = img.naturalHeight || img.height || 512;
+  const k = WORK / Math.max(w0, h0);
+  const iw = Math.max(1, Math.round(w0 * k)), ih = Math.max(1, Math.round(h0 * k));
+  const W = iw + PAD * 2, H = ih + PAD * 2, N = W * H;
+  const cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  const ctx = cv.getContext('2d', { willReadFrequently: true });
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(img, PAD, PAD, iw, ih);
+  const id = ctx.getImageData(0, 0, W, H), px = id.data;
+
+  // 1. Foreground mask
+  const fg = new Uint8Array(N);
+  let transparent = 0;
+  for (let y = PAD; y < PAD + ih; y++) for (let x = PAD; x < PAD + iw; x++) if (px[(y * W + x) * 4 + 3] < 200) transparent++;
+  const keepBg = custom.bgMode === 'keep';
+  const keyed = !keepBg && transparent < iw * ih * 0.01; // no real transparency → remove a solid background
+  if (keepBg) {
+    // Keep the whole picture (incl. its background): the acrylic follows the image rectangle
+    for (let y = PAD; y < PAD + ih; y++) for (let x = PAD; x < PAD + iw; x++) fg[y * W + x] = 1;
+  } else if (!keyed) {
+    for (let i = 0; i < N; i++) fg[i] = px[i * 4 + 3] >= 128 ? 1 : 0;
+  } else {
+    const corners = [[PAD, PAD], [PAD + iw - 1, PAD], [PAD, PAD + ih - 1], [PAD + iw - 1, PAD + ih - 1]];
+    let br = 0, bgc = 0, bb = 0;
+    for (const [x, y] of corners) { const o = (y * W + x) * 4; br += px[o]; bgc += px[o + 1]; bb += px[o + 2]; }
+    br /= 4; bgc /= 4; bb /= 4;
+    const tol2 = custom.tol * custom.tol;
+    const bg = new Uint8Array(N), q = new Int32Array(iw * ih);
+    let qh = 0, qt = 0;
+    const push = (x, y) => {
+      const i = y * W + x;
+      if (bg[i]) return;
+      const o = i * 4, dr = px[o] - br, dg = px[o + 1] - bgc, db = px[o + 2] - bb;
+      if (dr * dr + dg * dg + db * db <= tol2) { bg[i] = 1; q[qt++] = i; }
+    };
+    for (let x = PAD; x < PAD + iw; x++) { push(x, PAD); push(x, PAD + ih - 1); }
+    for (let y = PAD; y < PAD + ih; y++) { push(PAD, y); push(PAD + iw - 1, y); }
+    while (qh < qt) {
+      const i = q[qh++], x = i % W, y = (i / W) | 0;
+      if (x > PAD) push(x - 1, y);
+      if (x < PAD + iw - 1) push(x + 1, y);
+      if (y > PAD) push(x, y - 1);
+      if (y < PAD + ih - 1) push(x, y + 1);
+    }
+    for (let y = PAD; y < PAD + ih; y++) for (let x = PAD; x < PAD + iw; x++) {
+      const i = y * W + x;
+      if (bg[i]) px[i * 4 + 3] = 0; else fg[i] = 1;
+    }
+    ctx.putImageData(id, 0, 0);
+  }
+
+  let minX = W, minY = H, maxX = -1, maxY = -1, topX = 0;
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    if (!fg[y * W + x]) continue;
+    if (y < minY) { minY = y; topX = x; }
+    if (y > maxY) maxY = y;
+    if (x < minX) minX = x;
+    if (x > maxX) maxX = x;
+  }
+  if (maxX < 0) throw new Error('Gambar kosong, atau seluruhnya terhapus sebagai latar. Coba turunkan toleransi.');
+
+  // 2. Dilate by the acrylic border (chamfer 3-4 distance transform)
+  const B = Math.max(2, custom.border);
+  const dist = new Float32Array(N);
+  for (let i = 0; i < N; i++) dist[i] = fg[i] ? 0 : 1e9;
+  for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+    const i = y * W + x; let d = dist[i];
+    if (x > 0) d = Math.min(d, dist[i - 1] + 3);
+    if (y > 0) {
+      d = Math.min(d, dist[i - W] + 3);
+      if (x > 0) d = Math.min(d, dist[i - W - 1] + 4);
+      if (x < W - 1) d = Math.min(d, dist[i - W + 1] + 4);
+    }
+    dist[i] = d;
+  }
+  for (let y = H - 1; y >= 0; y--) for (let x = W - 1; x >= 0; x--) {
+    const i = y * W + x; let d = dist[i];
+    if (x < W - 1) d = Math.min(d, dist[i + 1] + 3);
+    if (y < H - 1) {
+      d = Math.min(d, dist[i + W] + 3);
+      if (x < W - 1) d = Math.min(d, dist[i + W + 1] + 4);
+      if (x > 0) d = Math.min(d, dist[i + W - 1] + 4);
+    }
+    dist[i] = d;
+  }
+  const body = new Uint8Array(N);
+  for (let i = 0; i < N; i++) body[i] = dist[i] <= B * 3 ? 1 : 0;
+
+  // 3. Tab with hole above the artwork
+  const fgSize = Math.max(maxX - minX, maxY - minY);
+  const holeR = Math.max(8, Math.round(fgSize * 0.03));
+  const gap = Math.max(4, B * 0.45);
+  const tabR = holeR * 2.1;
+  if (custom.holePos == null) custom.holePos = keepBg || maxX <= minX ? 0.5 : (topX - minX) / (maxX - minX);
+  const colX = Math.round(minX + custom.holePos * (maxX - minX));
+  const win = Math.ceil(holeR + gap);
+  let topFg = -1;
+  for (let y = minY; y <= maxY && topFg < 0; y++) {
+    for (let x = Math.max(0, colX - win); x <= Math.min(W - 1, colX + win); x++) if (fg[y * W + x]) { topFg = y; break; }
+  }
+  if (topFg < 0) topFg = minY;
+  const hx = colX, hy = Math.max(tabR + 2, topFg - holeR - gap);
+  for (let y = Math.floor(hy - tabR); y <= Math.ceil(hy + tabR); y++) {
+    for (let x = Math.floor(hx - tabR); x <= Math.ceil(hx + tabR); x++) {
+      if (x >= 0 && y >= 0 && x < W && y < H && (x - hx) ** 2 + (y - hy) ** 2 <= tabR * tabR) body[y * W + x] = 1;
+    }
+  }
+
+  // 4. Fill interior gaps (acrylic is solid), keep the largest connected piece
+  const outside = new Uint8Array(N), q = new Int32Array(N);
+  let qh = 0, qt = 0;
+  outside[0] = 1; q[qt++] = 0;
+  while (qh < qt) {
+    const i = q[qh++], x = i % W, y = (i / W) | 0;
+    const nb = [x > 0 ? i - 1 : -1, x < W - 1 ? i + 1 : -1, y > 0 ? i - W : -1, y < H - 1 ? i + W : -1];
+    for (const n of nb) if (n >= 0 && !outside[n] && !body[n]) { outside[n] = 1; q[qt++] = n; }
+  }
+  for (let i = 0; i < N; i++) body[i] = outside[i] ? 0 : 1;
+
+  const label = new Int32Array(N);
+  let cur = 0, best = 0, bestSize = 0, totalBody = 0;
+  for (let s = 0; s < N; s++) {
+    if (!body[s] || label[s]) continue;
+    cur++; let size = 0; qh = qt = 0; q[qt++] = s; label[s] = cur;
+    while (qh < qt) {
+      const i = q[qh++], x = i % W, y = (i / W) | 0; size++;
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+        const nx = x + dx, ny = y + dy;
+        if (nx < 0 || ny < 0 || nx >= W || ny >= H) continue;
+        const n = ny * W + nx;
+        if (body[n] && !label[n]) { label[n] = cur; q[qt++] = n; }
+      }
+    }
+    totalBody += size;
+    if (size > bestSize) { bestSize = size; best = cur; }
+  }
+  for (let i = 0; i < N; i++) body[i] = label[i] === best ? 1 : 0;
+  const droppedPieces = cur - 1;
+
+  // 5. Contour → simplified, smoothed polygon in world units
+  let pts = traceContour(body, W, H);
+  if (pts.length < 8) throw new Error('Bentuk terlalu kecil untuk dibuat outline.');
+  pts = chaikin(simplifyRDP(pts, 0.9), 2);
+  let pMinX = Infinity, pMaxX = -Infinity, pMinY = Infinity, pMaxY = -Infinity;
+  for (const [x, y] of pts) { pMinX = Math.min(pMinX, x); pMaxX = Math.max(pMaxX, x); pMinY = Math.min(pMinY, y); pMaxY = Math.max(pMaxY, y); }
+  const s = CHARM_SIZE / Math.max(pMaxX - pMinX, pMaxY - pMinY);
+  const toWorld = (x, y) => new THREE.Vector2((x - W / 2) * s, -(y - H / 2) * s);
+
+  // Free the old textures, unless a duplicated charm still shares them
+  const oldData = custom.data;
+  if (oldData && !charms.some(o => o !== active && o.custom.data === oldData)) {
+    oldData.art.tex.dispose();
+    oldData.art.reliefTex.dispose();
+  }
+  const tex = new THREE.CanvasTexture(cv);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+
+  // 6. Relief mask (raised gold part in "Chrome + Emas" mode): light / dark / all artwork pixels
+  const rc = document.createElement('canvas');
+  rc.width = W; rc.height = H;
+  const rctx = rc.getContext('2d');
+  const art = ctx.getImageData(0, 0, W, H).data;
+  const rid = rctx.createImageData(W, H), rp = rid.data;
+  for (let i = 0; i < N; i++) {
+    const o = i * 4;
+    let on = art[o + 3] >= 128;
+    if (on && custom.relief !== 'all') {
+      const lum = 0.299 * art[o] + 0.587 * art[o + 1] + 0.114 * art[o + 2];
+      on = custom.relief === 'dark' ? lum < 110 : lum >= 140;
+    }
+    const v = on ? 255 : 0;
+    rp[o] = rp[o + 1] = rp[o + 2] = v; rp[o + 3] = 255;
+  }
+  rctx.putImageData(rid, 0, 0);
+  const reliefTex = new THREE.CanvasTexture(rc);
+  reliefTex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+
+  const hw = toWorld(hx, hy);
+  custom.data = {
+    outline: pts.map(([x, y]) => toWorld(x, y)),
+    hole: { x: hw.x, y: hw.y, r: holeR * s },
+    art: { tex, reliefTex, canvas: cv, w: W * s, h: H * s },
+    keyed, keepBg, droppedPieces, removed: totalBody - bestSize
+  };
+}
+
+function customDef() {
+  const d = custom.data;
+  return {
+    shape: new THREE.Shape(d.outline), holeX: d.hole.x, holeY: d.hole.y, holeR: d.hole.r,
+    art: d.art, custom: true
+  };
+}
+
+function polygonCentroid(pts) {
+  let a = 0, cx = 0, cy = 0;
+  for (let i = 0; i < pts.length; i++) {
+    const p = pts[i], q = pts[(i + 1) % pts.length], c = p.x * q.y - q.x * p.y;
+    a += c; cx += (p.x + q.x) * c; cy += (p.y + q.y) * c;
+  }
+  a *= 0.5;
+  return Math.abs(a) < 1e-9 ? new THREE.Vector2() : new THREE.Vector2(cx / (6 * a), cy / (6 * a));
+}
+
+// ---------- Charms on the ring (stack) ----------
+// The editor always edits the *active* charm: `state`, `custom` and the material globals are bound to it.
+let font = null;
+let state = null;
+const charms = [];
+let active = null, charmSeq = 0;
+
+function newCharm(from) {
+  const c = {
+    id: ++charmSeq,
+    state: from ? { ...from.state }
+      : { shape: 'heart', text: 'ROCK', tilt: true, finish: 'glossy', sizeMm: 60, thickMm: 4, color: '#e11d2e', textColor: '#ffffff', textSize: 1, textPos: 0.12 },
+    custom: from ? { ...from.custom }
+      : { img: null, name: '', border: 14, tol: 40, holePos: null, relief: 'light', bgMode: 'auto', data: null, thumb: '', status: '', statusCls: '' },
+    links: from ? from.links : 4,
+    mats: makeMats(), group: null, def: null, rig: null, phys: null, baseX: 0, baseTwist: 0
+  };
+  return c;
+}
+function bind(c) {
+  active = c; state = c.state; custom = c.custom;
+  charmMat = c.mats.charm; textMat = c.mats.text; artMat = c.mats.art; artBackMat = c.mats.artBack; goldReliefMat = c.mats.gold;
+}
+function withCharm(c, fn) { const prev = active; bind(c); try { fn(); } finally { if (prev) bind(prev); } }
+function allCharmMats() { return charms.flatMap(c => Object.values(c.mats)); }
+
+function disposeGroup(g) {
+  g.traverse(o => { if (o.isMesh) o.geometry.dispose(); });
+}
+
+function buildCharm() {
+  const c = active;
+  if (!c || !c.rig) return;
+  if (c.group) { c.rig.hang.remove(c.group); disposeGroup(c.group); }
+  const isCustom = state.shape === 'custom' && custom.data;
+  const def = isCustom ? customDef() : SHAPES[state.shape === 'custom' ? 'heart' : state.shape]();
+  // Real-world thickness → world units, using the charm's real size (mm) as the scale reference
+  const pts2 = def.shape.getPoints();
+  let bx0 = Infinity, bx1 = -Infinity, by0 = Infinity, by1 = -Infinity;
+  for (const p of pts2) { bx0 = Math.min(bx0, p.x); bx1 = Math.max(bx1, p.x); by0 = Math.min(by0, p.y); by1 = Math.max(by1, p.y); }
+  const unitsPerMm = Math.max(bx1 - bx0, by1 - by0) / state.sizeMm;
+  const total = state.thickMm * unitsPerMm;                       // full thickness incl. bevels
+  const bevelT = Math.min(isCustom ? 0.03 : 0.06, total * 0.22);  // rounded edge scales down when thin
+  const bevelS = Math.min(isCustom ? 0.015 : 0.05, bevelT * (isCustom ? 0.5 : 0.85));
+  const depth = Math.max(0.002, total - bevelT * 2);
+  def.thicknessMm = state.thickMm;
+
+  const hole = new THREE.Path();
+  hole.absarc(def.holeX, def.holeY, def.holeR, 0, Math.PI * 2, true);
+  def.shape.holes.push(hole);
+
+  const geo = new THREE.ExtrudeGeometry(def.shape, {
+    depth, bevelEnabled: true, bevelThickness: bevelT, bevelSize: bevelS,
+    bevelSegments: isCustom ? 3 : 6, curveSegments: 64
+  });
+  geo.translate(0, 0, -depth / 2);
+  geo.computeVertexNormals();
+
+  const charmGroup = new THREE.Group();
+  charmGroup.add(new THREE.Mesh(geo, charmMat));
+  const zFront = depth / 2 + bevelT;
+
+  const reliefGroup = new THREE.Group(); // added after shadows are set (alpha-tested layers cast no shadow)
+  if (false) { // (chrome + gold relief removed)
+    // Raised gold relief: a stack of alpha-masked layers on both faces (reads as solid metal)
+    goldReliefMat.alphaMap = def.art.reliefTex; goldReliefMat.needsUpdate = true;
+    const pg = new THREE.PlaneGeometry(def.art.w, def.art.h);
+    const LAYERS = 14, RELIEF = 0.08;
+    for (const side of [1, -1]) {
+      for (let l = 0; l < LAYERS; l++) {
+        const p = new THREE.Mesh(pg, goldReliefMat);
+        // no rotation on the back: the relief must sit over the same part of the outline on both faces
+        p.position.z = side * (zFront + 0.002 + (RELIEF * l) / (LAYERS - 1));
+        reliefGroup.add(p);
+      }
+    }
+  } else if (def.art) {
+    // Printed artwork on both faces
+    artMat.map = artBackMat.map = def.art.tex;
+    artMat.needsUpdate = artBackMat.needsUpdate = true;
+    const pg = new THREE.PlaneGeometry(def.art.w, def.art.h);
+    for (const side of [1, -1]) {
+      const p = new THREE.Mesh(pg, side > 0 ? artMat : artBackMat);
+      p.position.z = side * (zFront + 0.003);
+      charmGroup.add(p);
+    }
+  }
+  {
+    const txt = state.text.trim();
+    if (def.art) { // custom asset: text sits over the artwork, position chosen by the user
+      def.textY = by0 + (by1 - by0) * state.textPos;
+      def.maxW = (bx1 - bx0) * 0.7; def.maxH = (by1 - by0) * 0.2;
+    }
+    if (font && txt) {
+      const tg = new TextGeometry(txt, {
+        font, size: 0.4, height: 0.04, depth: 0.04, curveSegments: 8,
+        bevelEnabled: true, bevelThickness: 0.01, bevelSize: 0.008, bevelSegments: 2
+      });
+      tg.computeBoundingBox();
+      const bb = tg.boundingBox;
+      const w = bb.max.x - bb.min.x, h = bb.max.y - bb.min.y;
+      const sc = Math.min(def.maxW / w, def.maxH / h, 1.2) * state.textSize;
+      tg.translate(-(bb.min.x + w / 2), -(bb.min.y + h / 2), 0);
+      for (const side of [1, -1]) {
+        const t = new THREE.Mesh(tg, textMat);
+        t.scale.setScalar(sc);
+        t.position.set(0, def.textY, side * (def.art ? zFront + 0.004 : zFront - 0.01));
+        if (side < 0) t.rotation.y = Math.PI;
+        charmGroup.add(t);
+      }
+    }
+  }
+
+  // Hang so the top edge of the hole rests on the jump ring
+  const hang = new THREE.Vector2(def.holeX, def.holeY + def.holeR - bevelS - 0.04);
+  charmGroup.position.set(-hang.x, -hang.y, 0);
+  c.rig.hang.rotation.z = 0;
+  if (state.tilt) {
+    const ctr = polygonCentroid(def.shape.getPoints()).sub(hang);
+    c.rig.hang.rotation.z = -Math.PI / 2 - Math.atan2(ctr.y, ctr.x);
+  }
+  c.rig.hang.add(addShadow(charmGroup));
+  charmGroup.add(reliefGroup);
+  c.group = charmGroup;
+  c.def = def;
+  buildCollider(c, def, total + bevelS * 0.5);
+}
+function rebuildAll() { for (const c of charms) withCharm(c, buildCharm); }
+
+new FontLoader().load(
+  'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/fonts/helvetiker_bold.typeface.json',
+  f => { font = f; rebuildAll(); },
+  undefined,
+  () => console.warn('Font gagal dimuat, tulisan tidak ditampilkan')
+);
+
+// ---------- Simple chained-pendulum physics ----------
+// The ring swings on the peg; every charm's chain follows the ring with a slight lag (whip effect).
+const ring = { wz: 0, vz: 0, wx: 0, vx: 0 };
+
+function impulse(strength = 1) {
+  const dir = Math.random() < 0.5 ? -1 : 1;
+  ring.vz += dir * (0.9 + Math.random() * 0.5) * strength;
+  ring.vx += (Math.random() - 0.5) * 0.8 * strength;
+  for (const c of charms) c.phys.vt += (Math.random() < 0.5 ? -1 : 1) * (2.5 + Math.random() * 2.5) * strength;
+}
+
+function stepPhysics(dt, time, auto) {
+  let az = -14 * ring.wz - 0.7 * ring.vz;
+  let ax = -18 * ring.wx - 1.5 * ring.vx;
+  if (auto) {
+    az += Math.sin(time * 1.1) * 0.45 + Math.sin(time * 2.7) * 0.15;
+    ax += Math.sin(time * 0.8 + 1) * 0.2;
+  }
+  ring.vz += az * dt; ring.wz += ring.vz * dt;
+  ring.vx += ax * dt; ring.wx += ring.vx * dt;
+  ring.wz = THREE.MathUtils.clamp(ring.wz, -0.9, 0.9);
+  ring.wx = THREE.MathUtils.clamp(ring.wx, -0.4, 0.4);
+
+  for (const ch of charms) {
+    const p = ch.phys;
+    for (let i = 0; i < p.n; i++) {
+      const pwz = i ? p.wz[i - 1] : ring.wz, pvz = i ? p.vz[i - 1] : ring.vz;
+      const pwx = i ? p.wx[i - 1] : ring.wx, pvx = i ? p.vx[i - 1] : ring.vx;
+      // The first link hangs loosely on the ring (soft); deeper links follow their parent more tightly
+      const k = i === 0 ? 30 : Math.max(60, 130 - i * 10), c = i === 0 ? 4.0 : 9.0;
+      const a1 = -k * (p.wz[i] - pwz) - c * (p.vz[i] - pvz) - 3 * p.wz[i];
+      const a2 = -k * (p.wx[i] - pwx) - c * (p.vx[i] - pvx) - 3 * p.wx[i];
+      p.vz[i] += a1 * dt; p.wz[i] += p.vz[i] * dt;
+      p.vx[i] += a2 * dt; p.wx[i] += p.vx[i] * dt;
+      // physical limits: a hanging chain never swings above ~75° and can't spin up without bound
+      p.wz[i] = THREE.MathUtils.clamp(p.wz[i], -1.3, 1.3); p.vz[i] = THREE.MathUtils.clamp(p.vz[i], -12, 12);
+      p.wx[i] = THREE.MathUtils.clamp(p.wx[i], -1.3, 1.3); p.vx[i] = THREE.MathUtils.clamp(p.vx[i], -12, 12);
+    }
+    let at = -3 * (p.twist - ch.baseTwist) - 0.5 * p.vt + p.vz[p.n - 1] * 0.8;
+    if (auto) at += Math.sin(time * 0.6 + ch.id * 1.7) * 0.5;
+    p.vt = THREE.MathUtils.clamp(p.vt + at * dt, -15, 15);
+    p.twist += p.vt * dt;
+  }
+}
+
+// ---------- Collision between charms ----------
+// Each charm is an acrylic plate: its 2D outline extruded by its real thickness (in charm-local space).
+// Sample points on one plate that end up inside another plate are pushed out along the shallowest
+// direction (through the face, or out over the nearest edge). The push is applied to the chain's
+// generalised coordinates (swing angles + twist), so the chain stays connected and motion stays natural.
+const collision = { enabled: true, iterations: 3, restitution: 0.15 }; // iterations per physics substep
+
+function resamplePoly(pts, n) {
+  const m = pts.length, L = [0];
+  for (let i = 0; i < m; i++) L.push(L[i] + pts[i].distanceTo(pts[(i + 1) % m]));
+  const total = L[m], out = [];
+  let j = 0;
+  for (let k = 0; k < n; k++) {
+    const t = (k / n) * total;
+    while (j < m - 1 && L[j + 1] < t) j++;
+    const a = pts[j], b = pts[(j + 1) % m], f = (t - L[j]) / ((L[j + 1] - L[j]) || 1);
+    out.push(a.x + (b.x - a.x) * f, a.y + (b.y - a.y) * f);
+  }
+  return new Float32Array(out);
+}
+function pointInPoly(poly, x, y) {
+  let inside = false;
+  for (let i = 0, n = poly.length / 2, j = n - 1; i < n; j = i++) {
+    const xi = poly[2 * i], yi = poly[2 * i + 1], xj = poly[2 * j], yj = poly[2 * j + 1];
+    if ((yi > y) !== (yj > y) && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) inside = !inside;
+  }
+  return inside;
+}
+const _edge = { d: 0, nx: 0, ny: 0 };
+function nearestEdge(poly, x, y) { // for a point inside: distance to the outline + outward direction
+  let best = Infinity, bx = 0, by = 0;
+  for (let i = 0, n = poly.length / 2, j = n - 1; i < n; j = i++) {
+    const ax = poly[2 * j], ay = poly[2 * j + 1], ex = poly[2 * i] - ax, ey = poly[2 * i + 1] - ay;
+    const t = Math.max(0, Math.min(1, ((x - ax) * ex + (y - ay) * ey) / (ex * ex + ey * ey || 1)));
+    const cx = ax + ex * t, cy = ay + ey * t, d = Math.hypot(cx - x, cy - y);
+    if (d < best) { best = d; bx = cx; by = cy; }
+  }
+  _edge.d = best;
+  _edge.nx = best > 1e-6 ? (bx - x) / best : 1;
+  _edge.ny = best > 1e-6 ? (by - y) / best : 0;
+  return _edge;
+}
+function buildCollider(c, def, thickness) {
+  const poly = resamplePoly(def.shape.getPoints(48), 40);
+  const h = thickness / 2 + 0.006;
+  let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity, cx = 0, cy = 0;
+  const n = poly.length / 2;
+  for (let i = 0; i < n; i++) {
+    const x = poly[2 * i], y = poly[2 * i + 1];
+    x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y);
+    cx += x / n; cy += y / n;
+  }
+  let r = 0;
+  for (let i = 0; i < n; i++) r = Math.max(r, Math.hypot(poly[2 * i] - cx, poly[2 * i + 1] - cy));
+  const s = [];
+  const rim = resamplePoly(def.shape.getPoints(48), 28);
+  for (let i = 0; i < rim.length; i += 2) for (const z of [-h, 0, h]) s.push(rim[i], rim[i + 1], z);
+  const G = 6;
+  for (let gx = 0; gx < G; gx++) for (let gy = 0; gy < G; gy++) {
+    const x = x0 + ((gx + 0.5) / G) * (x1 - x0), y = y0 + ((gy + 0.5) / G) * (y1 - y0);
+    if (pointInPoly(poly, x, y)) s.push(x, y, -h, x, y, h);
+  }
+  c.col = { poly, samples: new Float32Array(s), h, cx, cy, r: r + h };
+}
+
+const _pw = new THREE.Vector3(), _pl = new THREE.Vector3(), _nw = new THREE.Vector3();
+const _ca = new THREE.Vector3(), _cb = new THREE.Vector3(), _inv = new THREE.Matrix4();
+const _rootP = new THREE.Vector3(), _twP = new THREE.Vector3(), _twY = new THREE.Vector3();
+const contact = { d: 0, p: new THREE.Vector3(), n: new THREE.Vector3(), from: null };
+const pairSide = new Map(); // remembers which side of each other two charms are on (no flip-flopping)
+
+// Which side of plate Y is plate X on? (+1 = in front of Y's face, -1 = behind). Uses X's centre,
+// falls back to the remembered side when X is (almost) in Y's plane, e.g. two identical duplicates.
+function sideOf(X, Y) {
+  const key = X.id < Y.id ? `${X.id}|${Y.id}` : `${Y.id}|${X.id}`;
+  _inv.copy(Y.group.matrixWorld).invert();
+  X.group.localToWorld(_pl.set(X.col.cx, X.col.cy, 0)).applyMatrix4(_inv);
+  let s = pairSide.get(key);
+  const sXY = s === undefined ? undefined : (X.id < Y.id ? s : -s);
+  if (Math.abs(_pl.z) > Y.col.h * 0.5 || sXY === undefined) {
+    const side = Math.abs(_pl.z) > 1e-4 ? Math.sign(_pl.z) : (X.id < Y.id ? 1 : -1);
+    pairSide.set(key, X.id < Y.id ? side : -side);
+    return side;
+  }
+  return sXY;
+}
+
+// How far must plate X move along Y's face normal (towards `side`) so no part of X is inside Y?
+// Every sample of X over Y's footprint must end up beyond Y's surface on that side.
+function plateOverlap(X, Y, side) {
+  const sx = X.col.samples, mX = X.group.matrixWorld, mY = Y.group.matrixWorld, hY = Y.col.h, hX = X.col.h;
+  _inv.copy(mY).invert();
+  let depth = 0;
+  for (let i = 0; i < sx.length; i += 3) {
+    _pw.set(sx[i], sx[i + 1], sx[i + 2]).applyMatrix4(mX);
+    _pl.copy(_pw).applyMatrix4(_inv);
+    const pen = hY - side * _pl.z;           // > 0: this point is not yet clear of Y's surface
+    if (pen <= 0 || pen > 2 * (hY + hX) + 0.6) continue; // clear, or far away on the other side
+    if (!pointInPoly(Y.col.poly, _pl.x, _pl.y)) continue;
+    if (pen > depth) { depth = pen; contact.p.copy(_pw); }
+  }
+  return depth;
+}
+
+// How much n·p changes per radian of each degree of freedom of charm c (swing z, swing x, twist)
+function contactJacobian(c, p, n, out) {
+  c.rig.root.getWorldPosition(_rootP);
+  c.rig.twist.getWorldPosition(_twP);
+  _twY.set(0, 1, 0).transformDirection(c.rig.twist.matrixWorld);
+  const rx = p.x - _rootP.x, ry = p.y - _rootP.y, rz = p.z - _rootP.z;
+  out[0] = n.x * -ry + n.y * rx;   // n · (ẑ × r)
+  out[1] = n.y * -rz + n.z * ry;   // n · (x̂ × r)
+  const tx = p.x - _twP.x, ty = p.y - _twP.y, tz = p.z - _twP.z;
+  out[2] = n.x * (_twY.y * tz - _twY.z * ty) + n.y * (_twY.z * tx - _twY.x * tz) + n.z * (_twY.x * ty - _twY.y * tx);
+  return out;
+}
+const _J = new Float32Array(3);
+function pushCharm(c, p, n, depth) {
+  const J = contactJacobian(c, p, n, _J);
+  // Regularised (never divides by ~0 when the contact is almost in line with every rotation axis)
+  const s = J[0] * J[0] + J[1] * J[1] + J[2] * J[2] + 0.05;
+  const ph = c.phys, last = ph.n - 1, k = depth / s;
+  const MAXA = 0.06; // max angle change per push (rad) → corrections stay smooth and bounded
+  const dz = THREE.MathUtils.clamp(k * J[0], -MAXA, MAXA);
+  const dx = THREE.MathUtils.clamp(k * J[1], -MAXA, MAXA);
+  const dt = THREE.MathUtils.clamp(k * J[2], -MAXA, MAXA);
+  // Rigidly rotate the whole chain about its attachment point (keeps the links' relative angles) + twist
+  for (let i = 0; i < ph.n; i++) { ph.wz[i] += dz; ph.wx[i] += dx; }
+  ph.twist += dt;
+  // Remove (and slightly bounce) the velocity that drives this point into the other charm
+  const vn = J[0] * ph.vz[last] + J[1] * ph.vx[last] + J[2] * ph.vt;
+  if (vn < 0) {
+    const kv = Math.min((-(1 + collision.restitution) * vn) / s, 4);
+    for (let i = 0; i < ph.n; i++) { ph.vz[i] += kv * J[0]; ph.vx[i] += kv * J[1]; }
+    ph.vt += kv * J[2];
+  }
+}
+
+// Separate A and B along whichever plate normal needs the smaller move (minimum translation)
+const _pA = new THREE.Vector3(), _pB = new THREE.Vector3();
+function resolvePair(A, B) {
+  const sA = sideOf(A, B), dA = plateOverlap(A, B, sA); _pA.copy(contact.p); // move A off B's face
+  const sB = sideOf(B, A), dB = plateOverlap(B, A, sB); _pB.copy(contact.p); // move B off A's face
+  if (dA <= 0 && dB <= 0) return false;
+  const useA = dA > 0 && (dB <= 0 || dA <= dB);
+  const X = useA ? A : B, Y = useA ? B : A, side = useA ? sA : sB;
+  const depth = Math.min(useA ? dA : dB, 0.06);   // cap per pass; iterations/substeps finish the job
+  const p = useA ? _pA : _pB;
+  _nw.set(0, 0, side).transformDirection(Y.group.matrixWorld); // Y's face normal, towards X
+  const d = depth * 0.5 + 0.001;
+  pushCharm(X, p, _nw, d);
+  _nw.negate();
+  pushCharm(Y, p, _nw, d);
+  return true;
+}
+
+function collideCharms() {
+  if (!collision.enabled || charms.length < 2) return;
+  for (let it = 0; it < collision.iterations; it++) {
+    root.updateMatrixWorld(true);
+    let any = false;
+    for (let a = 0; a < charms.length; a++) for (let b = a + 1; b < charms.length; b++) {
+      const A = charms[a], B = charms[b];
+      if (!A.col || !B.col || !A.group || !B.group) continue;
+      A.group.localToWorld(_ca.set(A.col.cx, A.col.cy, 0));
+      B.group.localToWorld(_cb.set(B.col.cx, B.col.cy, 0));
+      if (_ca.distanceTo(_cb) > A.col.r + B.col.r) continue; // broad phase
+      if (!resolvePair(A, B)) continue;
+      any = true;
+    }
+    applyPhysics();
+    if (!any) break;
+  }
+}
+
+// Independent penetration check for testing: deepest point of X that is *inside* plate Y,
+// measured to Y's nearest surface (face or edge). Not used by the solver.
+function trueDepth(X, Y) {
+  const sx = X.col.samples, mX = X.group.matrixWorld, hY = Y.col.h;
+  _inv.copy(Y.group.matrixWorld).invert();
+  let worst = 0;
+  for (let i = 0; i < sx.length; i += 3) {
+    _pl.set(sx[i], sx[i + 1], sx[i + 2]).applyMatrix4(mX).applyMatrix4(_inv);
+    const az = Math.abs(_pl.z);
+    if (az >= hY || !pointInPoly(Y.col.poly, _pl.x, _pl.y)) continue;
+    worst = Math.max(worst, Math.min(hY - az, nearestEdge(Y.col.poly, _pl.x, _pl.y).d));
+  }
+  return worst;
+}
+// Max penetration depth between any two charms (world units) – used by ?debug for testing
+function measurePenetration(detail = false) {
+  root.updateMatrixWorld(true);
+  let worst = 0;
+  const pairs = [];
+  for (let a = 0; a < charms.length; a++) for (let b = a + 1; b < charms.length; b++) {
+    const A = charms[a], B = charms[b];
+    if (!A.col || !B.col) continue;
+    const d = Math.min(trueDepth(A, B), trueDepth(B, A));
+    worst = Math.max(worst, d);
+    if (detail && d > 0) pairs.push(`${a + 1}-${b + 1}:${d.toFixed(3)}`);
+  }
+  return detail ? pairs : worst;
+}
+
+function applyPhysics() {
+  ringGroup.rotation.z = ring.wz;
+  ringGroup.rotation.x = ring.wx;
+  for (const ch of charms) {
+    const p = ch.phys, js = ch.rig.joints;
+    for (let i = 0; i < p.n; i++) {
+      const pz = i ? p.wz[i - 1] : ring.wz, px = i ? p.wx[i - 1] : ring.wx;
+      js[i].rotation.z = p.wz[i] - pz;
+      js[i].rotation.x = p.wx[i] - px + (i === 0 ? ch.baseX : 0);
+    }
+    ch.rig.twist.rotation.y = p.twist;
+  }
+}
+
+// ---------- UI ----------
+const $ = id => document.getElementById(id);
+const PRESETS = ['#ffffff', '#111111', '#e11d2e', '#ff6a00', '#f5c400', '#8a8a8f', '#2f6bff', '#7a2cff'];
+const swatches = $('swatches');
+function setColor(hex) {
+  state.color = hex;
+  charmMat.color.set(hex);
+  $('colorPicker').value = hex;
+  swatches.querySelectorAll('.swatch').forEach(s => s.classList.toggle('active', s.dataset.c === hex));
+  const chip = $('stackList').children[charms.indexOf(active)];
+  if (chip) chip.style.setProperty('--chip', hex);
+}
+PRESETS.forEach(c => {
+  const d = document.createElement('div');
+  d.className = 'swatch'; d.style.background = c; d.dataset.c = c;
+  d.onclick = () => setColor(c);
+  swatches.insertBefore(d, $('colorPicker'));
+});
+function setFinish(f) { $('finishSelect').value = f; applyFinish(f); }
+
+function setShape(shape) {
+  state.shape = shape;
+  $('shapeSelect').value = shape;
+  const isCustom = shape === 'custom';
+  $('textPosBox').hidden = !isCustom;
+  $('customOpts').hidden = !(isCustom && custom.data);
+  buildCharm();
+}
+
+$('colorPicker').oninput = e => setColor(e.target.value);
+$('nameInput').oninput = e => { state.text = e.target.value; buildCharm(); renderStack(); };
+$('shapeSelect').onchange = e => { setShape(e.target.value); renderStack(); impulse(0.6); };
+$('finishSelect').onchange = e => applyFinish(e.target.value);
+$('swingBtn').onclick = () => impulse(1);
+$('tiltCheck').onchange = e => { state.tilt = e.target.checked; buildCharm(); };
+function updateThickUI() { $('thickVal').textContent = state.thickMm.toFixed(1).replace('.0', '') + ' mm'; }
+$('thickRange').oninput = e => { state.thickMm = +e.target.value; updateThickUI(); buildCharm(); };
+$('sizeMm').oninput = e => {
+  const v = +e.target.value;
+  if (v >= 10 && v <= 300) { state.sizeMm = v; buildCharm(); }
+};
+// --- text options (all shapes; position only for custom assets) ---
+const TEXT_COLORS = ['#ffffff', '#111111', '#e11d2e', '#f5c400', '#0b2a8f', '#2fb5e8'];
+function syncTextUI() {
+  $('textSizeVal').textContent = Math.round(state.textSize * 100) + '%';
+  $('textSize').value = Math.round(state.textSize * 100);
+  $('textPos').value = Math.round(state.textPos * 100);
+  $('textPosVal').textContent = state.textPos < 0.34 ? 'bawah' : state.textPos > 0.66 ? 'atas' : 'tengah';
+  $('textHint').textContent = state.shape === 'custom' ? 'opsional, di atas artwork' : '';
+  $('textColorPicker').value = state.textColor;
+  $('textSwatches').querySelectorAll('.swatch').forEach(s => s.classList.toggle('active', s.dataset.c === state.textColor));
+}
+function setTextColor(hex) { state.textColor = hex; textMat.color.set(hex); syncTextUI(); }
+for (const c of TEXT_COLORS) {
+  const d = document.createElement('div');
+  d.className = 'swatch'; d.style.background = c; d.dataset.c = c;
+  d.onclick = () => setTextColor(c);
+  $('textSwatches').insertBefore(d, $('textColorPicker'));
+}
+$('textColorPicker').oninput = e => setTextColor(e.target.value);
+$('textSize').oninput = e => { state.textSize = e.target.value / 100; syncTextUI(); buildCharm(); };
+$('textPos').oninput = e => { state.textPos = e.target.value / 100; syncTextUI(); buildCharm(); };
+
+// --- Stack: several charms on one ring ---
+const SHAPE_ABBR = { heart: 'HATI', star: 'STAR', tag: 'TAG', circle: 'BULAT', pick: 'PICK', custom: 'LOGO' };
+const STACK_COLORS = ['#e11d2e', '#111111', '#f5c400', '#ffffff', '#ff6a00', '#8a8a8f'];
+
+// Push the active charm's settings into every editor control
+function syncUI() {
+  const opt = $('shapeSelect').querySelector('option[value=custom]');
+  opt.disabled = !custom.data;
+  opt.textContent = custom.data ? 'Asset Custom' : 'Asset Custom (upload dulu)';
+  $('shapeSelect').value = state.shape;
+  $('textPosBox').hidden = state.shape !== 'custom';
+  syncTextUI();
+  $('nameInput').value = state.text;
+  $('customOpts').hidden = !(state.shape === 'custom' && custom.data);
+  if (custom.data) updateCustomUI();
+  $('bgModeSelect').value = custom.bgMode;
+  $('assetThumb').style.display = custom.thumb ? 'block' : 'none';
+  if (custom.thumb) $('assetThumb').src = custom.thumb;
+  $('assetStatus').textContent = custom.status;
+  $('assetStatus').className = custom.statusCls;
+  $('tiltCheck').checked = state.tilt;
+  $('finishSelect').value = state.finish;
+  $('colorPicker').value = state.color;
+  swatches.querySelectorAll('.swatch').forEach(s => s.classList.toggle('active', s.dataset.c === state.color));
+  $('thickRange').value = state.thickMm; updateThickUI();
+  $('sizeMm').value = state.sizeMm;
+  $('linksRange').value = active.links; $('linksVal').textContent = active.links + ' mata';
+  renderStack();
+}
+
+function renderStack() {
+  const list = $('stackList');
+  list.textContent = '';
+  charms.forEach((c, k) => {
+    const b = document.createElement('button');
+    b.className = 'chip' + (c === active ? ' active' : '');
+    b.title = `Gantungan ${k + 1}`;
+    if (c.state.shape === 'custom' && c.custom.thumb) {
+      const im = document.createElement('img'); im.src = c.custom.thumb; im.alt = ''; b.append(im);
+    } else {
+      const s = document.createElement('span'); s.className = 'chipTxt';
+      s.textContent = (c.state.text.trim() || SHAPE_ABBR[c.state.shape] || '?').slice(0, 4); b.append(s);
+    }
+    const n = document.createElement('small'); n.textContent = k + 1; b.append(n);
+    b.style.setProperty('--chip', c.state.color);
+    b.onclick = () => { selectCharm(c); swingCharm(c); };
+    list.append(b);
+  });
+  $('stackCount').textContent = `${charms.length}/${MAX_CHARMS}`;
+  $('addCharmBtn').disabled = $('dupCharmBtn').disabled = charms.length >= MAX_CHARMS;
+  $('delCharmBtn').disabled = charms.length <= 1;
+}
+
+function selectCharm(c) { bind(c); syncUI(); }
+function swingCharm(c) { c.phys.vt += (Math.random() < 0.5 ? -1 : 1) * 3; }
+
+// Finish a freshly created charm: rig on the ring, materials, mesh
+function attachCharm(c) {
+  charms.push(c);
+  createRig(c);
+  layoutRigs();
+  bind(c);
+  applyFinish(state.finish);
+  setColor(state.color);
+  buildCharm();
+  syncUI();
+  impulse(0.6);
+}
+function addCharm() {
+  if (charms.length >= MAX_CHARMS) return;
+  const c = newCharm();
+  c.state.color = STACK_COLORS[charms.length % STACK_COLORS.length];
+  c.state.text = String(charms.length + 1);
+  c.links = 2 + (charms.length % 3) * 2; // vary chain lengths so the charms stagger
+  attachCharm(c);
+}
+function duplicateCharm() {
+  if (charms.length >= MAX_CHARMS) return;
+  const c = newCharm(active);
+  c.links = Math.min(8, active.links + 1);
+  attachCharm(c);
+}
+function removeCharm() {
+  if (charms.length <= 1) return;
+  const c = active, idx = charms.indexOf(c);
+  destroyRig(c);
+  if (c.group) disposeGroup(c.group);
+  if (c.custom.data && !charms.some(o => o !== c && o.custom.data === c.custom.data)) {
+    c.custom.data.art.tex.dispose(); c.custom.data.art.reliefTex.dispose();
+  }
+  Object.values(c.mats).forEach(m => m.dispose());
+  charms.splice(idx, 1);
+  layoutRigs();
+  selectCharm(charms[Math.min(idx, charms.length - 1)]);
+  impulse(0.4);
+}
+function setLinks(n) {
+  const c = active;
+  c.links = n;
+  destroyRig(c);
+  createRig(c);
+  layoutRigs();
+  $('linksVal').textContent = n + ' mata';
+}
+$('addCharmBtn').onclick = addCharm;
+$('dupCharmBtn').onclick = duplicateCharm;
+$('delCharmBtn').onclick = removeCharm;
+$('linksRange').oninput = e => setLinks(+e.target.value);
+$('collisionCheck').onchange = e => { collision.enabled = e.target.checked; impulse(0.4); };
+
+// First charm
+{
+  const first = newCharm();
+  attachCharm(first);
+}
+
+// --- Lighting styles: light wall, black studio (rim lights + glow), or HDRI lighting from Poly Haven (CC0).
+// HDRIs are used for lighting/reflections only – the visible background is always a plain colour.
+// `bg` = the automatic background colour that suits each style.
+const ROOM_ENV = scene.environment;
+const ENVS = {
+  light: { label: '🎸 Panggung (dinding)', bg: '#1c1b20' },
+  studio: { label: '⬛ Studio Hitam + Glow', bg: '#000000' },
+  studio_small_09: { label: '📷 Cahaya Studio Foto', hdri: true, bg: '#ececf1' },
+  neon_photostudio: { label: '💡 Cahaya Neon', hdri: true, bg: '#120a1f' },
+  venice_sunset: { label: '🌇 Cahaya Sunset', hdri: true, bg: '#2a1a22' },
+  kloppenheim_06_puresky: { label: '☁️ Cahaya Langit Cerah', hdri: true, bg: '#dfeaf5' },
+  forest_slope: { label: '🌲 Cahaya Hutan', hdri: true, bg: '#16201a' },
+  rooftop_night: { label: '🌃 Cahaya Malam Kota', hdri: true, bg: '#0b0d14' },
+  shanghai_bund: { label: '🏙️ Cahaya Kota', hdri: true, bg: '#14141c' }
+};
+const ENV_KEYS = Object.keys(ENVS);
+for (const sel of document.querySelectorAll('.envSelect')) {
+  for (const k of ENV_KEYS) sel.add(new Option(ENVS[k].label, k));
+}
+const hdriUrl = n => `https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/${n}_1k.hdr`;
+const hdriCache = {};
+const rgbeLoader = new RGBELoader();
+function loadHDRI(name) {
+  if (!hdriCache[name]) {
+    hdriCache[name] = new Promise((resolve, reject) => rgbeLoader.load(hdriUrl(name), tex => {
+      tex.mapping = THREE.EquirectangularReflectionMapping;
+      resolve(tex);
+    }, undefined, reject));
+  }
+  return hdriCache[name];
+}
+function setEnvStatus(msg) { $('envStatus').textContent = msg; $('rvEnvStatus').textContent = msg; }
+function setBloom(on) { view.bloom = on; $('rvBloom').checked = on; }
+let envRequest = 0;
+async function setEnvironment(name) {
+  if (!ENVS[name]) name = 'light';
+  for (const sel of document.querySelectorAll('.envSelect')) sel.value = name;
+  const req = ++envRequest;
+  const isHdri = !!ENVS[name].hdri, isStudio = name === 'studio', isLight = name === 'light';
+  let hdr = null;
+  if (isHdri) {
+    setEnvStatus('Memuat pencahayaan...');
+    try { hdr = await loadHDRI(name); }
+    catch (err) {
+      delete hdriCache[name];
+      if (req === envRequest) { setEnvStatus('Gagal memuat pencahayaan, cek koneksi internet.'); setEnvironment(view.env === name ? 'studio' : view.env); }
+      return;
+    }
+    if (req !== envRequest) return; // a newer choice was made while loading
+  }
+  setEnvStatus(isHdri ? 'Pantulan dari HDRI Poly Haven (CC0). Latar tetap polos.' : '');
+  view.env = name;
+  // The HDRI only lights the scene and shows up in reflections; the visible background stays plain
+  scene.environment = isHdri ? hdr : ROOM_ENV;
+  scene.backgroundBlurriness = 0;
+  wall.visible = isLight;
+  applyBackground();
+  hemi.intensity = isLight ? 0.6 : isStudio ? 0.15 : 0.1;
+  sun.intensity = isLight ? 2.2 : isStudio ? 1.6 : 1.0;
+  // Stage: red + amber backlights; studio: white rim lights
+  rimA.color.set(isLight ? 0xff2a3a : 0xffffff); rimB.color.set(isLight ? 0xffa040 : 0xfff2dd);
+  rimA.intensity = isLight ? 14 : isStudio ? 18 : 0;
+  rimB.intensity = isLight ? 9 : isStudio ? 10 : 0;
+  renderer.toneMappingExposure = isLight ? 0.85 : isStudio ? 0.95 : 0.9;
+  // Darker, higher-contrast reflections so chrome reads as mirror metal on black
+  view.envIntensity = isStudio ? 0.55 : 1;
+  for (const m of [chromeMat, pegMat, ...allCharmMats()]) m.envMapIntensity = view.envIntensity;
+  setBloom(isStudio);
+}
+for (const sel of document.querySelectorAll('.envSelect')) sel.onchange = e => setEnvironment(e.target.value);
+
+// --- Plain background colour: "Auto" follows the lighting style, or pick any colour ---
+const BG_PRESETS = ['#000000', '#1c1b20', '#2b0a0e', '#3a3a40', '#f2ece0', '#ffffff', '#e11d2e'];
+view.bgColor = null; // null = automatic (matches the lighting style)
+function applyBackground() {
+  const hex = view.bgColor || ENVS[view.env].bg;
+  scene.background = new THREE.Color(hex);
+  if (wall.visible) wall.material.color.set(hex).offsetHSL(0, 0, -0.02); // light style: wall takes the colour
+  // Toolbar/text colours adapt to dark or light backgrounds
+  const c = new THREE.Color(hex), lum = 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b;
+  document.body.classList.toggle('light-review', lum > 0.35);
+  for (const box of document.querySelectorAll('.bgSwatches')) {
+    box.querySelectorAll('.swatch').forEach(s => s.classList.toggle('active', (s.dataset.c || null) === view.bgColor));
+    box.querySelector('input[type=color]').value = hex;
+  }
+}
+function setBgColor(hex) { view.bgColor = hex; applyBackground(); }
+for (const box of document.querySelectorAll('.bgSwatches')) {
+  const auto = document.createElement('div');
+  auto.className = 'swatch auto'; auto.textContent = 'A'; auto.title = 'Otomatis (ikut gaya cahaya)';
+  auto.onclick = () => setBgColor(null);
+  box.append(auto);
+  for (const c of BG_PRESETS) {
+    const d = document.createElement('div');
+    d.className = 'swatch'; d.style.background = c; d.dataset.c = c; d.title = c;
+    d.onclick = () => setBgColor(c);
+    box.append(d);
+  }
+  const pick = document.createElement('input');
+  pick.type = 'color'; pick.title = 'Warna latar bebas';
+  pick.oninput = e => setBgColor(e.target.value);
+  box.append(pick);
+}
+// --- Custom asset upload ---
+function setStatus(msg, cls = '') {
+  custom.status = msg; custom.statusCls = cls;
+  const el = $('assetStatus'); el.textContent = msg; el.className = cls;
+}
+
+function updateCustomUI() {
+  $('borderVal').textContent = custom.border + ' px';
+  $('holeVal').textContent = Math.round(custom.holePos * 100) + '%';
+  $('holeRange').value = Math.round(custom.holePos * 100);
+  $('tolVal').textContent = custom.tol;
+  $('tolBox').hidden = !custom.data?.keyed;
+  $('bgModeSelect').value = custom.bgMode;
+}
+
+function runProcess() {
+  try {
+    processAsset();
+    updateCustomUI();
+    const d = custom.data;
+    let msg = `OK: "${custom.name}", outline ${d.outline.length} titik. ` +
+      (d.keepBg ? 'Latar gambar dipertahankan.' : d.keyed ? 'Latar polos dihapus otomatis.' : 'Pakai transparansi gambar.');
+    if (d.droppedPieces > 0) msg += ` Perhatian: ${d.droppedPieces} bagian terpisah dibuang, naikkan border supaya menyatu.`;
+    setStatus(msg, d.droppedPieces > 0 ? '' : 'ok');
+    if (state.shape === 'custom') buildCharm();
+    return true;
+  } catch (err) {
+    console.error(err);
+    setStatus('Gagal: ' + err.message, 'err');
+    return false;
+  }
+}
+
+let processTimer = 0;
+function scheduleProcess() {
+  clearTimeout(processTimer);
+  const c = active;
+  processTimer = setTimeout(() => { if (active === c) runProcess(); }, 60);
+}
+
+function loadImage(url) {
+  return new Promise((resolve, reject) => {
+    const im = new Image();
+    im.onload = () => resolve(im);
+    im.onerror = () => reject(new Error('File tidak bisa dibaca sebagai gambar.'));
+    im.src = url;
+  });
+}
+
+async function useAsset(url, name) {
+  const c = active; // the charm that receives this image, even if the user switches while it loads
+  setStatus('Memproses gambar...');
+  let img;
+  try { img = await loadImage(url); }
+  catch (err) { withCharm(c, () => setStatus('Gagal: ' + err.message, 'err')); if (active === c) syncUI(); return; }
+  if (active !== c) selectCharm(c);
+  custom.img = img;
+  custom.name = name;
+  custom.holePos = null;
+  custom.thumb = url;
+  if (!runProcess()) { syncUI(); return; }
+  setFinish('clear');
+  setColor('#ffffff');
+  setShape('custom');
+  syncUI();
+  impulse(0.8);
+}
+
+function handleFile(file) {
+  if (!file || !file.type.startsWith('image/')) { setStatus('Gagal: pilih file gambar (PNG, JPG, WebP, SVG).', 'err'); return; }
+  useAsset(URL.createObjectURL(file), file.name);
+}
+
+$('uploadBtn').onclick = () => $('assetInput').click();
+$('assetInput').onchange = e => { handleFile(e.target.files[0]); e.target.value = ''; };
+$('sampleBtn').onclick = () => useAsset(makeSampleAsset(), 'contoh');
+$('borderRange').oninput = e => { custom.border = +e.target.value; updateCustomUI(); scheduleProcess(); };
+$('holeRange').oninput = e => { custom.holePos = e.target.value / 100; updateCustomUI(); scheduleProcess(); };
+$('tolRange').oninput = e => { custom.tol = +e.target.value; updateCustomUI(); scheduleProcess(); };
+$('bgModeSelect').onchange = e => { custom.bgMode = e.target.value; custom.holePos = null; runProcess(); impulse(0.5); };
+
+// Drag & drop
+let dragDepth = 0;
+addEventListener('dragenter', e => { e.preventDefault(); dragDepth++; $('dropOverlay').style.display = 'flex'; });
+addEventListener('dragleave', () => { if (--dragDepth <= 0) { dragDepth = 0; $('dropOverlay').style.display = 'none'; } });
+addEventListener('dragover', e => e.preventDefault());
+addEventListener('drop', e => {
+  e.preventDefault(); dragDepth = 0; $('dropOverlay').style.display = 'none';
+  handleFile(e.dataTransfer.files[0]);
+});
+
+// Sample band logo (grunge "ROCK": white letters, black outline, red drop) on a transparent background
+function makeSampleAsset() {
+  const c = document.createElement('canvas');
+  c.width = 900; c.height = 420;
+  const g = c.getContext('2d');
+  g.translate(450, 210); g.rotate(-0.1);
+  g.font = '900 210px Impact, "Arial Black", sans-serif';
+  g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineJoin = 'miter';
+  g.fillStyle = '#e11d2e'; g.strokeStyle = '#e11d2e'; g.lineWidth = 30;
+  for (let i = 12; i > 0; i--) { g.strokeText('ROCK', i * 1.4, i * 1.6); g.fillText('ROCK', i * 1.4, i * 1.6); }
+  g.strokeStyle = '#111'; g.lineWidth = 26; g.strokeText('ROCK', 0, 0);
+  g.fillStyle = '#fff'; g.fillText('ROCK', 0, 0);
+  // worn/grunge scratches through the letters
+  g.globalCompositeOperation = 'source-atop';
+  g.strokeStyle = 'rgba(17,17,17,.55)'; g.lineWidth = 3;
+  for (let i = 0; i < 26; i++) {
+    const x = -330 + ((i * 97) % 660), y = -80 + ((i * 53) % 160);
+    g.beginPath(); g.moveTo(x, y); g.lineTo(x + 26 + (i % 5) * 9, y + 8 - (i % 3) * 7); g.stroke();
+  }
+  g.globalCompositeOperation = 'source-over';
+  return c.toDataURL('image/png');
+}
+
+// --- Grab & drag the keychain to swing it (tap = flick); dragging elsewhere orbits the camera ---
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2();
+const camRight = new THREE.Vector3();
+let grab = null;
+function hitsKeychain(e) {
+  pointer.set((e.clientX / innerWidth) * 2 - 1, -(e.clientY / innerHeight) * 2 + 1);
+  raycaster.setFromCamera(pointer, camera);
+  return raycaster.intersectObject(root, true).length > 0;
+}
+// Capture phase on window so we decide before OrbitControls sees the event
+addEventListener('pointerdown', e => {
+  if (e.target !== renderer.domElement || !hitsKeychain(e)) return;
+  grab = { id: e.pointerId, x: e.clientX, y: e.clientY, lx: e.clientX, ly: e.clientY };
+  controls.enabled = false;
+  document.body.classList.add('grabbing');
+}, true);
+addEventListener('pointermove', e => {
+  if (!grab || e.pointerId !== grab.id) return;
+  const dx = e.clientX - grab.lx, dy = e.clientY - grab.ly;
+  grab.lx = e.clientX; grab.ly = e.clientY;
+  camRight.setFromMatrixColumn(camera.matrixWorld, 0);
+  ring.vz += dx * 0.012 * camRight.x;
+  ring.vx += -dx * 0.012 * camRight.z + dy * 0.004;
+  for (const c of charms) c.phys.vt += dx * 0.01;
+});
+addEventListener('pointerup', e => {
+  if (!grab || e.pointerId !== grab.id) return;
+  if (Math.hypot(e.clientX - grab.x, e.clientY - grab.y) < 5) impulse(1.2);
+  grab = null;
+  controls.enabled = true;
+  document.body.classList.remove('grabbing');
+});
+addEventListener('pointercancel', () => { grab = null; controls.enabled = true; document.body.classList.remove('grabbing'); });
+
+// ---------- Export ----------
+function download(blob, name) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 5000);
+}
+const baseName = () => 'gantungan-kunci' + (state.shape === 'custom' && custom.name ? '-' + custom.name.replace(/\.[^.]+$/, '').replace(/[^\w-]+/g, '_') : '');
+
+// Video (WebM) – shared recorder for the editor (6 s) and the Review page (free length, max 60 s)
+const MAX_REC_MS = 60000;
+let recorder = null, recStartedAt = 0, recTick = 0, recAutoStop = 0, recTrack = null;
+function isRecording() { return recorder && recorder.state === 'recording'; }
+function startRecording(maxMs = MAX_REC_MS) {
+  if (!window.MediaRecorder || !renderer.domElement.captureStream) { alert('Browser ini tidak mendukung perekaman video.'); return false; }
+  if (isRecording()) return false;
+  // Every rendered WebGL frame is copied onto a 2D canvas, and that 2D canvas is recorded.
+  // This is independent of WebGL's drawing-buffer/compositing behaviour (e.g. with transmission materials).
+  const src = renderer.domElement;
+  recCanvas.width = src.width; recCanvas.height = src.height;
+  recCtx.fillStyle = '#000'; recCtx.fillRect(0, 0, recCanvas.width, recCanvas.height);
+  const stream = recCanvas.captureStream(0);
+  recTrack = stream.getVideoTracks()[0];
+  if (typeof recTrack.requestFrame !== 'function') { // very old browsers: let the canvas push frames itself
+    stream.getTracks().forEach(t => t.stop());
+    recTrack = null;
+    return beginRecorder(recCanvas.captureStream(60), maxMs);
+  }
+  return beginRecorder(stream, maxMs);
+}
+const recCanvas = document.createElement('canvas');
+const recCtx = recCanvas.getContext('2d');
+function captureRecFrame() {
+  if (!isRecording()) return;
+  const src = renderer.domElement;
+  if (recCanvas.width !== src.width || recCanvas.height !== src.height) { recCanvas.width = src.width; recCanvas.height = src.height; }
+  recCtx.drawImage(src, 0, 0);
+  if (recTrack) recTrack.requestFrame();
+}
+function beginRecorder(stream, maxMs) {
+  // VP8 first: much lighter to encode than VP9, so it keeps up even on slow devices
+  const mime = ['video/webm;codecs=vp8', 'video/webm;codecs=vp9', 'video/webm']
+    .find(m => MediaRecorder.isTypeSupported(m)) || '';
+  recorder = new MediaRecorder(stream, mime ? { mimeType: mime, videoBitsPerSecond: 8e6 } : undefined);
+  const chunks = [];
+  recorder.ondataavailable = e => e.data.size && chunks.push(e.data);
+  recorder.onstop = () => {
+    clearInterval(recTick); clearTimeout(recAutoStop);
+    recTrack = null;
+    stream.getTracks().forEach(t => t.stop());
+    const blob = new Blob(chunks, { type: 'video/webm' });
+    updateRecUI();
+    if (blob.size < 1024) { alert('Rekaman kosong (tidak ada frame yang tertangkap). Coba rekam lagi.'); return; }
+    download(blob, baseName() + '.webm');
+  };
+  recorder.start(250);
+  recStartedAt = performance.now();
+  recTick = setInterval(updateRecUI, 250);
+  recAutoStop = setTimeout(stopRecording, maxMs);
+  updateRecUI();
+  return true;
+}
+function stopRecording() { if (isRecording()) recorder.stop(); }
+function updateRecUI() {
+  const on = isRecording();
+  const s = on ? Math.floor((performance.now() - recStartedAt) / 1000) : 0;
+  $('recTime').textContent = String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
+  $('recBadge').hidden = !on;
+  $('rvRecord').classList.toggle('recording', on);
+  $('recordBtn').disabled = on;
+  $('recordBtn').textContent = on ? 'Merekam...' : 'Rekam 6 dtk';
+}
+$('recordBtn').onclick = () => { if (startRecording(6000)) impulse(1); };
+
+// ---------- Review page ----------
+let savedView = null;
+function enterReview() {
+  if (document.body.classList.contains('reviewing')) return;
+  document.body.classList.add('reviewing');
+  $('review').hidden = false;
+  if (view.env === 'light') setEnvironment('studio');
+  setAutoRotate($('rvAuto').checked);
+  // Frame the keychain a bit higher & further so the bottom toolbar doesn't cover the charm
+  savedView = { pos: camera.position.clone(), target: controls.target.clone() };
+  const offset = camera.position.clone().sub(controls.target);
+  controls.target.set(0, -0.7, 0);
+  camera.position.copy(controls.target).add(offset.setLength(Math.max(offset.length(), 11.5)));
+  controls.update();
+  updateFraming();
+  if (location.hash !== '#review') history.pushState(null, '', location.pathname + location.search + '#review');
+  impulse(0.8);
+}
+function exitReview() {
+  if (!document.body.classList.contains('reviewing')) return;
+  stopRecording();
+  document.body.classList.remove('reviewing');
+  $('review').hidden = true;
+  controls.autoRotate = false;
+  $('rvSettings').hidden = true; $('rvSettingsBtn').classList.remove('on');
+  if (savedView) { camera.position.copy(savedView.pos); controls.target.copy(savedView.target); controls.update(); savedView = null; }
+  updateFraming();
+  if (location.hash === '#review') history.pushState(null, '', location.pathname + location.search);
+}
+$('reviewBtn').onclick = enterReview;
+$('backBtn').onclick = exitReview;
+addEventListener('popstate', () => (location.hash === '#review' ? enterReview() : exitReview()));
+addEventListener('keydown', e => {
+  if (!document.body.classList.contains('reviewing')) return;
+  if (e.key === 'Escape') exitReview();
+  if (e.key === ' ') { e.preventDefault(); isRecording() ? stopRecording() : startRecording(); }
+});
+$('rvRecord').onclick = () => (isRecording() ? stopRecording() : startRecording());
+$('rvSwing').onclick = () => impulse(1.2);
+$('rvPhoto').onclick = () => $('pngBtn').click();
+
+// Review settings: environment, glow, peg, 360° auto-rotate (speed + direction), record one full turn
+function setAutoRotate(on) {
+  controls.autoRotate = on;
+  $('rvAuto').checked = on;
+  $('rvRotate').classList.toggle('on', on);
+}
+function rotationSeconds() { return 60 / Math.abs(controls.autoRotateSpeed); } // OrbitControls: 60/speed s per orbit
+function updateSpeed() {
+  const speed = +$('rvSpeed').value, dir = +$('rvDir').value;
+  controls.autoRotateSpeed = speed * dir;
+  $('rvSpeedVal').textContent = `≈ ${Math.round(rotationSeconds())} dtk / putaran`;
+}
+$('rvRotate').onclick = () => setAutoRotate(!controls.autoRotate);
+$('rvAuto').onchange = e => setAutoRotate(e.target.checked);
+$('rvSpeed').oninput = updateSpeed;
+$('rvDir').onchange = updateSpeed;
+$('rvBloom').onchange = e => setBloom(e.target.checked);
+$('rvPeg').onchange = e => { peg.visible = pegCap.visible = e.target.checked; };
+$('rvAutoSwing').onchange = e => { $('autoSwing').checked = e.target.checked; };
+$('autoSwing').addEventListener('change', e => { $('rvAutoSwing').checked = e.target.checked; });
+$('rvSettingsBtn').onclick = () => {
+  const open = $('rvSettings').hidden;
+  $('rvSettings').hidden = !open;
+  $('rvSettingsBtn').classList.toggle('on', open);
+};
+$('rvBg').onclick = () => setEnvironment(ENV_KEYS[(ENV_KEYS.indexOf(view.env) + 1) % ENV_KEYS.length]);
+$('rvRec360').onclick = () => {
+  if (isRecording()) return;
+  setAutoRotate(true);
+  if (startRecording(rotationSeconds() * 1000 + 200)) $('rvSettings').hidden = true, $('rvSettingsBtn').classList.remove('on');
+};
+updateSpeed();
+setEnvironment(view.env); // stage lighting from the start
+
+// 3D model (GLB) – exported in rest pose
+$('glbBtn').onclick = () => {
+  ringGroup.rotation.set(0, 0, 0);
+  for (const c of charms) {
+    c.rig.joints.forEach((j, i) => { j.rotation.z = 0; j.rotation.x = i === 0 ? c.baseX : 0; });
+    c.rig.twist.rotation.y = c.baseTwist;
+  }
+  root.updateMatrixWorld(true);
+  new GLTFExporter().parse(
+    root,
+    glb => download(new Blob([glb], { type: 'model/gltf-binary' }), baseName() + '.glb'),
+    err => { console.error(err); alert('Export GLB gagal: ' + err.message); },
+    { binary: true }
+  );
+};
+
+// Screenshot (PNG)
+$('pngBtn').onclick = () => {
+  renderFrame();
+  renderer.domElement.toBlob(b => download(b, baseName() + '.png'), 'image/png');
+};
+
+// Cut line + artwork (SVG, in millimetres)
+$('svgBtn').onclick = () => {
+  const def = active.def; // cut line is per acrylic piece: exports the active charm
+  const outer = def.shape.getPoints(64);
+  const holes = def.shape.holes.map(h => h.getPoints(64));
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  for (const p of outer) { minX = Math.min(minX, p.x); maxX = Math.max(maxX, p.x); minY = Math.min(minY, p.y); maxY = Math.max(maxY, p.y); }
+  const sizeMm = state.sizeMm;
+  const m = sizeMm / Math.max(maxX - minX, maxY - minY);
+  const W = (maxX - minX) * m, H = (maxY - minY) * m;
+  const f = v => v.toFixed(3);
+  const ring = pts => 'M' + pts.map(p => `${f((p.x - minX) * m)},${f((maxY - p.y) * m)}`).join('L') + 'Z';
+  const d = [outer, ...holes].map(ring).join(' ');
+  let art = '';
+  if (def.art) {
+    const ax = (-def.art.w / 2 - minX) * m, ay = (maxY - def.art.h / 2) * m;
+    art = `<g id="artwork"><image x="${f(ax)}" y="${f(ay)}" width="${f(def.art.w * m)}" height="${f(def.art.h * m)}" ` +
+      `href="${def.art.canvas.toDataURL('image/png')}"/></g>`;
+  }
+  const svg = `<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="${f(W)}mm" height="${f(H)}mm" viewBox="0 0 ${f(W)} ${f(H)}">
+  <!-- Gantungan Kunci 3D: ${f(W)} x ${f(H)} mm, tebal akrilik ${state.thickMm} mm. Layer "cutline" = garis potong (merah, 0.1 mm). -->
+  <g id="acrylic"><path d="${d}" fill="#e8f4ff" fill-opacity="0.5" fill-rule="evenodd"/></g>
+  ${art}
+  <g id="cutline"><path d="${d}" fill="none" stroke="#ff0000" stroke-width="0.1" fill-rule="evenodd"/></g>
+</svg>`;
+  download(new Blob([svg], { type: 'image/svg+xml' }), baseName() + '-cutline.svg');
+};
+
+// ---------- Shop: nav links, mobile bottom sheet, pre-order hand-off, catalog presets ----------
+document.querySelectorAll('.igLink').forEach(a => { a.href = SHOP_UTIL.igUrl(); });
+const isMobile = () => innerWidth <= 700;
+const panel = $('panel');
+
+// Keep the keychain visible above the bottom sheet and fit it on narrow portrait screens
+function updateFraming() {
+  const mobile = isMobile(), reviewing = document.body.classList.contains('reviewing');
+  camera.aspect = innerWidth / innerHeight;
+  camera.zoom = mobile ? THREE.MathUtils.clamp(camera.aspect * 1.45, 0.6, 1) : 1;
+  let shiftY = 0;
+  if (mobile && !reviewing) {
+    const sheet = panel.getBoundingClientRect().height, nav = $('shopNav').getBoundingClientRect().height;
+    shiftY = (sheet - nav) / 2; // move the picture up by half of what the sheet covers
+  }
+  camera.setViewOffset(innerWidth, innerHeight, 0, shiftY, innerWidth, innerHeight);
+  camera.updateProjectionMatrix();
+  view.shiftY = shiftY;
+}
+function setSheet(open) {
+  panel.classList.toggle('collapsed', !open);
+  $('sheetToggle').setAttribute('aria-expanded', String(open));
+  if (!open) panel.scrollTop = 0;
+  updateFraming();
+}
+$('sheetHead').addEventListener('click', e => {
+  if (!isMobile() || e.target.closest('.quick')) return;
+  setSheet(panel.classList.contains('collapsed'));
+});
+panel.addEventListener('transitionend', e => { if (e.propertyName === 'max-height') updateFraming(); });
+$('quickReviewBtn').onclick = () => enterReview();
+if (isMobile()) setSheet(false);
+
+// Save a summary + thumbnail of the current design for preorder.html
+const SHAPE_LABELS = { heart: 'Hati', star: 'Bintang', tag: 'Tag', circle: 'Bulat', pick: 'Pick Gitar', custom: 'Custom logo' };
+function finishLabel(v) { return $('finishSelect').querySelector(`option[value="${v}"]`)?.textContent || v; }
+function designThumb() {
+  renderFrame();
+  const src = renderer.domElement, H = src.height, W = Math.round(H * 0.8);
+  const cy = H / 2 - (view.shiftY || 0) * renderer.getPixelRatio();
+  const out = document.createElement('canvas');
+  out.width = 480; out.height = 600;
+  const g = out.getContext('2d');
+  g.fillStyle = '#' + scene.background.getHexString(); g.fillRect(0, 0, 480, 600);
+  const sw = Math.min(W, src.width), sh = Math.min(H, Math.round(sw / 0.8));
+  g.drawImage(src, (src.width - sw) / 2, THREE.MathUtils.clamp(cy - sh / 2, 0, H - sh), sw, sh, 0, 0, 480, 600);
+  return out.toDataURL('image/jpeg', 0.85);
+}
+function orderDesign() {
+  const items = charms.map(c => ({
+    bentuk: SHAPE_LABELS[c.state.shape] || c.state.shape,
+    tulisan: c.state.text.trim(),
+    asset: c.state.shape === 'custom' ? c.custom.name : '',
+    material: finishLabel(c.state.finish), warna: c.state.color,
+    ukuran: c.state.sizeMm, tebal: c.state.thickMm
+  }));
+  const data = { items, at: Date.now(), thumb: '' };
+  try { data.thumb = designThumb(); } catch (e) { console.warn(e); }
+  try { localStorage.setItem('gk_design', JSON.stringify(data)); }
+  catch { data.thumb = ''; localStorage.setItem('gk_design', JSON.stringify(data)); } // storage full: drop the image
+  location.href = 'preorder.html?dari=editor';
+}
+$('orderBtn').onclick = orderDesign;
+$('rvOrderBtn').onclick = orderDesign;
+
+// Catalog products: desain.html?produk=<id> (see KATALOG in assets/shop.js), or ?preset=custom
+function setupCharm(shape, text, color, finish) {
+  state.text = text;
+  setFinish(finish);
+  setColor(color);
+  setShape(shape);
+  syncUI();
+}
+async function applyProduct(p) {
+  const d = p.desain || {};
+  if (p.aset) {
+    custom.border = d.border ?? custom.border;
+    custom.bgMode = d.latar || 'auto';
+    await useAsset(p.aset, p.nama);
+    if (custom.data && d.lubang != null) { custom.holePos = d.lubang; runProcess(); }
+  } else {
+    setShape(d.bentuk || 'pick');
+  }
+  state.text = d.tulisan || '';
+  state.textColor = d.warnaTulisan || '#ffffff';
+  state.textPos = d.posisiTulisan ?? state.textPos;
+  state.thickMm = d.tebal || state.thickMm;
+  state.sizeMm = d.ukuran || state.sizeMm;
+  setFinish(d.material || 'clear');
+  setColor(d.warna || '#ffffff');
+  buildCharm();
+  syncUI();
+  if (d.cahaya) setEnvironment(d.cahaya);
+}
+async function applyPreset(name) {
+  if (name === 'custom') await useAsset(makeSampleAsset(), 'logo-band');
+  else if (name === 'pick') setupCharm('pick', 'ROCK', '#111111', 'glossy');
+  else return;
+  impulse(0.8);
+}
+
+// ---------- Loop ----------
+addEventListener('resize', () => {
+  renderer.setSize(innerWidth, innerHeight);
+  composer.setSize(innerWidth, innerHeight);
+  updateFraming();
+});
+updateFraming();
+
+function renderFrame() {
+  if (view.bloom) composer.render();
+  else renderer.render(scene, camera);
+  captureRecFrame(); // copy the finished frame to the recorder canvas (same task, buffer still valid)
+}
+
+const clock = new THREE.Clock();
+let time = 0;
+setTimeout(() => impulse(1), 400);
+renderer.setAnimationLoop(() => {
+  const dt = Math.min(clock.getDelta(), 1 / 20);
+  const sub = 4;
+  for (let i = 0; i < sub; i++) {
+    time += dt / sub;
+    stepPhysics(dt / sub, time, $('autoSwing').checked);
+    applyPhysics();
+    collideCharms(); // every substep, so the chain springs can't push charms back into each other
+  }
+  applyPhysics();
+  controls.update();
+  renderFrame();
+});
+{
+  const q = new URLSearchParams(location.search);
+  const produk = q.get('produk') && SHOP_UTIL.produk(q.get('produk'));
+  const job = produk ? applyProduct(produk).then(() => impulse(0.8)) : q.get('preset') ? applyPreset(q.get('preset')) : Promise.resolve();
+  window.__ready = job.then(() => { if (location.hash === '#review') enterReview(); });
+}
+if (new URLSearchParams(location.search).has('debug')) {
+  // simulate(): run the exact same loop as the renderer at a fixed 60 fps (no drawing) and report
+  // how deep charms penetrate each other – a deterministic test independent of the device's frame rate
+  const simulate = (seconds, { auto = true, kicks = 0 } = {}) => {
+    const frames = Math.round(seconds * 60), dt = 1 / 60, sub = 4, depths = [];
+    for (let f = 0; f < frames; f++) {
+      if (kicks && f % Math.round(frames / kicks) === 0) impulse(1.5);
+      for (let i = 0; i < sub; i++) {
+        time += dt / sub;
+        stepPhysics(dt / sub, time, auto);
+        applyPhysics();
+        collideCharms();
+      }
+      applyPhysics();
+      depths.push(measurePenetration());
+    }
+    const max = Math.max(...depths), avg = depths.reduce((a, b) => a + b, 0) / frames;
+    return { frames, max: +max.toFixed(4), avg: +avg.toFixed(5), over1mm: depths.filter(d => d > 0.047).length };
+  };
+  // turntable(): deterministic frames for catalog videos. Frame i of n = camera at i/n of a full
+  // 360° orbit, physics advanced by 1/fps with the gentle auto-swing. Returns a JPEG data URL.
+  const tt = { radius: 0, elev: 0 };
+  const turntable = (i, n, fps = 30) => {
+    if (i === 0) {
+      // Product shot: floating keychain (no wall/peg), framed to fill the picture
+      wall.visible = false; peg.visible = pegCap.visible = false;
+      camera.clearViewOffset(); camera.zoom = 1;
+      root.updateMatrixWorld(true);
+      // Frame the real geometry only: ring coils + chains + acrylic bodies (not the padded artwork planes)
+      const box = new THREE.Box3();
+      ringGroup.children.forEach(o => { if (o.isMesh) box.expandByObject(o); });
+      for (const c of charms) { c.rig.root.traverse(o => { if (o.isMesh && o.geometry.type === 'TorusGeometry') box.expandByObject(o); }); box.expandByObject(c.group.children[0]); }
+      const size = box.getSize(new THREE.Vector3());
+      box.getCenter(controls.target);
+      const vfov = THREE.MathUtils.degToRad(camera.fov) / 2;
+      const fitH = (size.y / 2) / Math.tan(vfov), fitW = (Math.max(size.x, size.z) / 2) / (Math.tan(vfov) * camera.aspect);
+      tt.radius = Math.max(fitH, fitW) * 1.12 + Math.max(size.x, size.z) / 2;
+      tt.elev = tt.radius * 0.08; tt.start = 0;
+      camera.updateProjectionMatrix();
+      controls.autoRotate = false;
+    }
+    const sub = 4, dt = 1 / fps;
+    for (let k = 0; k < sub; k++) { time += dt / sub; stepPhysics(dt / sub, time, true); applyPhysics(); collideCharms(); }
+    applyPhysics();
+    const a = tt.start + (i / n) * Math.PI * 2;
+    camera.position.set(controls.target.x + tt.radius * Math.sin(a), controls.target.y + tt.elev, controls.target.z + tt.radius * Math.cos(a));
+    camera.lookAt(controls.target);
+    renderFrame();
+    return renderer.domElement.toDataURL('image/jpeg', 0.88);
+  };
+  window.gantungan = { charms, collision, ring, impulse, measurePenetration, simulate, selectCharm, setLinks, turntable,
+    stopLoop: () => renderer.setAnimationLoop(null) };
+}
+</script>
+</body>
+</html>

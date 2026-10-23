@@ -1,6 +1,7 @@
 // ===================================================================
 //  Data toko & katalog. Edit file ini untuk mengganti nama, kontak,
-//  produk, dan harga. Dipakai oleh index.html, katalog.html, preorder.html
+//  event, produk, dan harga. Dipakai oleh index.html (katalog),
+//  desain.html (editor 3D) dan preorder.html.
 // ===================================================================
 window.SHOP = {
   nama: 'Toko Aksesoris Persahabatan',
@@ -9,52 +10,55 @@ window.SHOP = {
   // Nomor WhatsApp format internasional tanpa "+" atau spasi, contoh: '6281234567890'.
   // Kosongkan ('') kalau pesanan hanya lewat DM Instagram.
   whatsapp: '',
-  catatanPO: 'Pre-order diproses setelah desain dikonfirmasi lewat DM. Estimasi pengerjaan dikonfirmasi admin.'
+  // Pesanan TIDAK dikirim: semua pre-order diambil di booth saat event ini.
+  event: {
+    nama: 'Binus Festival (Bifest)',
+    lokasi: 'Binus Anggrek, Lantai 1',
+    hari: 'Rabu, 26 November',
+    jam: '09.00 – 17.00'
+  },
+  catatanPO: 'Pre-order dikonfirmasi admin lewat DM. Pesanan hanya bisa diambil di booth saat Bifest, tidak ada pengiriman.'
 };
 
-// harga: angka dalam Rupiah (contoh 15000), atau null untuk menampilkan "Harga via DM"
-// preset: tampilan yang dibuka di editor 3D (index.html?preset=...)
-// badge: label kecil di pojok gambar (opsional)
+// harga: angka dalam Rupiah (contoh 15000), atau null untuk "Harga via DM".
+// aset: gambar logo/artwork (PNG transparan paling rapi, latar putih polos juga bisa).
+// video/gambar: preview 360° & poster di katalog (dibuat dari editor 3D, lihat README).
+// desain: tampilan awal di editor 3D (desain.html?produk=<id>).
 window.KATALOG = [
   {
-    id: 'pick', nama: 'Pick Gitar + Nama Band', kategori: 'akrilik', preset: 'pick', harga: null, badge: 'Best seller',
-    gambar: 'katalog/pick.jpg', spek: '50–60 mm · tebal 3–4 mm · glossy',
-    deskripsi: 'Bentuk pick gitar dengan nama band atau nama kamu timbul di kedua sisi.'
+    id: 'feast', nama: 'Feast', harga: null, badge: 'Best seller',
+    aset: 'katalog/aset/feast.png', gambar: 'katalog/feast.jpg', video: 'katalog/feast.mp4',
+    spek: '60 mm · akrilik bening · cetak 2 sisi',
+    deskripsi: 'Logo Feast, akrilik dipotong mengikuti outline logo.',
+    desain: { material: 'clear', warna: '#ffffff', border: 12 }
   },
   {
-    id: 'custom', nama: 'Logo Band Custom', kategori: 'custom', preset: 'custom', harga: null, badge: 'Custom',
-    gambar: 'katalog/custom.jpg', spek: 'ukuran bebas · bentuk ikut outline',
-    deskripsi: 'Kirim logo bandmu, akrilik dipotong mengikuti outline logo. Cocok untuk merch gig.'
+    id: 'bunny', nama: 'Bunny Skate', harga: null, badge: 'Cute',
+    aset: 'katalog/aset/bunny.png', gambar: 'katalog/bunny.jpg', video: 'katalog/bunny.mp4',
+    spek: '60 mm · akrilik bening · cetak 2 sisi',
+    deskripsi: 'Kelinci main sepatu roda, garis biru di akrilik bening.',
+    desain: { material: 'clear', warna: '#ffffff', border: 14 }
   },
   {
-    id: 'chrome-emas', nama: 'Chrome + Emas Timbul', kategori: 'metal', preset: 'chrome-emas', harga: null, badge: 'Premium',
-    gambar: 'katalog/chrome-emas.jpg', spek: 'ukuran bebas · chrome + emas',
-    deskripsi: 'Badan chrome mengilap dengan logo emas timbul. Vibes rockstar.'
+    id: 'radiohead', nama: 'Radiohead Bear', harga: null,
+    aset: 'katalog/aset/radiohead.png', gambar: 'katalog/radiohead.jpg', video: 'katalog/radiohead.mp4',
+    spek: '55 mm · akrilik bening · cetak 2 sisi',
+    deskripsi: 'Logo beruang Radiohead, hitam tegas di akrilik bening.',
+    desain: { material: 'clear', warna: '#ffffff', border: 12, ukuran: 55 }
   },
   {
-    id: 'tag', nama: 'Backstage Pass', kategori: 'akrilik', preset: 'tag', harga: null,
-    gambar: 'katalog/tag.jpg', spek: '60 mm · tebal 4 mm · glossy',
-    deskripsi: 'Tag ala kartu backstage: CREW, VIP, nama, atau tanggal konser.'
+    id: 'club', nama: 'Club', harga: null,
+    aset: 'katalog/aset/club.png', gambar: 'katalog/club.jpg', video: 'katalog/club.mp4',
+    spek: '60 mm · akrilik bening · cetak 2 sisi',
+    deskripsi: 'Tulisan "Club" biru gaya script.',
+    desain: { material: 'clear', warna: '#ffffff', border: 14 }
   },
   {
-    id: 'bintang', nama: 'Rockstar Metalik', kategori: 'metal', preset: 'bintang', harga: null,
-    gambar: 'katalog/bintang.jpg', spek: '60 mm · tebal 4 mm · metalik',
-    deskripsi: 'Bintang finishing metalik dengan tulisan timbul.'
-  },
-  {
-    id: 'hati', nama: 'Love Rock', kategori: 'akrilik', preset: 'hati', harga: null,
-    gambar: 'katalog/hati.jpg', spek: '60 mm · tebal 4 mm · glossy',
-    deskripsi: 'Hati merah dengan tulisan timbul, buat kamu yang cinta musik keras.'
-  },
-  {
-    id: 'bulat', nama: 'Encore Badge', kategori: 'akrilik', preset: 'bulat', harga: null,
-    gambar: 'katalog/bulat.jpg', spek: '60 mm · tebal 4 mm · glossy',
-    deskripsi: 'Akrilik bulat hitam glossy, cocok untuk nama lagu, setlist, atau tanggal gig.'
-  },
-  {
-    id: 'bundle', nama: 'Bundle Personel Band (4 pcs)', kategori: 'bundle', preset: 'bundle', harga: null, badge: 'Bundle',
-    gambar: 'katalog/bundle.jpg', spek: '4 gantungan · 1 ring',
-    deskripsi: 'Satu ring isi 4: VOX, GTR, BASS, DRUM. Bisa diganti nama personel bandmu.'
+    id: 'the1975', nama: 'The 1975', harga: null,
+    aset: 'katalog/aset/the1975.png', gambar: 'katalog/the1975.jpg', video: 'katalog/the1975.mp4',
+    spek: '70 mm · akrilik bening · cetak 2 sisi',
+    deskripsi: 'Logo THE1975 biru navy, bentuk memanjang.',
+    desain: { material: 'clear', warna: '#ffffff', border: 16, ukuran: 70 }
   }
 ];
 
@@ -63,5 +67,6 @@ window.SHOP_UTIL = {
   igDmUrl: () => `https://ig.me/m/${SHOP.instagram}`,
   waUrl: text => SHOP.whatsapp ? `https://wa.me/${SHOP.whatsapp}?text=${encodeURIComponent(text || '')}` : '',
   harga: h => (typeof h === 'number' ? 'Rp' + h.toLocaleString('id-ID') : 'Harga via DM'),
-  produk: id => KATALOG.find(p => p.id === id)
+  produk: id => KATALOG.find(p => p.id === id),
+  eventTeks: () => `${SHOP.event.nama}, ${SHOP.event.lokasi}, ${SHOP.event.hari}, ${SHOP.event.jam}`
 };

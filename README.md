@@ -2,21 +2,22 @@
 
 Web merch band untuk **Toko Aksesoris Persahabatan**: preview 3D gantungan kunci interaktif ([Three.js](https://threejs.org/)), katalog, dan form pre-order. Tema gelap ala poster band (merah, hitam, krem). Website statis, tidak perlu build atau install apa pun.
 
-| Pick Gitar | Logo Band Custom | Chrome + Emas Timbul |
-|---|---|---|
-| ![Pick gitar](katalog/pick.jpg) | ![Logo band](katalog/custom.jpg) | ![Chrome + emas](katalog/chrome-emas.jpg) |
+| Feast | Bunny Skate | Radiohead Bear | Club | The 1975 |
+|---|---|---|---|---|
+| ![Feast](katalog/feast.jpg) | ![Bunny](katalog/bunny.jpg) | ![Radiohead](katalog/radiohead.jpg) | ![Club](katalog/club.jpg) | ![The 1975](katalog/the1975.jpg) |
 
 ## Fitur
 - Rantai yang berayun dengan fisika pendulum sederhana, plus bandul yang ikut berputar
 - Goyang otomatis, tombol **Goyangkan!**, atau klik langsung gantungannya
 - Tulisan custom yang timbul di kedua sisi bandul
 - 5 bentuk: **Pick Gitar**, Hati, Bintang, Tag, Bulat
-- 4 material: Akrilik Glossy, Akrilik Bening, Metalik, Doff
+- 3 material: Akrilik Glossy, Akrilik Bening, Doff
 - Pilihan warna siap pakai dan color picker
 - **Ukuran asli (mm)** dan **ketebalan akrilik (1–15 mm)**. Tebal di preview 3D proporsional dengan ukuran aslinya.
 - Kamera bisa diputar (drag) dan di-zoom (scroll)
 
 ### Asset custom
+- Tulisan tetap bisa ditambahkan di atas artwork (ukuran, posisi atas/tengah/bawah, warna).
 <img src="docs/custom.png" alt="Asset custom" width="560" />
 
 Upload (atau drag & drop) logo/artwork kamu, lalu bentuk akriliknya otomatis **mengikuti outline gambar**:
@@ -37,15 +38,10 @@ Upload (atau drag & drop) logo/artwork kamu, lalu bentuk akriliknya otomatis **m
 - **Tabrakan antar gantungan (solid)**: tiap akrilik diperlakukan sebagai pelat padat (outline + ketebalan aslinya), jadi gantungan saling menahan dan memantul sedikit, tidak saling tembus. Bisa dimatikan lewat checkbox kalau perangkat terasa berat.
 - Export GLB berisi seluruh stack. Export SVG cut line berisi gantungan yang sedang dipilih (satu potongan akrilik)
 
-### Gaya Chrome + Emas (studio)
-- Material **Chrome + Emas Timbul**: badan chrome, dan bagian artwork yang dipilih (terang, gelap, atau semua) jadi timbul emas
-- **Latar Studio**: background hitam, rim light, dan efek glow (bloom)
-- Tombol **Preset Chrome + Emas** untuk mengaktifkan semuanya sekaligus
-
 ### Halaman Review
 <img src="docs/review.png" alt="Halaman Review" width="420" />
 
-Klik **Buka Halaman Review** (atau buka `index.html#review`). Hasilnya tampilan layar penuh tanpa panel editor:
+Klik **Buka Halaman Review** (atau buka `desain.html#review`). Hasilnya tampilan layar penuh tanpa panel editor:
 - **Tarik gantungan** untuk mengayun, **drag latar** untuk memutar kamera, scroll/pinch untuk zoom
 - Putar otomatis 360°, Goyang, Ganti pencahayaan, Foto PNG
 - **Rekam bebas**: tekan untuk mulai dan tekan lagi untuk berhenti (maks. 60 detik). Video langsung terunduh sebagai `.webm`
@@ -66,20 +62,26 @@ Klik **Buka Halaman Review** (atau buka `index.html#review`). Hasilnya tampilan 
 ## Halaman toko
 | Halaman | Isi |
 |---|---|
-| `katalog.html` | Daftar produk dengan filter kategori, tombol **Coba 3D** (buka editor dengan preset produk) dan **Pre-order** |
-| `index.html` | Editor 3D. Tombol **Pre-order desain ini** membawa desain (ringkasan + gambar) ke form pre-order |
-| `preorder.html` | Form pre-order dengan validasi, ringkasan pesanan, lalu **Salin & kirim via DM Instagram** (atau WhatsApp kalau nomornya diisi) |
+| `index.html` | **Katalog (halaman utama)**: produk dengan video preview 360°, info booth Bifest, tombol **Coba 3D** dan **Pre-order** |
+| `desain.html` | Editor 3D. `desain.html?produk=<id>` membuka produk katalog. Tombol **Pre-order desain ini** membawa desain ke form pre-order |
+| `preorder.html` | Form pre-order + ringkasan, dikirim via DM Instagram (atau WhatsApp). **Tanpa pengiriman**: semua pesanan diambil di booth Bifest |
 
-<img src="docs/katalog.png" alt="Katalog" width="560" /> <img src="docs/mobile-editor.png" alt="Editor di HP" width="150" /> <img src="docs/mobile-preorder.png" alt="Pre-order di HP" width="150" />
+<img src="docs/katalog.png" alt="Katalog" width="560" />
 
-Semua halaman punya menu atas dan link ke Instagram [@toko.aksesoris.persahabatan](https://www.instagram.com/toko.aksesoris.persahabatan/).
+**Mengatur toko:** edit `assets/shop.js`: nama toko, Instagram, WhatsApp (opsional), info event/booth, dan daftar produk (nama, harga, aset logo, gambar, video, tampilan awal di editor). Harga `null` tampil "Harga via DM".
 
-**Mengatur toko:** edit `assets/shop.js`, berisi nama toko, username Instagram, nomor WhatsApp (opsional), catatan pre-order, dan daftar produk (nama, harga, spek, gambar, preset 3D). Harga `null` akan tampil sebagai "Harga via DM". Gambar produk ada di folder `katalog/`.
+**Aset produk:** taruh logo di `katalog/aset/<id>.png` (PNG transparan paling rapi, latar putih polos juga bisa).
 
-**Tampilan HP:** panel editor menjadi *bottom sheet* yang bisa dibuka/tutup (tap judul atau tombol panah), kamera otomatis menyesuaikan layar portrait, dan halaman Review memakai toolbar & panel pengaturan yang lebih ringkas.
+**Membuat ulang poster + video 360°** (setelah mengganti aset atau menambah produk):
+```bash
+npm i -D playwright && npx playwright install chromium   # sekali saja
+python3 -m http.server 8765                              # di folder repo, biarkan jalan
+FFMPEG=ffmpeg node tools/render-katalog.cjs              # semua produk, atau: ... render-katalog.cjs feast,club
+```
+Hasilnya `katalog/<id>.jpg` (poster), `katalog/<id>.mp4` (H.264, untuk iPhone/Safari) dan `katalog/<id>.webm` (cadangan). Video diputar otomatis tanpa suara hanya saat kartunya terlihat.
 
 ## Cara menjalankan
-Buka `index.html` di browser modern (Chrome, Edge, Firefox, Safari). Perlu koneksi internet karena Three.js dimuat dari CDN.
+Buka `index.html` (katalog) di browser modern (Chrome, Edge, Firefox, Safari). Perlu koneksi internet karena Three.js dimuat dari CDN.
 
 Bisa juga lewat server lokal:
 

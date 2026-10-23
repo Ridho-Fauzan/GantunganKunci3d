@@ -13,10 +13,10 @@
 </head>
 <body>
 <header class="topnav">
-  <a class="brand" href="katalog.html"><span class="shopName"></span></a>
+  <a class="brand" href="index.html"><span class="shopName"></span></a>
   <nav>
-    <a href="katalog.html">Katalog</a>
-    <a href="index.html">Desain 3D</a>
+    <a href="index.html">Katalog</a>
+    <a href="desain.html">Desain 3D</a>
     <a href="preorder.html" class="active">Pre-order</a>
     <a class="ig igLink" target="_blank" rel="noopener" aria-label="Instagram">
       <svg class="ig-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor"/></svg>
@@ -29,7 +29,7 @@
   <section class="hero">
     <div class="kicker">get on the list</div>
     <h1>Pre-order</h1>
-    <p>Isi form di bawah, lalu kirim ringkasan pesananmu ke DM Instagram kami untuk konfirmasi harga &amp; pembayaran.</p>
+    <p>Isi form di bawah, lalu kirim ringkasan pesananmu ke DM Instagram kami untuk konfirmasi harga &amp; pembayaran. Semua pesanan diambil di booth Bifest.</p>
   </section>
 
   <div class="po">
@@ -65,7 +65,7 @@
               <strong>Desain tersimpan</strong> <span class="hint" id="designTime"></span>
               <ul id="designList"></ul>
               <div class="btn-row" style="margin-top:8px">
-                <a class="btn ghost" href="index.html" style="min-height:36px;padding:6px 10px">Ubah</a>
+                <a class="btn ghost" href="desain.html" style="min-height:36px;padding:6px 10px">Ubah</a>
                 <button type="button" class="btn ghost" id="designRemove" style="min-height:36px;padding:6px 10px">Lepas</button>
               </div>
             </div>
@@ -114,25 +114,14 @@
       </fieldset>
 
       <fieldset>
-        <legend>Pengiriman</legend>
-        <div class="field">
-          <div class="radio-row">
-            <label><input type="radio" name="kirim" value="Dikirim" checked /> Dikirim</label>
-            <label><input type="radio" name="kirim" value="Ambil sendiri / COD" /> Ambil / COD</label>
-          </div>
+        <legend>Pengambilan</legend>
+        <div class="pickup">
+          <strong>Ambil di booth, tanpa pengiriman</strong>
+          <span class="js-event"></span>
         </div>
-        <div class="field" id="alamatField">
-          <label for="alamat">Alamat lengkap <span class="req">*</span></label>
-          <textarea id="alamat" name="alamat" autocomplete="street-address" placeholder="Jalan, no. rumah, kelurahan, kecamatan, kota, kode pos"></textarea>
-          <div class="err">Alamat wajib diisi untuk pengiriman.</div>
-        </div>
-        <div class="field">
-          <label for="tanggal">Dibutuhkan sebelum (opsional)</label>
-          <input id="tanggal" name="tanggal" type="date" />
-        </div>
-        <div class="field">
+        <div class="field" style="margin-top:12px">
           <label for="catatan">Catatan</label>
-          <textarea id="catatan" name="catatan" placeholder="Detail lain: font, logo, tanggal gig, posisi lubang, dll."></textarea>
+          <textarea id="catatan" name="catatan" placeholder="Detail lain: tulisan tambahan, ukuran, posisi lubang, dll."></textarea>
         </div>
       </fieldset>
 
@@ -151,7 +140,7 @@
       <ol class="steps">
         <li>Klik <b>Salin &amp; kirim via DM Instagram</b>. Ringkasan otomatis tersalin.</li>
         <li>Di DM, tempel (paste) ringkasannya<span id="stepImg">, lalu lampirkan gambar desain yang sudah diunduh</span>.</li>
-        <li>Admin membalas dengan harga, ongkir &amp; cara bayar.</li>
+        <li>Admin membalas dengan harga &amp; cara bayar. Pesanan diambil di booth Bifest.</li>
       </ol>
     </aside>
   </div>
@@ -169,6 +158,7 @@
   document.querySelectorAll('.igLink').forEach(a => a.href = SHOP_UTIL.igUrl());
   document.querySelectorAll('.igHandle').forEach(a => a.textContent = '@' + SHOP.instagram);
   $('poNote').textContent = SHOP.catatanPO;
+  document.querySelectorAll('.js-event').forEach(e => e.textContent = SHOP_UTIL.eventTeks());
 
   // ---- Product list (+ "design from editor" option) ----
   const sel = $('produk');
@@ -232,7 +222,6 @@
   }
 
   // ---- Validation ----
-  const kirimVal = () => form.elements.kirim.value;
   function validate(showErrors) {
     let ok = true;
     const check = (id, valid) => {
@@ -246,8 +235,6 @@
     check('hp', !hp || (hp.length >= 8 && hp.length <= 15));
     check('produk', !!sel.value);
     check('jumlah', +$('jumlah').value >= 1);
-    if (kirimVal() === 'Dikirim') check('alamat', $('alamat').value.trim().length > 5);
-    else $('alamat').closest('.field').classList.remove('invalid');
     return ok;
   }
 
@@ -270,16 +257,13 @@
     lines.push(`• Ukuran: ${v('ukuran')} · Tebal: ${v('tebal')} · Cetak: ${v('sisi')}`);
     if (v('teks')) lines.push(`• Tulisan: ${v('teks')}`);
     if (v('warna')) lines.push(`• Warna: ${v('warna')}`);
-    lines.push('', `Pengiriman: ${kirimVal()}`);
-    if (kirimVal() === 'Dikirim' && v('alamat')) lines.push(`Alamat: ${v('alamat')}`);
-    if (v('tanggal')) lines.push(`Dibutuhkan sebelum: ${new Date(v('tanggal') + 'T00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}`);
+    lines.push('', `Pengambilan: di booth ${SHOP_UTIL.eventTeks()}`);
     if (v('catatan')) lines.push('', `Catatan: ${v('catatan')}`);
     if (sel.value === DESIGN_OPT && design) lines.push('', '(Gambar desain saya lampirkan di chat ini)');
     return lines.join('\n');
   }
 
   function update() {
-    $('alamatField').hidden = kirimVal() !== 'Dikirim';
     const text = summaryText();
     $('summaryText').textContent = text;
     const wa = SHOP_UTIL.waUrl(text);
@@ -287,7 +271,6 @@
     if (wa) $('sendWa').href = wa;
     const draft = {};
     for (const el of form.elements) if (el.name && el.type !== 'radio') draft[el.name] = el.value;
-    draft.kirim = kirimVal();
     localStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
   }
   form.addEventListener('input', () => { update(); if (form.dataset.tried) validate(true); });
