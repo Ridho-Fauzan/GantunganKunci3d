@@ -1,4 +1,6 @@
-# Band Keychain 3D
+# Friendship KeyChain
+
+**Live:** https://friendshipmerch.vercel.app
 
 Web merch band untuk **Toko Aksesoris "Persahabatan"**: preview 3D gantungan kunci interaktif ([Three.js](https://threejs.org/)), katalog, dan form pre-order. Tema gelap ala poster band (merah, hitam, krem). Website statis, tidak perlu build atau install apa pun.
 
@@ -91,3 +93,13 @@ python3 -m http.server 8000
 ```
 
 Atau aktifkan **GitHub Pages** (Settings → Pages → Deploy from branch `main`, folder `/root`) supaya bisa diakses online di `https://ridho-fauzan.github.io/GantunganKunci3d/`.
+
+
+## Link, QR & preview sosial media
+- **Website:** https://friendshipmerch.vercel.app (hosting Vercel, auto-deploy dari branch `main`).
+- **QR code** (di folder `docs/`): `qr-poster.png` (poster siap cetak, ke katalog) dan `qr-preorder-poster.png` (langsung ke form pre-order). Versi tanpa teks: `qr-plain.png` / `qr-preorder-plain.png`. Tinggal cetak buat booth atau taruh di story.
+- **Preview sosmed (Open Graph):** `og-image.png` (1200x630) muncul saat link di-share di Instagram/WhatsApp/X. Judul & deskripsi diatur lewat meta tag di tiap halaman.
+- **Favicon & icon:** `favicon.svg`, `icon-180.png`, `icon-512.png`.
+- Semua di-generate dari `.kiro/artifacts/compose.py` + `make-assets.cjs` — jalankan ulang kalau ganti link atau desain.
+
+> Ganti link: cari `friendshipmerch.vercel.app` di `index.html`, `desain.html`, `preorder.html`, lalu generate ulang QR.
