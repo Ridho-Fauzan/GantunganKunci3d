@@ -363,18 +363,7 @@
   <div class="note" id="envStatus"></div>
   <label>Warna latar</label>
   <div class="swatches bgSwatches"></div>
-  <label for="finishSelect">Material</label>
-  <select id="finishSelect">
-    <option value="glossy">Akrilik Glossy</option>
-    <option value="clear">Akrilik Bening</option>
-    <option value="matte">Doff (Matte)</option>
-  </select>
-
-  <label for="sizeMm">Ukuran asli: tinggi/lebar maks. (mm)</label>
-  <input type="number" id="sizeMm" min="10" max="300" value="60" />
-  <label for="thickRange">Ketebalan akrilik <span class="val" id="thickVal"></span></label>
-  <input type="range" id="thickRange" min="1" max="15" step="0.5" value="4" />
-  <div class="note">Ketebalan umum akrilik: 2, 3, atau 5 mm. Proporsinya mengikuti ukuran asli di atas.</div>
+  <div class="note">Bahan: akrilik.</div>
 
   <label>Warna</label>
   <div class="swatches" id="swatches">
@@ -393,7 +382,7 @@
     <button id="pngBtn" class="secondary">Gambar (.png)</button>
   </div>
   <button id="svgBtn" class="secondary" style="width:100%;margin-top:8px">Cut line (.svg)</button>
-  <div class="note">SVG berisi garis potong merah (outline + lubang) dan artwork sesuai ukuran asli &amp; ketebalan di bagian Tampilan, siap dikirim ke vendor akrilik.</div>
+  <div class="note">SVG berisi garis potong merah (outline + lubang) dan artwork untuk akrilik, siap dikirim ke vendor.</div>
 </div>
 <div id="hint">Drag latar untuk memutar kamera • Scroll untuk zoom • Tarik gantungan untuk mengayun</div>
 
@@ -1444,7 +1433,7 @@ PRESETS.forEach(c => {
   d.onclick = () => setColor(c);
   swatches.insertBefore(d, $('colorPicker'));
 });
-function setFinish(f) { $('finishSelect').value = f; applyFinish(f); }
+function setFinish(f) { applyFinish(f); }
 
 function setShape(shape) {
   state.shape = shape;
@@ -1458,15 +1447,8 @@ function setShape(shape) {
 $('colorPicker').oninput = e => setColor(e.target.value);
 $('nameInput').oninput = e => { state.text = e.target.value; textChanged(); renderStack(); };
 $('shapeSelect').onchange = e => { setShape(e.target.value); renderStack(); impulse(0.6); };
-$('finishSelect').onchange = e => applyFinish(e.target.value);
 $('swingBtn').onclick = () => impulse(1);
 $('tiltCheck').onchange = e => { state.tilt = e.target.checked; buildCharm(); };
-function updateThickUI() { $('thickVal').textContent = state.thickMm.toFixed(1).replace('.0', '') + ' mm'; }
-$('thickRange').oninput = e => { state.thickMm = +e.target.value; updateThickUI(); buildCharm(); };
-$('sizeMm').oninput = e => {
-  const v = +e.target.value;
-  if (v >= 10 && v <= 300) { state.sizeMm = v; buildCharm(); }
-};
 // --- text options (all shapes; position only for custom assets) ---
 const TEXT_COLORS = ['#ffffff', '#111111', '#e11d2e', '#f5c400', '#0b2a8f', '#2fb5e8'];
 function syncTextUI() {
@@ -1510,11 +1492,8 @@ function syncUI() {
   $('assetStatus').textContent = custom.status;
   $('assetStatus').className = custom.statusCls;
   $('tiltCheck').checked = state.tilt;
-  $('finishSelect').value = state.finish;
   $('colorPicker').value = state.color;
   swatches.querySelectorAll('.swatch').forEach(s => s.classList.toggle('active', s.dataset.c === state.color));
-  $('thickRange').value = state.thickMm; updateThickUI();
-  $('sizeMm').value = state.sizeMm;
   $('linksRange').value = active.links; $('linksVal').textContent = active.links + ' mata';
   renderStack();
 }
@@ -2093,7 +2072,8 @@ if (isMobile()) setSheet(false);
 
 // Save a summary + thumbnail of the current design for preorder.html
 const SHAPE_LABELS = { heart: 'Hati', star: 'Bintang', tag: 'Tag', circle: 'Bulat', pick: 'Pick Gitar', custom: 'Custom logo' };
-function finishLabel(v) { return $('finishSelect').querySelector(`option[value="${v}"]`)?.textContent || v; }
+const FINISH_LABELS = { glossy: 'Akrilik Glossy', clear: 'Akrilik Bening', matte: 'Doff (Matte)' };
+function finishLabel(v) { return FINISH_LABELS[v] || 'Akrilik'; }
 function designThumb() {
   renderFrame();
   const src = renderer.domElement, H = src.height, W = Math.round(H * 0.8);
