@@ -8,16 +8,16 @@ window.SHOP = {
   tagline: 'Band Merch · Keychain Custom',
   instagram: 'toko.aksesoris.persahabatan',
   // Nomor WhatsApp format internasional tanpa "+" atau spasi, contoh: '6281234567890'.
-  // Kosongkan ('') kalau pesanan hanya lewat DM Instagram.
+  // >>> ISI nomor WhatsApp admin di sini sebelum buka PO. Pre-order dilakukan via WhatsApp. <<<
   whatsapp: '',
   // Pesanan TIDAK dikirim: semua pre-order diambil di booth saat event ini.
   event: {
     nama: 'Binus Festival (Bifest)',
     lokasi: 'Binus Anggrek, Lantai 1',
-    hari: 'Rabu, 26 November',
+    hari: '25 – 26 November 2026',
     jam: '09.00 – 17.00'
   },
-  catatanPO: 'Pre-order dikonfirmasi admin lewat DM. Pesanan hanya bisa diambil di booth saat Bifest, tidak ada pengiriman.'
+  catatanPO: 'Pre-order dikonfirmasi admin lewat WhatsApp. Pesanan hanya bisa diambil di booth saat Bifest, tidak ada pengiriman.'
 };
 
 // harga: angka dalam Rupiah (contoh 15000), atau null untuk "Harga via DM".
@@ -26,35 +26,35 @@ window.SHOP = {
 // desain: tampilan awal di editor 3D (desain.html?produk=<id>).
 window.KATALOG = [
   {
-    id: 'feast', nama: 'Feast', harga: null, badge: 'Best seller',
+    id: 'feast', nama: 'Feast', harga: 12000, badge: 'Best seller',
     aset: 'katalog/asetAsli/feast.png', gambar: 'katalog/feast.jpg', video: 'katalog/feast.mp4',
     spek: '60 mm · akrilik bening · cetak 2 sisi',
     deskripsi: 'Logo Feast, akrilik dipotong mengikuti outline logo.',
     desain: { material: 'clear', warna: '#ffffff', border: 12 }
   },
   {
-    id: 'bunny', nama: 'NewJeans Bunny', harga: null, badge: 'Cute',
+    id: 'bunny', nama: 'NewJeans Bunny', harga: 12000, badge: 'Cute',
     aset: 'katalog/asetAsli/new%20jeans%20bunny.png', gambar: 'katalog/bunny.jpg', video: 'katalog/bunny.mp4',
     spek: '60 mm · akrilik bening · cetak 2 sisi',
     deskripsi: 'Bunny NewJeans main sepatu roda, garis biru di akrilik bening.',
     desain: { material: 'clear', warna: '#ffffff', border: 14 }
   },
   {
-    id: 'radiohead', nama: 'Radiohead Bear', harga: null,
+    id: 'radiohead', nama: 'Radiohead Bear', harga: 12000,
     aset: 'katalog/asetAsli/RadioHead.png', gambar: 'katalog/radiohead.jpg', video: 'katalog/radiohead.mp4',
     spek: '55 mm · akrilik bening · cetak 2 sisi',
     deskripsi: 'Logo beruang Radiohead, hitam tegas di akrilik bening.',
     desain: { material: 'clear', warna: '#ffffff', border: 12, ukuran: 55 }
   },
   {
-    id: 'club', nama: 'Reality Club', harga: null,
+    id: 'club', nama: 'Reality Club', harga: 12000,
     aset: 'katalog/asetAsli/RealityClub.png', gambar: 'katalog/club.jpg', video: 'katalog/club.mp4',
     spek: '60 mm · akrilik bening · cetak 2 sisi',
     deskripsi: 'Logo Reality Club, tulisan script biru.',
     desain: { material: 'clear', warna: '#ffffff', border: 14 }
   },
   {
-    id: 'the1975', nama: 'The 1975', harga: null,
+    id: 'the1975', nama: 'The 1975', harga: 12000,
     aset: 'katalog/asetAsli/The1975.png', gambar: 'katalog/the1975.jpg', video: 'katalog/the1975.mp4',
     spek: '70 mm · akrilik bening · cetak 2 sisi',
     deskripsi: 'Logo THE1975 biru navy, bentuk memanjang.',

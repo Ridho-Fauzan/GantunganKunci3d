@@ -10,14 +10,14 @@
 <meta property="og:site_name" content="Friendship KeyChain" />
 <meta property="og:url" content="https://friendshipmerch.vercel.app/preorder.html" />
 <meta property="og:title" content="Pre-order - Friendship KeyChain" />
-<meta property="og:description" content="Form pre-order gantungan kunci. Dikirim via DM Instagram, diambil di booth Bifest." />
+<meta property="og:description" content="Form pre-order gantungan kunci. Konfirmasi via WhatsApp, diambil di booth Bifest." />
 <meta property="og:image" content="https://friendshipmerch.vercel.app/og-image.png" />
 <meta property="og:image:width" content="1200" />
 <meta property="og:image:height" content="630" />
 <meta property="og:image:alt" content="Friendship KeyChain - gantungan kunci akrilik band merch" />
 <meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content="Pre-order - Friendship KeyChain" />
-<meta name="twitter:description" content="Form pre-order gantungan kunci. Dikirim via DM Instagram, diambil di booth Bifest." />
+<meta name="twitter:description" content="Form pre-order gantungan kunci. Konfirmasi via WhatsApp, diambil di booth Bifest." />
 <meta name="twitter:image" content="https://friendshipmerch.vercel.app/og-image.png" />
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
 <link rel="apple-touch-icon" href="/icon-180.png" />
@@ -45,7 +45,7 @@
   <section class="hero">
     <div class="kicker">get on the list</div>
     <h1>Pre-order</h1>
-    <p>Isi form di bawah, lalu kirim ringkasan pesananmu ke DM Instagram kami untuk konfirmasi harga &amp; pembayaran. Semua pesanan diambil di booth Bifest.</p>
+    <p>Isi form di bawah, lalu kirim ringkasan pesananmu lewat WhatsApp kami untuk konfirmasi harga &amp; pembayaran. Semua pesanan diambil di booth Bifest.</p>
   </section>
 
   <div class="po">
@@ -99,25 +99,15 @@
             <div class="err">Jumlah minimal 1.</div>
           </div>
           <div class="field">
-            <label for="ukuran">Ukuran</label>
-            <select id="ukuran" name="ukuran">
-              <option>40 mm</option><option>50 mm</option><option selected>60 mm</option><option>70 mm</option><option>Ukuran lain (tulis di catatan)</option>
-            </select>
-          </div>
-        </div>
-        <div class="two">
-          <div class="field">
-            <label for="tebal">Ketebalan akrilik</label>
-            <select id="tebal" name="tebal">
-              <option>2 mm</option><option selected>3 mm</option><option>5 mm</option>
-            </select>
-          </div>
-          <div class="field">
             <label for="sisi">Cetak</label>
             <select id="sisi" name="sisi">
               <option>2 sisi</option><option>1 sisi</option>
             </select>
           </div>
+        </div>
+        <div class="field">
+          <label>Bahan</label>
+          <input type="text" value="Akrilik" readonly />
         </div>
         <div class="field">
           <label for="teks">Tulisan / nama di gantungan</label>
@@ -149,13 +139,13 @@
       <h2>Ringkasan pesanan</h2>
       <p class="hint">Ringkasan ini yang dikirim ke admin. Belum ada pembayaran di sini.</p>
       <pre id="summaryText"></pre>
-      <button type="button" class="btn" id="sendIg">Salin &amp; kirim via DM Instagram</button>
-      <a class="btn secondary" id="sendWa" target="_blank" rel="noopener" hidden>Kirim via WhatsApp</a>
+      <a class="btn" id="sendWa" target="_blank" rel="noopener" hidden>Kirim via WhatsApp</a>
+      <button type="button" class="btn secondary" id="sendIg">Kirim via DM Instagram</button>
       <button type="button" class="btn secondary" id="copyBtn">Salin ringkasan</button>
       <button type="button" class="btn ghost" id="dlDesign" hidden>Unduh gambar desain</button>
       <ol class="steps">
-        <li>Klik <b>Salin &amp; kirim via DM Instagram</b>. Ringkasan otomatis tersalin.</li>
-        <li>Di DM, tempel (paste) ringkasannya<span id="stepImg">, lalu lampirkan gambar desain yang sudah diunduh</span>.</li>
+        <li>Klik <b>Kirim via WhatsApp</b>. Ringkasan otomatis terisi di chat (dan tersalin sebagai cadangan).</li>
+        <li>Kirim pesannya ke admin<span id="stepImg">, lalu lampirkan gambar desain yang sudah diunduh</span>.</li>
         <li>Admin membalas dengan harga &amp; cara bayar. Pesanan diambil di booth Bifest.</li>
       </ol>
     </aside>
@@ -199,7 +189,7 @@
     const ul = $('designList'); ul.textContent = '';
     design.items.forEach((it, i) => {
       const li = document.createElement('li');
-      li.textContent = `${design.items.length > 1 ? `#${i + 1} ` : ''}${it.bentuk}${it.tulisan ? ` "${it.tulisan}"` : ''} · ${it.material} · ${it.ukuran} mm · tebal ${it.tebal} mm`;
+      li.textContent = `${design.items.length > 1 ? `#${i + 1} ` : ''}${it.bentuk}${it.tulisan ? ` "${it.tulisan}"` : ''} · akrilik`;
       ul.append(li);
     });
   }
@@ -228,11 +218,6 @@
   if (params.get('produk') && SHOP_UTIL.produk(params.get('produk'))) sel.value = params.get('produk');
   if (params.get('dari') === 'editor' && design) {
     sel.value = DESIGN_OPT;
-    const first = design.items[0];
-    const nearest = ['2 mm', '3 mm', '5 mm'].reduce((a, b) => Math.abs(parseFloat(b) - first.tebal) < Math.abs(parseFloat(a) - first.tebal) ? b : a);
-    $('tebal').value = nearest;
-    const uk = ['40 mm', '50 mm', '60 mm', '70 mm'].find(u => parseFloat(u) === first.ukuran);
-    $('ukuran').value = uk || 'Ukuran lain (tulis di catatan)';
     const texts = design.items.map(i => i.tulisan).filter(Boolean);
     if (texts.length && !$('teks').value) $('teks').value = texts.join(', ');
   }
@@ -265,12 +250,12 @@
     lines.push('', 'PESANAN');
     if (sel.value === DESIGN_OPT && design) {
       lines.push('• Produk: Desain custom dari editor 3D');
-      design.items.forEach((it, i) => lines.push(`   ${design.items.length > 1 ? `#${i + 1}` : '-'} ${it.bentuk}${it.tulisan ? ` "${it.tulisan}"` : ''}${it.asset ? ` (file: ${it.asset})` : ''}, ${it.material}, warna ${it.warna}`));
+      design.items.forEach((it, i) => lines.push(`   ${design.items.length > 1 ? `#${i + 1}` : '-'} ${it.bentuk}${it.tulisan ? ` "${it.tulisan}"` : ''}${it.asset ? ` (file: ${it.asset})` : ''}, akrilik, warna ${it.warna}`));
     } else {
       lines.push(`• Produk: ${p ? p.nama : '-'}`);
     }
     lines.push(`• Jumlah: ${v('jumlah') || '-'}`);
-    lines.push(`• Ukuran: ${v('ukuran')} · Tebal: ${v('tebal')} · Cetak: ${v('sisi')}`);
+    lines.push(`• Bahan: Akrilik · Cetak: ${v('sisi')}`);
     if (v('teks')) lines.push(`• Tulisan: ${v('teks')}`);
     if (v('warna')) lines.push(`• Warna: ${v('warna')}`);
     lines.push('', `Pengambilan: di booth ${SHOP_UTIL.eventTeks()}`);
@@ -317,7 +302,7 @@
     if (!requireValid()) return;
     update();
     $('summary').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    toast('Ringkasan siap. Kirim ke DM Instagram ya!');
+    toast('Ringkasan siap. Kirim via WhatsApp ya!');
   });
   $('sendIg').onclick = async () => {
     if (!requireValid()) return;
@@ -325,7 +310,11 @@
     toast(ok ? 'Ringkasan tersalin. Tempel di DM Instagram.' : 'Gagal menyalin otomatis, salin manual dari kotak ringkasan.');
     window.open(SHOP_UTIL.igDmUrl(), '_blank', 'noopener');
   };
-  $('sendWa').addEventListener('click', e => { if (!requireValid()) e.preventDefault(); });
+  $('sendWa').addEventListener('click', async e => {
+    if (!requireValid()) { e.preventDefault(); return; }
+    const ok = await copy(summaryText());
+    toast(ok ? 'Ringkasan juga tersalin sebagai cadangan.' : 'Ringkasan dikirim ke WhatsApp.');
+  });
   $('copyBtn').onclick = async () => toast((await copy(summaryText())) ? 'Ringkasan tersalin.' : 'Gagal menyalin, salin manual ya.');
   update();
 </script>
