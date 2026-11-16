@@ -152,5 +152,7 @@
   $('detailClose').addEventListener('keydown', e => {
     if (e.key === 'Escape') closeDetail();
   });
-  refresh();
+  client.auth.getSession().then(({ data }) => {
+    if (data.session) refresh();
+  });
 })();
