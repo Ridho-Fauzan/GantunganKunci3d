@@ -1,44 +1,30 @@
 <!DOCTYPE html>
-<html lang="id">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-<title>Admin - Friendship KeyChain</title>
-<meta name="robots" content="noindex, nofollow" />
-<meta name="theme-color" content="#0d0d10" />
-<link rel="stylesheet" href="assets/site.css" />
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;800&family=Permanent+Marker&display=swap" />
+<html lang="id"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin Dashboard - Friendship KeyChain</title><meta name="robots" content="noindex,nofollow">
+<link rel="stylesheet" href="assets/site.css">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;800&family=Permanent+Marker&display=swap" rel="stylesheet">
 <style>
-.admin-wrap{max-width:900px;margin:7vh auto;padding:24px 16px}
-.admin-panel{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:24px;box-shadow:6px 6px 0 #000}
-.admin-panel h1{font:400 clamp(40px,8vw,64px)/.95 var(--display);margin:0 0 10px;text-shadow:3px 3px 0 var(--red)}
-.admin-panel p{color:var(--muted)}
-.admin-top{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:26px}
-.admin-top .account{font-size:13px;color:var(--muted);overflow-wrap:anywhere}
-.admin-notice{border:1px dashed var(--red);background:#211216;padding:16px;border-radius:6px;color:var(--paper)}
-#adminPage[hidden]{display:none}
-</style>
-</head>
-<body>
+.admin-wrap{max-width:1180px;margin:auto;padding:28px 16px 60px}.admin-top,.admin-heading{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:24px}.account{font-size:12px;color:var(--muted)}.admin-heading h1{font:400 clamp(42px,8vw,68px)/.95 var(--display);margin:0;text-shadow:3px 3px 0 var(--red)}.admin-heading p{color:var(--muted)}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:20px 0}.stat,.orders-panel,.detail-card{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:18px;box-shadow:4px 4px 0 #000}.stat span{display:block;color:var(--muted);font-size:12px}.stat strong{display:block;font:400 38px var(--display);margin-top:8px}.orders-toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}.orders-toolbar input,.orders-toolbar select,.detail-actions select{background:var(--field);color:var(--paper);border:1px solid var(--line);border-radius:6px;padding:11px;font:inherit;min-height:42px}.orders-toolbar input{flex:1;min-width:180px}.table-scroll{overflow-x:auto}table{width:100%;border-collapse:collapse;min-width:740px;text-align:left}th,td{padding:12px 9px;border-bottom:1px solid var(--line);font-size:13px}th{color:var(--muted);font-size:11px;text-transform:uppercase}td small{display:block;color:var(--muted)}.order-code{background:none;border:0;color:var(--red-hi);font-weight:800;cursor:pointer}.status{display:inline-block;border:1px solid var(--line);border-radius:20px;padding:4px 9px;font-size:11px}.status.new{color:#ffd18a}.status.confirmed{color:#a9d7ff}.status.processing{color:#d5c0ff}.status.completed{color:#a8e6bb}.status.cancelled{color:#ffb4b4}.btn-small{background:#29272e;color:var(--paper);border:1px solid var(--line);border-radius:5px;padding:7px 10px;cursor:pointer}.notice{padding:12px;border:1px solid var(--line);border-radius:6px;color:var(--muted);font-size:13px;margin:12px 0}.notice[data-type=error]{color:#ffd9dc;border-color:#8e3039;background:#2a1216}.notice[hidden],#adminPage[hidden],#detailDialog[hidden]{display:none}#detailDialog{position:fixed;inset:0;z-index:50;background:#000b;display:grid;place-items:center;padding:16px;overflow:auto}.detail-card{width:min(680px,100%);max-height:90vh;overflow:auto}.detail-head,.detail-actions{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.detail-head h2{font:400 32px var(--display);margin:0}.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0}.detail-item span{display:block;color:var(--muted);font-size:11px;text-transform:uppercase}.detail-item strong{display:block;font-size:14px;overflow-wrap:anywhere}.detail-summary{white-space:pre-wrap;background:#111;padding:14px;border-radius:6px;font:12px/1.6 monospace;max-height:220px;overflow:auto}.detail-actions select{flex:1}.empty{padding:30px;text-align:center;color:var(--muted)}
+@media(max-width:650px){.stats{grid-template-columns:repeat(2,1fr)}.detail-grid{grid-template-columns:1fr}}
+</style></head><body>
 <main class="admin-wrap" id="adminPage" hidden>
-  <div class="admin-top">
-    <a class="brand" href="index.html">Friendship KeyChain</a>
-    <button class="btn ghost" id="adminLogout" type="button">Keluar</button>
-  </div>
-  <section class="admin-panel">
-    <div class="kicker">private area · admin</div>
-    <h1>Welcome back.</h1>
-    <p>Login sebagai <strong id="adminAccount"></strong></p>
-    <div class="admin-notice">
-      <strong>Autentikasi admin berhasil.</strong>
-      <p>Area admin sudah terlindungi. Dashboard pesanan, pengelolaan produk, dan fitur operasional belum dibuat pada tahap ini.</p>
-    </div>
-  </section>
-</main>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="assets/supabase-config.js"></script>
-<script src="assets/admin-auth.js"></script>
-</body>
-</html>
+<header class="admin-top"><a class="brand" href="index.html">Friendship KeyChain</a><div><span class="account" id="adminAccount"></span> <button class="btn ghost" id="adminLogout" type="button">Keluar</button></div></header>
+<section id="adminDashboard">
+<div class="admin-heading"><div><div class="kicker">private area · admin</div><h1>Order Desk.</h1><p>Kelola pre-order Friendship KeyChain.</p></div><button class="btn" id="refreshOrders" type="button">Refresh pesanan</button></div>
+<div class="stats">
+<article class="stat"><span>Total pesanan</span><strong id="statTotal">—</strong></article><article class="stat"><span>Pesanan baru</span><strong id="statNew">—</strong></article><article class="stat"><span>Dalam proses</span><strong id="statProcessing">—</strong></article><article class="stat"><span>Selesai</span><strong id="statCompleted">—</strong></article>
+</div>
+<section class="orders-panel"><div class="orders-toolbar"><input id="orderSearch" type="search" placeholder="Cari nama, Instagram, produk, atau kode..." aria-label="Cari pesanan"><select id="statusFilter" aria-label="Filter status"><option value="">Semua status</option><option value="new">Baru</option><option value="confirmed">Dikonfirmasi</option><option value="processing">Diproses</option><option value="completed">Selesai</option><option value="cancelled">Dibatalkan</option></select></div>
+<div class="notice" id="dashboardMessage" role="status" aria-live="polite" hidden></div><div class="table-scroll"><table id="ordersTable" hidden><thead><tr><th>Tanggal</th><th>Kode</th><th>Pemesan</th><th>Produk</th><th>Qty</th><th>Status</th><th></th></tr></thead><tbody id="ordersBody"></tbody></table></div><div class="empty" id="emptyOrders" hidden>Belum ada pesanan yang cocok.</div><small id="resultCount" style="color:var(--muted)"></small>
+</section></section></main>
+<div id="detailDialog" hidden aria-hidden="true" role="dialog" aria-modal="true"><section class="detail-card">
+<div class="detail-head"><div><div class="kicker">order detail</div><h2 id="detailCode">ORDER</h2><small id="detailDate"></small></div><button class="btn ghost" id="detailClose" type="button">Tutup</button></div>
+<div class="detail-grid">
+<div class="detail-item"><span>Nama</span><strong id="detailName"></strong></div><div class="detail-item"><span>Instagram</span><strong id="detailInstagram"></strong></div><div class="detail-item"><span>WhatsApp</span><strong id="detailWhatsapp"></strong></div><div class="detail-item"><span>Produk</span><strong id="detailProduct"></strong></div><div class="detail-item"><span>Jumlah</span><strong id="detailQuantity"></strong></div><div class="detail-item"><span>Cetak</span><strong id="detailSides"></strong></div><div class="detail-item"><span>Tulisan</span><strong id="detailCustomText"></strong></div><div class="detail-item"><span>Warna</span><strong id="detailColor"></strong></div><div class="detail-item" style="grid-column:1/-1"><span>Catatan</span><strong id="detailNotes"></strong></div>
+</div><span style="font-size:11px;color:var(--muted)">RINGKASAN PELANGGAN</span><pre class="detail-summary" id="detailSummary"></pre>
+<div class="detail-actions"><select id="detailStatus" aria-label="Ubah status"><option value="new">Baru</option><option value="confirmed">Dikonfirmasi</option><option value="processing">Diproses</option><option value="completed">Selesai</option><option value="cancelled">Dibatalkan</option></select><button class="btn" id="detailSave" type="button">Simpan status</button></div><p class="notice" id="detailError" role="alert" hidden></p>
+</section></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="assets/supabase-config.js"></script><script src="assets/admin-auth.js"></script><script src="assets/admin-dashboard.js"></script>
+</body></html>
