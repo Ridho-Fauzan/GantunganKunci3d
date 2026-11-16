@@ -2091,13 +2091,20 @@ function orderDesign() {
     bentuk: SHAPE_LABELS[c.state.shape] || c.state.shape,
     tulisan: c.state.text.trim(),
     asset: c.state.shape === 'custom' ? c.custom.name : '',
+    // Save the processed artwork, not a screenshot of the 3D viewport.
+    artwork: c.def?.art?.canvas ? c.def.art.canvas.toDataURL('image/png') : '',
     material: finishLabel(c.state.finish), warna: c.state.color,
     ukuran: c.state.sizeMm, tebal: c.state.thickMm
   }));
   const data = { items, at: Date.now(), thumb: '' };
   try { data.thumb = designThumb(); } catch (e) { console.warn(e); }
   try { localStorage.setItem('gk_design', JSON.stringify(data)); }
-  catch { data.thumb = ''; localStorage.setItem('gk_design', JSON.stringify(data)); } // storage full: drop the image
+  catch {
+    // Keep the production artwork; only the optional 3D screenshot is discarded.
+    data.thumb = '';
+    try { localStorage.setItem('gk_design', JSON.stringify(data)); }
+    catch { alert('Data desain terlalu besar untuk disimpan browser. Coba gunakan gambar yang lebih kecil.'); return; }
+  }
   location.href = 'preorder.html?dari=editor';
 }
 $('orderBtn').onclick = orderDesign;
