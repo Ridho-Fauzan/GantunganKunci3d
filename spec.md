@@ -182,6 +182,8 @@ The shared source of truth is `assets/shop.js`.
 - `public.admin_users` is the admin allowlist. Row Level Security permits authenticated users to read only their own admin row; adding/removing admins is done manually in the Supabase SQL Editor using `supabase/admin-setup.sql`.
 - `public.orders` stores preorder details and a status (`new`, `confirmed`, `processing`, `completed`, `cancelled`). Run `supabase/orders-setup.sql` to create it.
 - Anonymous visitors may insert a new preorder only. They cannot select or update orders. Authenticated users listed in `admin_users` may select and update orders; no browser delete policy is provided.
+- WhatsApp is required and validated as an 8–15 digit phone number on the preorder form. Instagram username is optional and is stored as null when omitted.
+- For custom 3D designs, store each pendant's processed artwork canvas separately from the 3D viewport screenshot in the order's JSONB design payload. The admin order detail displays the actual processed artwork.
 - `assets/order-storage.js` writes the preorder only when the customer chooses the WhatsApp or Instagram hand-off. The initial status is `new`; it is not proof of payment or admin confirmation.
 - `admin.html` is the protected order dashboard; `assets/admin-dashboard.js` handles stats, search, filters, order details, and status updates.
 - The publishable key is public by design. Never expose Supabase `service_role` or secret keys in frontend code or source control.
