@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Admin - Friendship KeyChain</title>
+<meta name="robots" content="noindex, nofollow" />
+<meta name="theme-color" content="#0d0d10" />
+<link rel="stylesheet" href="assets/site.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;800&family=Permanent+Marker&display=swap" />
+<style>
+.admin-wrap{max-width:900px;margin:7vh auto;padding:24px 16px}
+.admin-panel{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:24px;box-shadow:6px 6px 0 #000}
+.admin-panel h1{font:400 clamp(40px,8vw,64px)/.95 var(--display);margin:0 0 10px;text-shadow:3px 3px 0 var(--red)}
+.admin-panel p{color:var(--muted)}
+.admin-top{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;margin-bottom:26px}
+.admin-top .account{font-size:13px;color:var(--muted);overflow-wrap:anywhere}
+.admin-notice{border:1px dashed var(--red);background:#211216;padding:16px;border-radius:6px;color:var(--paper)}
+#adminPage[hidden]{display:none}
+</style>
+</head>
+<body>
+<main class="admin-wrap" id="adminPage" hidden>
+  <div class="admin-top">
+    <a class="brand" href="index.html">Friendship KeyChain</a>
+    <button class="btn ghost" id="adminLogout" type="button">Keluar</button>
+  </div>
+  <section class="admin-panel">
+    <div class="kicker">private area · admin</div>
+    <h1>Welcome back.</h1>
+    <p>Login sebagai <strong id="adminAccount"></strong></p>
+    <div class="admin-notice">
+      <strong>Autentikasi admin berhasil.</strong>
+      <p>Area admin sudah terlindungi. Dashboard pesanan, pengelolaan produk, dan fitur operasional belum dibuat pada tahap ini.</p>
+    </div>
+  </section>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/supabase-config.js"></script>
+<script src="assets/admin-auth.js"></script>
+</body>
+</html>
