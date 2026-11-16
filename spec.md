@@ -314,4 +314,4 @@ The following values reflect the current `assets/shop.js` configuration and shou
 - Schedule: **25–26 November 2026, 09.00–17.00**
 - Price examples: current catalog products are listed at **Rp12.000** each.
 - Collection: **booth pickup only; no shipping**.
-- WhatsApp: currently not configured in `assets/shop.js`; keep Instagram DM as the fallback until a number is added.
+- WhatsApp: **6285179621456** is configured in `assets/shop.js` for pre-order confirmation; Instagram DM remains available as a fallback.
