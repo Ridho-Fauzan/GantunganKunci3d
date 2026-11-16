@@ -25,9 +25,10 @@ The experience should feel like a compact independent band-merch shop: dark visu
 - Shipping, courier integration, or delivery address collection.
 - Customer accounts, login, or order history.
 - Inventory synchronization or order-management dashboard.
-- Server-side order storage. Orders are handed off to the shop admin through WhatsApp or Instagram DM.
+- Online payment, shipping, and customer accounts.
+- Server-side order storage is now provided by Supabase for preorder tracking; customer-facing checkout remains a WhatsApp/Instagram hand-off.
 
-A minimal **admin-only authentication area** is now in scope, using Supabase Auth email/password and an explicit admin allowlist. It does not yet include order management.
+An **admin-only order dashboard** is in scope, using Supabase Auth email/password, an explicit admin allowlist, a public preorder insert flow, and admin-only read/update policies.
 
 ## 2. Target Users and Main Journey
 
@@ -179,6 +180,10 @@ The shared source of truth is `assets/shop.js`.
 - Admin authentication uses Supabase JS v2 from a CDN; project URL and publishable key are in `assets/supabase-config.js`.
 - `admin-login.html` is the email/password login page; `admin.html` is a protected admin landing page; `assets/admin-auth.js` handles session and allowlist checks.
 - `public.admin_users` is the admin allowlist. Row Level Security permits authenticated users to read only their own admin row; adding/removing admins is done manually in the Supabase SQL Editor using `supabase/admin-setup.sql`.
+- `public.orders` stores preorder details and a status (`new`, `confirmed`, `processing`, `completed`, `cancelled`). Run `supabase/orders-setup.sql` to create it.
+- Anonymous visitors may insert a new preorder only. They cannot select or update orders. Authenticated users listed in `admin_users` may select and update orders; no browser delete policy is provided.
+- `assets/order-storage.js` writes the preorder only when the customer chooses the WhatsApp or Instagram hand-off. The initial status is `new`; it is not proof of payment or admin confirmation.
+- `admin.html` is the protected order dashboard; `assets/admin-dashboard.js` handles stats, search, filters, order details, and status updates.
 - The publishable key is public by design. Never expose Supabase `service_role` or secret keys in frontend code or source control.
 - Supabase Auth login alone does not grant admin access. The user must also have a row in `public.admin_users`.
 
@@ -271,6 +276,13 @@ A change is considered complete when all relevant criteria pass:
 - [ ] PNG and WEBM recording provide clear feedback and graceful failure handling.
 - [ ] One-rotation recording stops after one complete rotation.
 
+### Admin dashboard and order database
+- [ ] `supabase/orders-setup.sql` creates `public.orders` with RLS enabled.
+- [ ] Anonymous visitors can insert a new preorder but cannot read or update any order.
+- [ ] Allowlisted admins can list orders and update status; non-admin users cannot.
+- [ ] Dashboard stats, search, status filters, detail view, and status updates work.
+- [ ] WhatsApp/Instagram hand-off stores the order before opening the external app.
+
 ### Admin authentication
 - [ ] Admin can sign in with an email/password account created in Supabase.
 - [ ] A signed-in user without an `admin_users` row is denied and signed out.
@@ -330,3 +342,18 @@ The following values reflect the current `assets/shop.js` configuration and shou
 - Price examples: current catalog products are listed at **Rp12.000** each.
 - Collection: **booth pickup only; no shipping**.
 - WhatsApp: **6285179621456** is configured in `assets/shop.js` for pre-order confirmation; Instagram DM remains available as a fallback.
+
+
+## 15. Admin Dashboard and Order Database
+
+### Database setup
+1. Keep the existing `public.admin_users` table and its RLS policy from `supabase/admin-setup.sql`.
+2. Run the complete `supabase/orders-setup.sql` file in Supabase SQL Editor.
+3. The `public.orders` table stores customer contact details, product/design snapshot, quantity, print sides, notes, summary, status, and timestamps.
+4. Public access is insert-only for new orders. Only allowlisted authenticated admins can select and update orders. Browser-side deletion is intentionally unavailable.
+
+### Order flow
+- The preorder form saves a record when the customer chooses WhatsApp or Instagram DM. The record starts with status `new`.
+- The external message hand-off is still required for the customer to contact the shop. A database record is not a confirmation or payment receipt.
+- The admin dashboard at `admin.html` shows order counts, search, status filtering, order details, and status updates.
+- Supported statuses: `new`, `confirmed`, `processing`, `completed`, and `cancelled`.
