@@ -36,7 +36,8 @@ Treat the existing implementation as the source of truth for behavior. Documenta
 
 - Use the existing HTML, CSS, and vanilla JavaScript approach.
 - Do not migrate to React, Vue, Next.js, Vite, TypeScript, or another framework/build system unless explicitly requested or approved.
-- Do not add payment processing or server-side order storage without explicit approval.
+- Supabase preorder storage and the admin order dashboard are explicitly approved and implemented; preserve the RLS boundary in `supabase/orders-setup.sql`.
+- Do not add payment processing, shipping, or customer accounts without explicit approval.
 - Supabase admin authentication is already approved and implemented; preserve its email/password flow, admin allowlist, and RLS boundaries.
 - Reuse existing utilities and shared code instead of duplicating logic across pages.
 - Keep shared shop information and catalog product data in `assets/shop.js`; do not hard-code duplicate copies in page markup or unrelated scripts.
