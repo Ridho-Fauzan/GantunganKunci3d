@@ -12,7 +12,8 @@ This repository contains **Friendship KeyChain**, a static storefront and intera
 - Architecture: plain HTML, CSS, and browser JavaScript
 - 3D rendering: Three.js loaded from a CDN
 - Shared shop and catalog data: `assets/shop.js`
-- No application backend or database is currently required.
+- The storefront and designer remain static; Supabase is used for admin authentication only.
+- Admin auth files: `admin-login.html`, `admin.html`, `assets/admin-auth.js`, `assets/supabase-config.js`, and `supabase/admin-setup.sql`.
 
 Before making changes, read:
 1. `spec.md` — product requirements, existing features, constraints, and acceptance criteria.
@@ -35,7 +36,8 @@ Treat the existing implementation as the source of truth for behavior. Documenta
 
 - Use the existing HTML, CSS, and vanilla JavaScript approach.
 - Do not migrate to React, Vue, Next.js, Vite, TypeScript, or another framework/build system unless explicitly requested or approved.
-- Do not add a backend, database, authentication, payment system, or server-side order storage without explicit approval.
+- Do not add payment processing or server-side order storage without explicit approval.
+- Supabase admin authentication is already approved and implemented; preserve its email/password flow, admin allowlist, and RLS boundaries.
 - Reuse existing utilities and shared code instead of duplicating logic across pages.
 - Keep shared shop information and catalog product data in `assets/shop.js`; do not hard-code duplicate copies in page markup or unrelated scripts.
 - Keep Three.js and other external resources consistent with the current CDN-based setup unless a change is justified.
@@ -50,7 +52,7 @@ Treat the existing implementation as the source of truth for behavior. Documenta
 - Product IDs must remain unique and URL-safe. Preserve existing IDs because they are used in links and saved product references.
 - Store prices as integer Rupiah values. Use the existing price utility where appropriate.
 - Do not duplicate event dates, booth location, contact details, or product prices in multiple files.
-- WhatsApp is currently unconfigured (empty string). Do not create a WhatsApp link unless a valid number is configured.
+- WhatsApp is configured in `assets/shop.js`; use the shared configuration rather than hard-coding the number.
 - Keep Instagram DM as the fallback contact method when WhatsApp is unavailable.
 - Orders are collected at the Bifest booth. **There is no shipping.**
 - Do not represent a message hand-off as a confirmed order or completed payment.
@@ -82,7 +84,17 @@ Treat the existing implementation as the source of truth for behavior. Documenta
 - Clearly communicate booth pickup and no-shipping rules.
 - Do not claim that an order has been submitted, confirmed, or paid before the customer completes the external conversation.
 
-## 6. 3D, Artwork, and Export Safety
+## 6. Supabase Authentication and Security
+
+- Use only the Supabase publishable key in browser code. Never expose `service_role` or secret keys in source control or client-side scripts.
+- A successful Supabase Auth login is not sufficient for admin access; require a matching row in `public.admin_users`.
+- Keep Row Level Security enabled on `public.admin_users`. Authenticated users may select only their own row; do not add client-side insert/update/delete policies for the admin allowlist.
+- Grant or revoke admin membership only through trusted Supabase Dashboard/SQL Editor access.
+- Do not add public admin registration or let a user self-assign an admin role.
+- Protect every future admin page by checking both the Supabase session and admin allowlist. Frontend route checks are UX only; any future database table containing orders or private data must have its own restrictive RLS policies.
+- Keep the Supabase project URL and publishable key in `assets/supabase-config.js`; these values are public configuration, not secrets.
+
+## 7. 3D, Artwork, and Export Safety
 
 - Keep artwork processing client-side. Do not upload customer artwork to a server unless the user explicitly approves a scope change.
 - Treat uploaded files as untrusted input.
@@ -97,7 +109,7 @@ Treat the existing implementation as the source of truth for behavior. Documenta
 - GLB export should continue to include the full pendant stack; SVG export should continue to target the selected pendant, unless the specification is intentionally changed.
 - Recording and screenshot controls must fail gracefully when browser capabilities are unavailable.
 
-## 7. UI, UX, and Accessibility
+## 8. UI, UX, and Accessibility
 
 - Follow the established dark band-poster visual direction: red, black, and warm cream.
 - Keep product artwork and the 3D preview visually prominent.
@@ -111,7 +123,7 @@ Treat the existing implementation as the source of truth for behavior. Documenta
 - Confirm destructive actions such as deleting a pendant.
 - Avoid adding decorative UI that makes important actions harder to find.
 
-## 8. Performance and Reliability
+## 9. Performance and Reliability
 
 - Keep the site lightweight and avoid unnecessary dependencies and network requests.
 - Lazy-load non-critical media where appropriate.
@@ -123,7 +135,7 @@ Treat the existing implementation as the source of truth for behavior. Documenta
 - Provide fallbacks for missing images, videos, and external resources.
 - Avoid unnecessary polling, animation loops, and repeated DOM queries.
 
-## 9. Code Quality and Editing Practices
+## 10. Code Quality and Editing Practices
 
 - Match the existing code style and naming conventions in each file.
 - Prefer clear, descriptive names and small functions with focused responsibilities.
@@ -136,7 +148,7 @@ Treat the existing implementation as the source of truth for behavior. Documenta
 - Keep comments useful and update comments when behavior changes.
 - Do not add placeholder links, fake data, or unfinished controls that appear functional.
 
-## 10. Testing and Verification
+## 11. Testing and Verification
 
 There may be no automated test suite. Do not assume one exists.
 
@@ -170,12 +182,13 @@ On Windows, `py -m http.server 8000` may be used if `python3` is unavailable.
 - Pendant stack: add, select, duplicate, delete, and verify the six-pendant limit.
 - Review mode: orbit, zoom, shake, lighting/background controls, screenshot, and recording.
 - Export: verify GLB, PNG, SVG, and WEBM where applicable.
-- Pre-order: verify catalog/custom summary, event details, WhatsApp-unconfigured fallback, and no-shipping notice.
+- Pre-order: verify catalog/custom summary, event details, WhatsApp handoff, and no-shipping notice.
+- Admin auth: verify allowlisted login, non-admin denial, protected direct route, and logout.
 - Responsive: repeat the main journey at a mobile viewport.
 
 If a test cannot be performed, state that clearly in the final report.
 
-## 11. Documentation and Asset Changes
+## 12. Documentation and Asset Changes
 
 - Update `README.md` when user-visible features, setup steps, or asset-generation workflows change.
 - Update `spec.md` when product requirements, page behavior, business rules, or acceptance criteria change.
@@ -184,7 +197,7 @@ If a test cannot be performed, state that clearly in the final report.
 - If a URL or production domain changes, inspect canonical URLs, Open Graph metadata, sitemap, robots file, and QR destinations for consistency.
 - Do not commit generated temporary files, local caches, secrets, or unrelated artifacts.
 
-## 12. Git and Deployment Rules
+## 13. Git and Deployment Rules
 
 - Work on the current branch unless the user requests another branch.
 - Do not force-push, rewrite history, delete branches, or revert user changes without explicit approval.
@@ -193,7 +206,7 @@ If a test cannot be performed, state that clearly in the final report.
 - Vercel deploys from `main`; do not claim a production deployment completed unless deployment status was actually verified.
 - Do not change repository settings, deployment settings, environment variables, or domain configuration without explicit approval.
 
-## 13. Final Response Format
+## 14. Final Response Format
 
 After completing a task, report briefly:
 
