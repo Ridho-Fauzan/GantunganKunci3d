@@ -333,13 +333,7 @@
     if (!requireValid()) return;
     update();
     $('summary').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    try {
-      await saveOrder();
-      toast('Pesanan tersimpan! Lanjut kirim ringkasan ke admin ya.');
-    } catch (error) {
-      console.error('Gagal menyimpan pre-order:', error);
-      toast('Ringkasan siap, tapi belum tersimpan. Coba lagi sebelum mengirim.');
-    }
+    toast('Ringkasan siap. Pilih WhatsApp atau DM untuk menyimpan dan mengirim pesanan.');
   });
   $('sendIg').onclick = async () => {
     if (!requireValid()) return;
