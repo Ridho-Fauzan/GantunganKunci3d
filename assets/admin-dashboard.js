@@ -65,7 +65,7 @@
       tdCode.append(code);
       const tdCustomer = document.createElement('td');
       const strong = document.createElement('strong'); strong.textContent = order.customer_name;
-      const small = document.createElement('small'); small.textContent = '@' + order.instagram.replace(/^@/, '');
+      const small = document.createElement('small'); small.textContent = order.instagram ? '@' + order.instagram.replace(/^@/, '') : 'Instagram tidak dicantumkan';
       tdCustomer.append(strong, small);
       const tdProduct = document.createElement('td'); tdProduct.textContent = order.product_name;
       const tdQty = document.createElement('td'); tdQty.textContent = order.quantity;
@@ -84,12 +84,35 @@
     $('resultCount').textContent = filtered.length + ' pesanan';
   }
 
+  function renderArtwork(design) {
+    const container = $('detailArtwork');
+    container.textContent = '';
+    const items = Array.isArray(design?.items) ? design.items : [];
+    const withArtwork = items.filter(item => typeof item.artwork === 'string' && item.artwork.startsWith('data:image/'));
+    if (!withArtwork.length) {
+      container.hidden = true;
+      return;
+    }
+    container.hidden = false;
+    for (const item of withArtwork) {
+      const figure = document.createElement('figure');
+      const img = document.createElement('img');
+      img.src = item.artwork;
+      img.alt = 'Artwork hasil kustomisasi - ' + (item.bentuk || 'desain custom');
+      img.loading = 'lazy';
+      const caption = document.createElement('figcaption');
+      caption.textContent = item.bentuk || 'Artwork custom';
+      figure.append(img, caption);
+      container.append(figure);
+    }
+  }
+
   function showDetail(order) {
     activeOrder = order;
     $('detailCode').textContent = 'ORDER-' + order.id.slice(0, 8).toUpperCase();
     $('detailDate').textContent = date(order.created_at);
     $('detailName').textContent = order.customer_name;
-    $('detailInstagram').textContent = '@' + order.instagram.replace(/^@/, '');
+    $('detailInstagram').textContent = order.instagram ? '@' + order.instagram.replace(/^@/, '') : '—';
     $('detailWhatsapp').textContent = order.whatsapp || '—';
     $('detailProduct').textContent = order.product_name;
     $('detailQuantity').textContent = order.quantity + ' pcs';
@@ -98,6 +121,7 @@
     $('detailColor').textContent = order.color || '—';
     $('detailNotes').textContent = order.notes || '—';
     $('detailSummary').textContent = order.summary || '—';
+    renderArtwork(order.design);
     $('detailStatus').value = order.status;
     $('detailDialog').hidden = false;
     $('detailDialog').setAttribute('aria-hidden', 'false');
