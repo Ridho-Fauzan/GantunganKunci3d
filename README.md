@@ -66,11 +66,11 @@ Klik **Buka Halaman Review** (atau buka `desain.html#review`). Hasilnya tampilan
 |---|---|
 | `index.html` | **Katalog (halaman utama)**: produk dengan video preview 360°, info booth Bifest, tombol **Coba 3D** dan **Pre-order** |
 | `desain.html` | Editor 3D. `desain.html?produk=<id>` membuka produk katalog. Tombol **Pre-order desain ini** membawa desain ke form pre-order |
-| `preorder.html` | Form pre-order + ringkasan, dikirim via DM Instagram (atau WhatsApp). **Tanpa pengiriman**: semua pesanan diambil di booth Bifest |
+| `preorder.html` | Form pre-order + ringkasan, dikirim via WhatsApp (dengan DM Instagram sebagai cadangan). **Tanpa pengiriman**: semua pesanan diambil di booth Bifest |
 
 <img src="docs/katalog.png" alt="Katalog" width="560" />
 
-**Mengatur toko:** edit `assets/shop.js`: nama toko, Instagram, WhatsApp (opsional), info event/booth, dan daftar produk (nama, harga, aset logo, gambar, video, tampilan awal di editor). Harga `null` tampil "Harga via DM".
+**Mengatur toko:** edit `assets/shop.js`: nama toko, Instagram, WhatsApp (format internasional tanpa `+` atau spasi), info event/booth, dan daftar produk (nama, harga, aset logo, gambar, video, tampilan awal di editor). Harga `null` tampil "Harga via DM".
 
 **Aset produk:** taruh logo di `katalog/asetAsli/` dan isi path-nya di `assets/shop.js` (PNG transparan paling rapi, latar putih polos juga bisa).
 

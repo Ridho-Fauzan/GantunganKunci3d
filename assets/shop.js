@@ -8,8 +8,8 @@ window.SHOP = {
   tagline: 'Band Merch · Keychain Custom',
   instagram: 'toko.aksesoris.persahabatan',
   // Nomor WhatsApp format internasional tanpa "+" atau spasi, contoh: '6281234567890'.
-  // >>> ISI nomor WhatsApp admin di sini sebelum buka PO. Pre-order dilakukan via WhatsApp. <<<
-  whatsapp: '',
+  // Nomor admin untuk konfirmasi pre-order via WhatsApp.
+  whatsapp: '6285179621456',
   // Pesanan TIDAK dikirim: semua pre-order diambil di booth saat event ini.
   event: {
     nama: 'Binus Festival (Bifest)',
