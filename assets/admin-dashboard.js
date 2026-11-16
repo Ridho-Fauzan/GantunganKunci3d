@@ -84,25 +84,47 @@
     $('resultCount').textContent = filtered.length + ' pesanan';
   }
 
-  function renderArtwork(design) {
+  function safeFilename(value) {
+    return String(value || 'artwork-custom')
+      .normalize('NFKD')
+      .replace(/[^a-zA-Z0-9_-]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 50) || 'artwork-custom';
+  }
+
+  function renderArtwork(order) {
     const container = $('detailArtwork');
     container.textContent = '';
-    const items = Array.isArray(design?.items) ? design.items : [];
-    const withArtwork = items.filter(item => typeof item.artwork === 'string' && item.artwork.startsWith('data:image/'));
+    const items = Array.isArray(order.design?.items) ? order.design.items : [];
+    const withArtwork = items
+      .map((item, index) => ({ item, index }))
+      .filter(({ item }) => typeof item.artwork === 'string' && /^data:image\/png;base64,/.test(item.artwork));
+
     if (!withArtwork.length) {
       container.hidden = true;
       return;
     }
+
     container.hidden = false;
-    for (const item of withArtwork) {
+    const orderCode = order.id.slice(0, 8).toUpperCase();
+    for (const { item, index } of withArtwork) {
       const figure = document.createElement('figure');
       const img = document.createElement('img');
       img.src = item.artwork;
       img.alt = 'Artwork hasil kustomisasi - ' + (item.bentuk || 'desain custom');
       img.loading = 'lazy';
+
       const caption = document.createElement('figcaption');
       caption.textContent = item.bentuk || 'Artwork custom';
-      figure.append(img, caption);
+
+      const download = document.createElement('a');
+      download.className = 'btn-small artwork-download';
+      download.href = item.artwork;
+      download.download = 'FK-' + orderCode + '-' + String(index + 1).padStart(2, '0') + '-' + safeFilename(item.bentuk) + '.png';
+      download.textContent = 'Download PNG';
+      download.setAttribute('aria-label', 'Download artwork ' + (item.bentuk || 'custom') + ' sebagai PNG');
+
+      figure.append(img, caption, download);
       container.append(figure);
     }
   }
@@ -121,7 +143,7 @@
     $('detailColor').textContent = order.color || '—';
     $('detailNotes').textContent = order.notes || '—';
     $('detailSummary').textContent = order.summary || '—';
-    renderArtwork(order.design);
+    renderArtwork(order);
     $('detailStatus').value = order.status;
     $('detailDialog').hidden = false;
     $('detailDialog').setAttribute('aria-hidden', 'false');
