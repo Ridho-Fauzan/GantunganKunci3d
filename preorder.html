@@ -140,7 +140,7 @@
       <p class="hint">Ringkasan ini yang dikirim ke admin. Belum ada pembayaran di sini.</p>
       <pre id="summaryText"></pre>
       <a class="btn" id="sendWa" target="_blank" rel="noopener" hidden>Kirim via WhatsApp</a>
-      <button type="button" class="btn secondary" id="sendIg">Salin ringkasan untuk Instagram</button>
+      <button type="button" class="btn secondary" id="sendIg">Kirim via DM Instagram</button>
       <button type="button" class="btn secondary" id="copyBtn">Salin ringkasan</button>
       <button type="button" class="btn ghost" id="dlDesign" hidden>Unduh gambar desain</button>
       <ol class="steps">
@@ -339,11 +339,14 @@
   });
   $('sendIg').onclick = async () => {
     if (!requireValid()) return;
+    const popup = window.open('about:blank', '_blank');
     try {
       await saveOrder();
       const ok = await copy(summaryText());
-      toast(ok ? 'Pesanan tersimpan. Ringkasan tersalin untuk dikirim lewat Instagram.' : 'Pesanan tersimpan. Salin ringkasan secara manual.');
+      if (popup) popup.location.href = SHOP_UTIL.igDmUrl();
+      toast(ok ? 'Pesanan tersimpan. Ringkasan tersalin, tempel di DM Instagram.' : 'Pesanan tersimpan. Salin ringkasan secara manual ke DM.');
     } catch (error) {
+      if (popup) popup.close();
       toast('Pesanan belum tersimpan. Coba lagi sebelum mengirim.');
     }
   };
