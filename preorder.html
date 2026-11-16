@@ -265,8 +265,8 @@
       } : null,
       summary: summaryText()
     };
-    const result = await window.orderStorage.create(payload);
-    savedOrderId = result.id;
+    await window.orderStorage.create(payload);
+    savedOrderId = true;
     return savedOrderId;
   }
 
