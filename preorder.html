@@ -158,6 +158,9 @@
 </footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/supabase-config.js"></script>
+<script src="assets/order-storage.js"></script>
 <script>
   const $ = id => document.getElementById(id);
   document.querySelectorAll('.shopName').forEach(e => e.textContent = SHOP.nama);
@@ -239,6 +242,34 @@
     return ok;
   }
 
+  // Simpan satu record pesanan ketika ringkasan dibuat. Retry tidak membuat duplikat.
+  let savedOrderId = null;
+  async function saveOrder() {
+    if (savedOrderId) return savedOrderId;
+    if (!window.orderStorage) throw new Error('Database belum siap. Refresh halaman lalu coba lagi.');
+    const product = SHOP_UTIL.produk(sel.value);
+    const payload = {
+      customer_name: $('nama').value.trim(),
+      instagram: $('ig').value.trim().replace(/^@/, ''),
+      whatsapp: $('hp').value.trim().replace(/[^0-9+]/g, ''),
+      product_name: sel.value === DESIGN_OPT ? 'Desain custom dari editor 3D' : (product ? product.nama : 'Produk'),
+      quantity: Number($('jumlah').value),
+      print_sides: $('sisi').value,
+      custom_text: $('teks').value.trim(),
+      color: $('warna').value.trim(),
+      notes: $('catatan').value.trim(),
+      design: sel.value === DESIGN_OPT && design ? {
+        items: (design.items || []).map(item => ({
+          bentuk: item.bentuk, tulisan: item.tulisan, warna: item.warna, asset: item.asset
+        }))
+      } : null,
+      summary: summaryText()
+    };
+    const result = await window.orderStorage.create(payload);
+    savedOrderId = result.id;
+    return savedOrderId;
+  }
+
   // ---- Summary text ----
   function summaryText() {
     const v = id => $(id).value.trim();
@@ -297,23 +328,45 @@
     toast('Lengkapi dulu data yang ditandai merah.');
     return false;
   }
-  form.addEventListener('submit', e => {
+  form.addEventListener('submit', async e => {
     e.preventDefault();
     if (!requireValid()) return;
     update();
     $('summary').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    toast('Ringkasan siap. Kirim via WhatsApp ya!');
+    try {
+      await saveOrder();
+      toast('Pesanan tersimpan! Lanjut kirim ringkasan ke admin ya.');
+    } catch (error) {
+      console.error('Gagal menyimpan pre-order:', error);
+      toast('Ringkasan siap, tapi belum tersimpan. Coba lagi sebelum mengirim.');
+    }
   });
   $('sendIg').onclick = async () => {
     if (!requireValid()) return;
-    const ok = await copy(summaryText());
-    toast(ok ? 'Ringkasan tersalin. Tempel di DM Instagram.' : 'Gagal menyalin otomatis, salin manual dari kotak ringkasan.');
-    window.open(SHOP_UTIL.igDmUrl(), '_blank', 'noopener');
+    const popup = window.open('about:blank', '_blank');
+    try {
+      await saveOrder();
+      const ok = await copy(summaryText());
+      if (popup) popup.location.href = SHOP_UTIL.igDmUrl();
+      toast(ok ? 'Pesanan tersimpan. Ringkasan tersalin, tempel di DM Instagram.' : 'Pesanan tersimpan. Salin ringkasan secara manual ke DM.');
+    } catch (error) {
+      if (popup) popup.close();
+      toast('Pesanan belum tersimpan. Coba lagi sebelum mengirim.');
+    }
   };
   $('sendWa').addEventListener('click', async e => {
-    if (!requireValid()) { e.preventDefault(); return; }
-    const ok = await copy(summaryText());
-    toast(ok ? 'Ringkasan juga tersalin sebagai cadangan.' : 'Ringkasan dikirim ke WhatsApp.');
+    e.preventDefault();
+    if (!requireValid()) return;
+    const popup = window.open('about:blank', '_blank');
+    try {
+      await saveOrder();
+      await copy(summaryText());
+      if (popup) popup.location.href = SHOP_UTIL.waUrl(summaryText());
+      toast('Pesanan tersimpan. Ringkasan siap dikirim via WhatsApp.');
+    } catch (error) {
+      if (popup) popup.close();
+      toast('Pesanan belum tersimpan. Coba lagi sebelum mengirim.');
+    }
   });
   $('copyBtn').onclick = async () => toast((await copy(summaryText())) ? 'Ringkasan tersalin.' : 'Gagal menyalin, salin manual ya.');
   update();
