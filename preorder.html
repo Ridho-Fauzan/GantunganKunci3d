@@ -59,14 +59,14 @@
         </div>
         <div class="two">
           <div class="field">
-            <label for="ig">Username Instagram <span class="req">*</span></label>
-            <input id="ig" name="ig" placeholder="@username" autocapitalize="off" autocomplete="off" required />
-            <div class="err">Isi username Instagram kamu.</div>
+            <label for="ig">Username Instagram <span class="hint">(opsional)</span></label>
+            <input id="ig" name="ig" placeholder="@username (opsional)" autocapitalize="off" autocomplete="off" />
+            <div class="err">Username Instagram tidak valid.</div>
           </div>
           <div class="field">
-            <label for="hp">No. WhatsApp</label>
-            <input id="hp" name="hp" type="tel" inputmode="tel" placeholder="08xxxxxxxxxx" autocomplete="tel" />
-            <div class="err">Nomor tidak valid (8–15 angka).</div>
+            <label for="hp">No. WhatsApp <span class="req">*</span></label>
+            <input id="hp" name="hp" type="tel" inputmode="tel" placeholder="08xxxxxxxxxx" autocomplete="tel" required />
+            <div class="err">Nomor WhatsApp wajib diisi (8–15 angka).</div>
           </div>
         </div>
       </fieldset>
@@ -140,7 +140,7 @@
       <p class="hint">Ringkasan ini yang dikirim ke admin. Belum ada pembayaran di sini.</p>
       <pre id="summaryText"></pre>
       <a class="btn" id="sendWa" target="_blank" rel="noopener" hidden>Kirim via WhatsApp</a>
-      <button type="button" class="btn secondary" id="sendIg">Kirim via DM Instagram</button>
+      <button type="button" class="btn secondary" id="sendIg">Salin ringkasan untuk Instagram</button>
       <button type="button" class="btn secondary" id="copyBtn">Salin ringkasan</button>
       <button type="button" class="btn ghost" id="dlDesign" hidden>Unduh gambar desain</button>
       <ol class="steps">
@@ -234,9 +234,10 @@
       if (!valid) ok = false;
     };
     check('nama', $('nama').value.trim().length > 0);
-    check('ig', $('ig').value.replace(/^@/, '').trim().length > 0);
+    const ig = $('ig').value.replace(/^@/, '').trim();
+    check('ig', !ig || /^[a-zA-Z0-9._]{1,30}$/.test(ig));
     const hp = $('hp').value.replace(/[^\d]/g, '');
-    check('hp', !hp || (hp.length >= 8 && hp.length <= 15));
+    check('hp', hp.length >= 8 && hp.length <= 15);
     check('produk', !!sel.value);
     check('jumlah', +$('jumlah').value >= 1);
     return ok;
@@ -260,7 +261,8 @@
       notes: $('catatan').value.trim(),
       design: sel.value === DESIGN_OPT && design ? {
         items: (design.items || []).map(item => ({
-          bentuk: item.bentuk, tulisan: item.tulisan, warna: item.warna, asset: item.asset
+          bentuk: item.bentuk, tulisan: item.tulisan, warna: item.warna, asset: item.asset,
+          artwork: item.artwork || ''
         }))
       } : null,
       summary: summaryText()
@@ -276,8 +278,8 @@
     const p = SHOP_UTIL.produk(sel.value);
     const lines = [`Halo ${SHOP.nama}! Saya mau PRE-ORDER.`, ''];
     lines.push(`Nama: ${v('nama') || '-'}`);
-    lines.push(`IG: ${v('ig') ? '@' + v('ig').replace(/^@/, '') : '-'}`);
     if (v('hp')) lines.push(`WA: ${v('hp')}`);
+    lines.push(`IG: ${v('ig') ? '@' + v('ig').replace(/^@/, '') : 'Tidak dicantumkan'}`);
     lines.push('', 'PESANAN');
     if (sel.value === DESIGN_OPT && design) {
       lines.push('• Produk: Desain custom dari editor 3D');
@@ -337,14 +339,11 @@
   });
   $('sendIg').onclick = async () => {
     if (!requireValid()) return;
-    const popup = window.open('about:blank', '_blank');
     try {
       await saveOrder();
       const ok = await copy(summaryText());
-      if (popup) popup.location.href = SHOP_UTIL.igDmUrl();
-      toast(ok ? 'Pesanan tersimpan. Ringkasan tersalin, tempel di DM Instagram.' : 'Pesanan tersimpan. Salin ringkasan secara manual ke DM.');
+      toast(ok ? 'Pesanan tersimpan. Ringkasan tersalin untuk dikirim lewat Instagram.' : 'Pesanan tersimpan. Salin ringkasan secara manual.');
     } catch (error) {
-      if (popup) popup.close();
       toast('Pesanan belum tersimpan. Coba lagi sebelum mengirim.');
     }
   };
