@@ -27,7 +27,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;800&family=Permanent+Marker&display=swap" />
 <link rel="stylesheet" href="assets/site.css" />
 <script src="assets/shop.js"></script>
-</head>
+<style>\n.custom-thumb{display:grid;place-items:center;background:radial-gradient(circle at 50% 45%,#44202a 0,#171216 58%,#0d0d10 100%)}.custom-mark{font-size:100px;line-height:1;color:#f0dfe1;text-shadow:0 5px 0 #8f2737,0 12px 28px #000;transform:rotate(-12deg)}\n</style>\n</head>
 <body>
 <header class="topnav">
   <a class="brand" href="index.html"><span class="shopName"></span></a>
@@ -152,6 +152,25 @@
     card.querySelector('.order').href = 'preorder.html?produk=' + encodeURIComponent(p.id);
     grid.append(card);
   }
+
+  // Dedicated custom-design product: opens the blank editor directly.
+  const customCard = document.createElement('article');
+  customCard.className = 'card custom-product';
+  customCard.innerHTML = `
+    <div class="thumb custom-thumb" aria-label="Desain gantungan kunci custom">
+      <div class="custom-mark" aria-hidden="true">✳</div>
+      <span class="badge">Custom</span>
+    </div>
+    <div class="body">
+      <h3>Custom Keychain</h3>
+      <div class="spek">Desain bebas · akrilik · cetak 2 sisi</div>
+      <p class="desc">Bikin gantungan kunci dengan artwork dan tulisan pilihanmu sendiri lewat editor 3D.</p>
+      <div class="price">Rp15.000</div>
+      <div class="btn-row">
+        <a class="btn order" href="desain.html">Buat Desain</a>
+      </div>
+    </div>`;
+  grid.append(customCard);
 </script>
 </body>
 </html>
