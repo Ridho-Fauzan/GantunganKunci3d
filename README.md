@@ -82,7 +82,7 @@ FFMPEG=ffmpeg node tools/render-katalog.cjs              # semua produk, atau: .
 ```
 Hasilnya `katalog/<id>.jpg` (poster), `katalog/<id>.mp4` (H.264, untuk iPhone/Safari) dan `katalog/<id>.webm` (cadangan). Video diputar otomatis tanpa suara hanya saat kartunya terlihat.
 
-## Admin login (Supabase)
+## Admin dashboard & pesanan (Supabase)
 
 Area admin menggunakan Supabase Auth email + password. Tidak ada halaman registrasi publik. Login hanya berhasil untuk user yang juga terdaftar pada tabel `public.admin_users`.
 
@@ -91,13 +91,18 @@ Area admin menggunakan Supabase Auth email + password. Tidak ada halaman registr
 2. Masuk ke **SQL Editor**, buka/copy isi `supabase/admin-setup.sql`, lalu jalankan.
 3. Buka **Authentication → Users → Add user** untuk membuat akun admin dengan email dan password.
 4. Kembali ke SQL Editor, jalankan bagian `insert into public.admin_users` pada file SQL setelah mengganti `GANTI_DENGAN_EMAIL_ADMIN` dengan email akun admin.
-5. Deploy perubahan website. Buka `/admin-login.html` untuk login; setelah berhasil akan masuk ke `/admin.html`.
+5. Jalankan seluruh isi `supabase/orders-setup.sql` di SQL Editor untuk membuat tabel pesanan dan policy RLS.
+6. Deploy perubahan website. Buka `/admin-login.html` untuk login; setelah berhasil akan masuk ke `/admin.html` (Order Desk).
 
 ### Keamanan
 - Publishable key di `assets/supabase-config.js` memang boleh berada di frontend. Jangan pernah memasukkan `service_role` atau secret key ke repository.
 - Akses admin ditentukan oleh baris di `admin_users`, bukan hanya karena user berhasil login.
 - RLS membatasi pembacaan baris admin ke user itu sendiri. Tidak ada policy untuk menambah/menghapus admin dari browser; kelola allowlist melalui SQL Editor.
-- Halaman admin saat ini hanya membuktikan autentikasi dan menyediakan logout. Dashboard pesanan belum dibuat.
+- `supabase/orders-setup.sql` membuat tabel `public.orders`. Pengunjung dapat mengirim pesanan baru melalui form pre-order, tetapi tidak dapat membaca pesanan.
+- Hanya user yang terdaftar di `public.admin_users` dapat membaca dan mengubah pesanan melalui dashboard `/admin.html`.
+- Dashboard menampilkan total pesanan, pesanan baru, pesanan dalam proses, pesanan selesai, pencarian/filter, detail, dan perubahan status.
+- Pesanan disimpan saat pelanggan memilih membuat/mengirim ringkasan melalui WhatsApp atau DM Instagram. Status awal adalah `Baru`; penyimpanan tidak berarti pesanan sudah dikonfirmasi atau dibayar.
+- Status yang tersedia: `Baru`, `Dikonfirmasi`, `Diproses`, `Selesai`, dan `Dibatalkan`. Tidak ada pembayaran online, pengiriman, atau penghapusan pesanan dari dashboard.
 - Untuk menghapus akses admin, hapus baris user tersebut dari `public.admin_users`.
 
 ## Cara menjalankan
