@@ -18,9 +18,9 @@
         design: payload.design || null,
         summary: payload.summary,
         status: 'new'
-      }).select('id').single();
+      });
       if (error) throw error;
-      return data;
+      return { saved: true };
     }
   };
 })();
