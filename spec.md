@@ -55,7 +55,7 @@ Requirements:
 - Render products from `window.KATALOG` in `assets/shop.js`; do not duplicate product data in page markup.
 - Each product card should show its name, price or "Harga via DM", product artwork/poster, and relevant short specification.
 - Play product preview videos silently and only when the relevant card is visible. Provide a poster/fallback image when video is unavailable or unsupported.
-- Provide clear actions to open the 3D editor and start a pre-order.
+- Provide clear actions to open the 3D editor and start a pre-order. Include a dedicated **Custom Keychain** catalog card priced at Rp15.000 that opens the blank 3D editor.
 - Include a **Bagikan toko** action using the native share sheet where supported, with copy-link fallback.
 - Keep Instagram/contact and event details consistent with the shared shop configuration.
 
@@ -114,7 +114,7 @@ Requirements:
 - Show shop contact details, event name, booth location, date, and opening hours.
 - Explain that the order is confirmed by the admin through WhatsApp.
 - Clearly state that orders are collected at the event booth and **shipping is not available**.
-- Use WhatsApp when a valid number is configured; otherwise provide the Instagram DM fallback.
+- Use the configured WhatsApp contact as the single primary hand-off action, labelled **Make an Order**. Do not show separate Instagram DM or copy-summary buttons in the order summary.
 - Never imply that an order has been submitted or paid until the customer completes the external conversation.
 
 ## 4. 3D Export and Production Files
@@ -283,7 +283,7 @@ A change is considered complete when all relevant criteria pass:
 - [ ] Anonymous visitors can insert a new preorder but cannot read or update any order.
 - [ ] Allowlisted admins can list orders and update status; non-admin users cannot.
 - [ ] Dashboard stats, search, status filters, detail view, and status updates work.
-- [ ] WhatsApp/Instagram hand-off stores the order before opening the external app.
+- [ ] Clicking **Make an Order** stores the order before opening the configured WhatsApp chat.
 
 ### Admin authentication
 - [ ] Admin can sign in with an email/password account created in Supabase.
@@ -355,7 +355,7 @@ The following values reflect the current `assets/shop.js` configuration and shou
 4. Public access is insert-only for new orders. Only allowlisted authenticated admins can select and update orders. Browser-side deletion is intentionally unavailable.
 
 ### Order flow
-- The preorder form saves a record when the customer chooses WhatsApp or Instagram DM. The record starts with status `new`.
+- The preorder form saves a record when the customer clicks **Make an Order**. The record starts with status `new`.
 - The external message hand-off is still required for the customer to contact the shop. A database record is not a confirmation or payment receipt.
 - The admin dashboard at `admin.html` shows order counts, search, status filtering, order details, and status updates.
 - Supported statuses: `new`, `confirmed`, `processing`, `completed`, and `cancelled`.
