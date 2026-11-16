@@ -82,6 +82,24 @@ FFMPEG=ffmpeg node tools/render-katalog.cjs              # semua produk, atau: .
 ```
 Hasilnya `katalog/<id>.jpg` (poster), `katalog/<id>.mp4` (H.264, untuk iPhone/Safari) dan `katalog/<id>.webm` (cadangan). Video diputar otomatis tanpa suara hanya saat kartunya terlihat.
 
+## Admin login (Supabase)
+
+Area admin menggunakan Supabase Auth email + password. Tidak ada halaman registrasi publik. Login hanya berhasil untuk user yang juga terdaftar pada tabel `public.admin_users`.
+
+### Setup pertama kali
+1. Buka Supabase Dashboard project yang dipakai website.
+2. Masuk ke **SQL Editor**, buka/copy isi `supabase/admin-setup.sql`, lalu jalankan.
+3. Buka **Authentication → Users → Add user** untuk membuat akun admin dengan email dan password.
+4. Kembali ke SQL Editor, jalankan bagian `insert into public.admin_users` pada file SQL setelah mengganti `GANTI_DENGAN_EMAIL_ADMIN` dengan email akun admin.
+5. Deploy perubahan website. Buka `/admin-login.html` untuk login; setelah berhasil akan masuk ke `/admin.html`.
+
+### Keamanan
+- Publishable key di `assets/supabase-config.js` memang boleh berada di frontend. Jangan pernah memasukkan `service_role` atau secret key ke repository.
+- Akses admin ditentukan oleh baris di `admin_users`, bukan hanya karena user berhasil login.
+- RLS membatasi pembacaan baris admin ke user itu sendiri. Tidak ada policy untuk menambah/menghapus admin dari browser; kelola allowlist melalui SQL Editor.
+- Halaman admin saat ini hanya membuktikan autentikasi dan menyediakan logout. Dashboard pesanan belum dibuat.
+- Untuk menghapus akses admin, hapus baris user tersebut dari `public.admin_users`.
+
 ## Cara menjalankan
 Buka `index.html` (katalog) di browser modern (Chrome, Edge, Firefox, Safari). Perlu koneksi internet karena Three.js dimuat dari CDN.
 
