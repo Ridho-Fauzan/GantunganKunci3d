@@ -7,7 +7,7 @@
     async create(payload) {
       const { data, error } = await client.from('orders').insert({
         customer_name: payload.customer_name,
-        instagram: payload.instagram,
+        instagram: payload.instagram || null,
         whatsapp: payload.whatsapp || null,
         product_name: payload.product_name,
         quantity: payload.quantity,
