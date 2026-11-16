@@ -5,7 +5,7 @@
 create table if not exists public.orders (
   id uuid primary key default gen_random_uuid(),
   customer_name text not null check (char_length(trim(customer_name)) between 1 and 100),
-  instagram text not null check (char_length(trim(instagram)) between 1 and 50),
+  instagram text check (instagram is null or char_length(trim(instagram)) between 1 and 50),
   whatsapp text check (whatsapp is null or char_length(whatsapp) <= 25),
   product_name text not null check (char_length(trim(product_name)) between 1 and 160),
   quantity integer not null check (quantity between 1 and 1000),
@@ -37,7 +37,7 @@ to anon, authenticated
 with check (
   status = 'new'
   and char_length(trim(customer_name)) between 1 and 100
-  and char_length(trim(instagram)) between 1 and 50
+  and (instagram is null or char_length(trim(instagram)) between 1 and 50)
   and quantity between 1 and 1000
 );
 
