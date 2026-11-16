@@ -24,8 +24,10 @@ The experience should feel like a compact independent band-merch shop: dark visu
 - Online payment or checkout.
 - Shipping, courier integration, or delivery address collection.
 - Customer accounts, login, or order history.
-- Inventory synchronization or an admin dashboard.
+- Inventory synchronization or order-management dashboard.
 - Server-side order storage. Orders are handed off to the shop admin through WhatsApp or Instagram DM.
+
+A minimal **admin-only authentication area** is now in scope, using Supabase Auth email/password and an explicit admin allowlist. It does not yet include order management.
 
 ## 2. Target Users and Main Journey
 
@@ -174,6 +176,11 @@ The shared source of truth is `assets/shop.js`.
 - Shared shop/catalog configuration lives in `assets/shop.js`.
 - Product artwork, posters, and preview videos are stored in the repository.
 - The site is hosted on Vercel and deployed from the `main` branch.
+- Admin authentication uses Supabase JS v2 from a CDN; project URL and publishable key are in `assets/supabase-config.js`.
+- `admin-login.html` is the email/password login page; `admin.html` is a protected admin landing page; `assets/admin-auth.js` handles session and allowlist checks.
+- `public.admin_users` is the admin allowlist. Row Level Security permits authenticated users to read only their own admin row; adding/removing admins is done manually in the Supabase SQL Editor using `supabase/admin-setup.sql`.
+- The publishable key is public by design. Never expose Supabase `service_role` or secret keys in frontend code or source control.
+- Supabase Auth login alone does not grant admin access. The user must also have a row in `public.admin_users`.
 
 ### Development constraints
 
@@ -264,6 +271,13 @@ A change is considered complete when all relevant criteria pass:
 - [ ] PNG and WEBM recording provide clear feedback and graceful failure handling.
 - [ ] One-rotation recording stops after one complete rotation.
 
+### Admin authentication
+- [ ] Admin can sign in with an email/password account created in Supabase.
+- [ ] A signed-in user without an `admin_users` row is denied and signed out.
+- [ ] `admin.html` redirects unauthenticated users to `admin-login.html`.
+- [ ] Admin can sign out.
+- [ ] Admin membership can only be granted/revoked through trusted Supabase dashboard/SQL access, not from the browser.
+
 ### Pre-order
 - [ ] Catalog and custom designs produce a correct order summary.
 - [ ] Event and collection information are visible before hand-off.
@@ -298,7 +312,8 @@ Before implementing a feature:
 5. Open review mode; test orbit, zoom, shake, screenshot, and recording.
 6. Export GLB and SVG and inspect the resulting files.
 7. Continue to pre-order and verify the summary and contact fallback.
-8. Repeat the main journey at a mobile viewport.
+8. Create a Supabase Auth user, add it to `public.admin_users`, then test admin login, denied non-admin login, direct access to `admin.html`, and logout.
+9. Repeat the main journey at a mobile viewport.
 
 ---
 
