@@ -144,8 +144,8 @@
       <button type="button" class="btn secondary" id="copyBtn">Salin ringkasan</button>
       <button type="button" class="btn ghost" id="dlDesign" hidden>Unduh gambar desain</button>
       <ol class="steps">
-        <li>Klik <b>Kirim via WhatsApp</b>. Ringkasan otomatis terisi di chat (dan tersalin sebagai cadangan).</li>
-        <li>Kirim pesannya ke admin<span id="stepImg">, lalu lampirkan gambar desain yang sudah diunduh</span>.</li>
+        <li>Klik <b>Make an Order</b> untuk membuka WhatsApp dengan ringkasan pesananmu.</li>
+        <li>Periksa ringkasan, kirim pesan ke admin<span id="stepImg">, lalu lampirkan gambar desain yang sudah diunduh</span>.</li>
         <li>Admin membalas dengan harga &amp; cara bayar. Pesanan diambil di booth Bifest.</li>
       </ol>
     </aside>
@@ -335,21 +335,8 @@
     if (!requireValid()) return;
     update();
     $('summary').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    toast('Ringkasan siap. Pilih WhatsApp atau DM untuk menyimpan dan mengirim pesanan.');
+    toast('Ringkasan siap. Klik Make an Order untuk melanjutkan ke WhatsApp.');
   });
-  $('sendIg').onclick = async () => {
-    if (!requireValid()) return;
-    const popup = window.open('about:blank', '_blank');
-    try {
-      await saveOrder();
-      const ok = await copy(summaryText());
-      if (popup) popup.location.href = SHOP_UTIL.igDmUrl();
-      toast(ok ? 'Pesanan tersimpan. Ringkasan tersalin, tempel di DM Instagram.' : 'Pesanan tersimpan. Salin ringkasan secara manual ke DM.');
-    } catch (error) {
-      if (popup) popup.close();
-      toast('Pesanan belum tersimpan. Coba lagi sebelum mengirim.');
-    }
-  };
   $('sendWa').addEventListener('click', async e => {
     e.preventDefault();
     if (!requireValid()) return;
@@ -358,13 +345,12 @@
       await saveOrder();
       await copy(summaryText());
       if (popup) popup.location.href = SHOP_UTIL.waUrl(summaryText());
-      toast('Pesanan tersimpan. Ringkasan siap dikirim via WhatsApp.');
+      toast('Pesanan tersimpan. WhatsApp siap dibuka untuk mengirim pesanan.');
     } catch (error) {
       if (popup) popup.close();
       toast('Pesanan belum tersimpan. Coba lagi sebelum mengirim.');
     }
   });
-  $('copyBtn').onclick = async () => toast((await copy(summaryText())) ? 'Ringkasan tersalin.' : 'Gagal menyalin, salin manual ya.');
   update();
 </script>
 </body>
