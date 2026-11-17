@@ -6,7 +6,7 @@
 <title>Desain 3D - Friendship KeyChain</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;800&family=Permanent+Marker&display=swap" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Inter:wght@400;600;800&family=Oswald:wght@400;600;700&family=Permanent+Marker&family=Roboto+Slab:wght@700&display=swap" />
 <meta name="theme-color" content="#0d0d10" />
 <link rel="canonical" href="https://friendshipmerch.vercel.app/desain.html" />
 <meta property="og:type" content="website" />
@@ -310,6 +310,15 @@
   <div id="textBox">
     <label for="nameInput">Tulisan <span class="val" id="textHint"></span></label>
     <input id="nameInput" type="text" maxlength="16" value="ROCK" placeholder="Kosongkan kalau tanpa tulisan" />
+      <label for="fontSelect">Font tulisan</label>
+      <select id="fontSelect">
+        <option value="bebas">Bebas Neue — tegas</option>
+        <option value="anton">Anton — bold</option>
+        <option value="oswald">Oswald — condensed</option>
+        <option value="marker">Permanent Marker — handwritten</option>
+        <option value="slab">Roboto Slab — serif</option>
+        <option value="inter">Inter — clean</option>
+      </select>
     <div id="textOpts">
       <label for="textSize">Ukuran tulisan <span class="val" id="textSizeVal"></span></label>
       <input type="range" id="textSize" min="40" max="160" value="100" />
@@ -743,11 +752,20 @@ function chaikin(pts, iterations) {
 }
 
 // Text label for custom assets: bold poster type with a contrasting outline (sticker style)
-const LABEL_FONT = '"Bebas Neue", Impact, "Arial Narrow Bold", sans-serif';
+const FONT_PRESETS = {
+  bebas: { label: "Bebas Neue", css: '"Bebas Neue", Impact, sans-serif', url: "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/fonts/helvetiker_bold.typeface.json" },
+  anton: { label: "Anton", css: '"Anton", Impact, sans-serif', url: "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/fonts/helvetiker_bold.typeface.json" },
+  oswald: { label: "Oswald", css: '"Oswald", "Arial Narrow", sans-serif', url: "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/fonts/helvetiker_regular.typeface.json" },
+  marker: { label: "Permanent Marker", css: '"Permanent Marker", cursive', url: "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/fonts/optimer_bold.typeface.json" },
+  slab: { label: "Roboto Slab", css: '"Roboto Slab", Georgia, serif', url: "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/fonts/gentilis_bold.typeface.json" },
+  inter: { label: "Inter", css: 'Inter, Arial, sans-serif', url: "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/fonts/droid/droid_sans_bold.typeface.json" }
+};
+const loadedFonts = {};
+const LABEL_FONT = () => FONT_PRESETS[state?.font || "bebas"].css;
 function textLayout(label, iw, ih) {
   const g = document.createElement('canvas').getContext('2d');
   let size = Math.max(iw, ih) * 0.2 * (state.textSize || 1);
-  g.font = `${size}px ${LABEL_FONT}`;
+  g.font = `${size}px ${LABEL_FONT()}`;
   let m = g.measureText(label), w = m.width;
   const maxW = Math.max(iw, ih) * 1.6;            // very long text gets smaller instead of very wide
   if (w > maxW) { size *= maxW / w; g.font = `${size}px ${LABEL_FONT}`; m = g.measureText(label); w = m.width; }
@@ -760,7 +778,7 @@ function textLayout(label, iw, ih) {
 function drawTextLabel(label, tf, W, H, cx, top) {
   const c = document.createElement('canvas'); c.width = W; c.height = H;
   const g = c.getContext('2d');
-  g.font = `${tf.size}px ${LABEL_FONT}`; g.textAlign = 'center'; g.textBaseline = 'alphabetic'; g.lineJoin = 'round';
+  g.font = `${tf.size}px ${LABEL_FONT()}`; g.textAlign = 'center'; g.textBaseline = 'alphabetic'; g.lineJoin = 'round';
   const fill = new THREE.Color(state.textColor || '#ffffff');
   const light = 0.2126 * fill.r + 0.7152 * fill.g + 0.0722 * fill.b > 0.5;
   g.strokeStyle = light ? '#111111' : '#ffffff'; g.lineWidth = tf.stroke * 2;
@@ -1031,7 +1049,7 @@ function newCharm(from) {
   const c = {
     id: ++charmSeq,
     state: from ? { ...from.state }
-      : { shape: 'heart', text: 'ROCK', tilt: true, finish: 'glossy', sizeMm: 60, thickMm: 4, color: '#e11d2e', textColor: '#ffffff', textSize: 1, textPlace: 'bawah' },
+      : { shape: 'heart', text: 'ROCK', font: 'bebas', tilt: true, finish: 'glossy', sizeMm: 60, thickMm: 4, color: '#e11d2e', textColor: '#ffffff', textSize: 1, textPlace: 'bawah' },
     custom: from ? { ...from.custom }
       : { img: null, name: '', border: 14, tol: 40, holePos: null, relief: 'light', bgMode: 'auto', data: null, thumb: '', status: '', statusCls: '' },
     links: from ? from.links : 4,
@@ -1109,9 +1127,10 @@ function buildCharm() {
   }
   {
     const txt = state.text.trim();
-    if (font && txt && !def.art) { // custom assets: the text is already printed + cut in processAsset()
+    const selectedFont = loadedFonts[state.font || "bebas"];
+    if (selectedFont && txt && !def.art) { // custom assets: the text is already printed + cut in processAsset()
       const tg = new TextGeometry(txt, {
-        font, size: 0.4, height: 0.04, depth: 0.04, curveSegments: 8,
+        font: selectedFont, size: 0.4, height: 0.04, depth: 0.04, curveSegments: 8,
         bevelEnabled: true, bevelThickness: 0.01, bevelSize: 0.008, bevelSegments: 2
       });
       tg.computeBoundingBox();
@@ -1145,12 +1164,16 @@ function buildCharm() {
 }
 function rebuildAll() { for (const c of charms) withCharm(c, buildCharm); }
 
-new FontLoader().load(
-  'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/fonts/helvetiker_bold.typeface.json',
-  f => { font = f; rebuildAll(); },
-  undefined,
-  () => console.warn('Font gagal dimuat, tulisan tidak ditampilkan')
-);
+function loadTextFont(key) {
+  const preset = FONT_PRESETS[key] || FONT_PRESETS.bebas;
+  if (loadedFonts[key]) { rebuildAll(); return; }
+  new FontLoader().load(preset.url, f => { loadedFonts[key] = f; rebuildAll(); }, undefined,
+    () => console.warn(`Font 3D ${key} gagal dimuat`));
+  if (document.fonts?.load) document.fonts.load(`40px ${preset.css}`).then(() => {
+    for (const c of charms) if (c.custom.data && c.state.font === key && c.state.text.trim()) withCharm(c, runProcess);
+  }).catch(() => {});
+}
+loadTextFont("bebas");
 
 // ---------- Simple chained-pendulum physics ----------
 // The ring swings on the peg; every charm's chain follows the ring with a slight lag (whip effect).
@@ -1452,6 +1475,7 @@ $('tiltCheck').onchange = e => { state.tilt = e.target.checked; buildCharm(); };
 // --- text options (all shapes; position only for custom assets) ---
 const TEXT_COLORS = ['#ffffff', '#111111', '#e11d2e', '#f5c400', '#0b2a8f', '#2fb5e8'];
 function syncTextUI() {
+  $('fontSelect').value = state.font || "bebas";
   $('textSizeVal').textContent = Math.round(state.textSize * 100) + '%';
   $('textSize').value = Math.round(state.textSize * 100);
   $('textPlace').value = state.textPlace || 'bawah';
@@ -1467,6 +1491,7 @@ for (const c of TEXT_COLORS) {
   d.onclick = () => setTextColor(c);
   $('textSwatches').insertBefore(d, $('textColorPicker'));
 }
+$('fontSelect').onchange = e => { state.font = e.target.value; loadTextFont(state.font); textChanged(); };
 $('textColorPicker').oninput = e => setTextColor(e.target.value);
 $('textSize').oninput = e => { state.textSize = e.target.value / 100; syncTextUI(); textChanged(); };
 $('textPlace').onchange = e => { state.textPlace = e.target.value; syncTextUI(); textChanged(); };
