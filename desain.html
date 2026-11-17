@@ -811,21 +811,33 @@ function drawTextLabel(label, tf, W, H, cx, top) {
 function makeSelectedTextPlane(label, maxW, maxH) {
   const fontFamily = LABEL_FONT();
   const canvas = document.createElement('canvas');
-  canvas.width = 1024; canvas.height = 256;
+  canvas.width = 1024; canvas.height = 512;
   const ctx = canvas.getContext('2d');
-  const size = 176;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  const size = 280;
   ctx.font = `${size}px ${fontFamily}`;
-  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  let width = ctx.measureText(label).width;
-  const fittedSize = width > 880 ? size * (880 / width) : size;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+  const metrics = ctx.measureText(label);
+  const rawW = Math.max(1, metrics.width);
+  const rawH = Math.max(1, (metrics.actualBoundingBoxAscent || size * 0.8) + (metrics.actualBoundingBoxDescent || size * 0.2));
+  // Fit by the actual glyph bounds, not the entire transparent canvas.
+  const pad = 24;
+  const scale = Math.min((canvas.width - pad * 2) / rawW, (canvas.height - pad * 2) / rawH, 1);
+  const fittedSize = size * scale;
   ctx.font = `${fittedSize}px ${fontFamily}`;
+  const fitted = ctx.measureText(label);
+  const glyphW = Math.max(1, fitted.width);
+  const ascent = fitted.actualBoundingBoxAscent || fittedSize * 0.8;
+  const descent = fitted.actualBoundingBoxDescent || fittedSize * 0.2;
+  const glyphH = Math.max(1, ascent + descent);
+  const baseline = (canvas.height - glyphH) / 2 + ascent;
   ctx.fillStyle = state.textColor || '#ffffff';
-  ctx.fillText(label, canvas.width / 2, canvas.height / 2);
-  const actualWidth = Math.max(1, ctx.measureText(label).width);
-  const aspect = actualWidth / canvas.height;
-  const planeW = Math.min(maxW, maxH * aspect);
-  const planeH = Math.min(maxH, planeW / aspect);
+  ctx.fillText(label, canvas.width / 2, baseline);
+  const scaleFactor = state.textSize || 1;
+  const boxW = maxW * scaleFactor;
+  const boxH = maxH * scaleFactor;
+  const fit = Math.min(boxW / glyphW, boxH / glyphH);
+  const planeW = glyphW * fit;
+  const planeH = glyphH * fit;
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
@@ -1175,7 +1187,7 @@ function buildCharm() {
   {
     const txt = state.text.trim();
     if (txt && !def.art) {
-      const label = makeSelectedTextPlane(txt, def.maxW, def.maxH * (state.textSize || 1));
+      const label = makeSelectedTextPlane(txt, def.maxW, def.maxH);
       const t = new THREE.Mesh(label.geometry, label.material);
       t.position.set(0, def.textY, zFront + 0.006);
       charmGroup.add(t);
