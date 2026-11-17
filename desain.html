@@ -806,6 +806,36 @@ function drawTextLabel(label, tf, W, H, cx, top) {
   return c;
 }
 
+// Render selected local/web font on built-in charm shapes as a texture.
+// Three.js TextGeometry only accepts its own JSON font format, not raw TTF/OTF files.
+function makeSelectedTextPlane(label, maxW, maxH) {
+  const fontFamily = LABEL_FONT();
+  const canvas = document.createElement('canvas');
+  canvas.width = 1024; canvas.height = 256;
+  const ctx = canvas.getContext('2d');
+  const size = 176;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.font = `${size}px ${fontFamily}`;
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  let width = ctx.measureText(label).width;
+  const fittedSize = width > 880 ? size * (880 / width) : size;
+  ctx.font = `${fittedSize}px ${fontFamily}`;
+  ctx.fillStyle = state.textColor || '#ffffff';
+  ctx.fillText(label, canvas.width / 2, canvas.height / 2);
+  const actualWidth = Math.max(1, ctx.measureText(label).width);
+  const aspect = actualWidth / canvas.height;
+  const planeW = Math.min(maxW, maxH * aspect);
+  const planeH = Math.min(maxH, planeW / aspect);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
+  const material = new THREE.MeshBasicMaterial({
+    map: texture, transparent: true, depthWrite: false,
+    side: THREE.DoubleSide, toneMapped: false
+  });
+  return { geometry: new THREE.PlaneGeometry(planeW, planeH), material };
+}
+
 
 // Bounding box of the real artwork inside the image (skips transparent or plain-colour margins),
 // so added text sits right next to the logo instead of next to the empty canvas edge.
@@ -1144,24 +1174,11 @@ function buildCharm() {
   }
   {
     const txt = state.text.trim();
-    const selectedFont = loadedFonts[state.font || "bebas"] || loadedFonts.bebas; // TTF display fonts use the canvas artwork; keep 3D text visible with the default extrusion font.
-    if (selectedFont && txt && !def.art) { // custom assets: the text is already printed + cut in processAsset()
-      const tg = new TextGeometry(txt, {
-        font: selectedFont, size: 0.4, height: 0.04, depth: 0.04, curveSegments: 8,
-        bevelEnabled: true, bevelThickness: 0.01, bevelSize: 0.008, bevelSegments: 2
-      });
-      tg.computeBoundingBox();
-      const bb = tg.boundingBox;
-      const w = bb.max.x - bb.min.x, h = bb.max.y - bb.min.y;
-      const sc = Math.min(def.maxW / w, def.maxH / h, 1.2) * state.textSize;
-      tg.translate(-(bb.min.x + w / 2), -(bb.min.y + h / 2), 0);
-      for (const side of [1, -1]) {
-        const t = new THREE.Mesh(tg, textMat);
-        t.scale.setScalar(sc);
-        t.position.set(0, def.textY, side * (def.art ? zFront + 0.004 : zFront - 0.01));
-        if (side < 0) t.rotation.y = Math.PI;
-        charmGroup.add(t);
-      }
+    if (txt && !def.art) {
+      const label = makeSelectedTextPlane(txt, def.maxW, def.maxH * (state.textSize || 1));
+      const t = new THREE.Mesh(label.geometry, label.material);
+      t.position.set(0, def.textY, zFront + 0.006);
+      charmGroup.add(t);
     }
   }
 
