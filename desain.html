@@ -8,6 +8,9 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Inter:wght@400;600;800&family=Oswald:wght@400;600;700&family=Permanent+Marker&family=Roboto+Slab:wght@700&display=swap" />
 <style>
+@font-face { font-family: "Bootle"; src: url("./assets/font/bootle-font/Bootle-4B9l.ttf") format("truetype"); font-display: swap; }
+@font-face { font-family: "Floydian"; src: url("./assets/font/floydian/floyd.TTF") format("truetype"); font-display: swap; }
+@font-face { font-family: "Metal Lord"; src: url("./assets/font/metal_lord/Metal%20Lord.otf") format("opentype"); font-display: swap; }
 @font-face { font-family: "Pastor of Muppets"; src: url("./assets/font/pastor-of-muppets/pastor%20of%20muppets.ttf") format("truetype"); font-display: swap; }
 @font-face { font-family: "Pastor of Muppets Flipped"; src: url("./assets/font/pastor-of-muppets/pastor%20of%20muppets%20flipped.ttf") format("truetype"); font-display: swap; }
 </style>
@@ -322,6 +325,9 @@
         <option value="marker">Permanent Marker — handwritten</option>
         <option value="slab">Roboto Slab — serif</option>
         <option value="inter">Inter — clean</option>
+        <option value="bootle">Bootle — Beatles style</option>
+        <option value="floydian">Floydian — psychedelic</option>
+        <option value="metal-lord">Metal Lord — metal</option>
         <option value="pastor">Pastor of Muppets — metal</option>
         <option value="pastor-flipped">Pastor of Muppets Flipped — metal mirror</option>
       </select>
@@ -765,6 +771,9 @@ const FONT_PRESETS = {
   marker: { label: "Permanent Marker", css: '"Permanent Marker", cursive', url: "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/fonts/optimer_bold.typeface.json" },
   slab: { label: "Roboto Slab", css: '"Roboto Slab", Georgia, serif', url: "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/fonts/gentilis_bold.typeface.json" },
   inter: { label: "Inter", css: 'Inter, Arial, sans-serif', url: "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/fonts/droid/droid_sans_bold.typeface.json" },
+  bootle: { label: "Bootle", css: '"Bootle", sans-serif' },
+  floydian: { label: "Floydian", css: '"Floydian", sans-serif' },
+  "metal-lord": { label: "Metal Lord", css: '"Metal Lord", fantasy' },
   pastor: { label: "Pastor of Muppets", css: '"Pastor of Muppets", fantasy' },
   "pastor-flipped": { label: "Pastor of Muppets Flipped", css: '"Pastor of Muppets Flipped", fantasy' }
 };
