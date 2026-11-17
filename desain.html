@@ -768,7 +768,7 @@ function textLayout(label, iw, ih) {
   g.font = `${size}px ${LABEL_FONT()}`;
   let m = g.measureText(label), w = m.width;
   const maxW = Math.max(iw, ih) * 1.6;            // very long text gets smaller instead of very wide
-  if (w > maxW) { size *= maxW / w; g.font = `${size}px ${LABEL_FONT}`; m = g.measureText(label); w = m.width; }
+  if (w > maxW) { size *= maxW / w; g.font = `${size}px ${LABEL_FONT()}`; m = g.measureText(label); w = m.width; }
   const stroke = Math.max(3, size * 0.09);
   // exact ink height (cap height etc.) so the gap to the logo is what we intend
   const asc = m.actualBoundingBoxAscent || size * 0.75, desc = m.actualBoundingBoxDescent || 0;
@@ -788,7 +788,7 @@ function drawTextLabel(label, tf, W, H, cx, top) {
   g.fillText(label, cx, y);
   return c;
 }
-document.fonts?.load(`40px ${LABEL_FONT}`).then(() => { for (const c of charms) if (c.custom.data && c.state.text.trim()) withCharm(c, runProcess); });
+
 
 // Bounding box of the real artwork inside the image (skips transparent or plain-colour margins),
 // so added text sits right next to the logo instead of next to the empty canvas edge.
