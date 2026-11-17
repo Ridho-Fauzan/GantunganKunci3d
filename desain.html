@@ -810,34 +810,38 @@ function drawTextLabel(label, tf, W, H, cx, top) {
 // Three.js TextGeometry only accepts its own JSON font format, not raw TTF/OTF files.
 function makeSelectedTextPlane(label, maxW, maxH) {
   const fontFamily = LABEL_FONT();
-  const canvas = document.createElement('canvas');
-  canvas.width = 1024; canvas.height = 512;
-  const ctx = canvas.getContext('2d');
   const size = 280;
+  const measureCanvas = document.createElement('canvas');
+  const measureCtx = measureCanvas.getContext('2d');
+  measureCtx.font = `${size}px ${fontFamily}`;
+  measureCtx.textAlign = 'left';
+  measureCtx.textBaseline = 'alphabetic';
+  const metrics = measureCtx.measureText(label);
+  const left = Math.max(0, metrics.actualBoundingBoxLeft || 0);
+  const right = Math.max(1, metrics.actualBoundingBoxRight || metrics.width);
+  const ascent = Math.max(1, metrics.actualBoundingBoxAscent || size * 0.8);
+  const descent = Math.max(0, metrics.actualBoundingBoxDescent || size * 0.2);
+  const pad = 18;
+
+  // Crop the texture to the glyphs. A large fixed canvas makes the letters
+  // occupy only a small part of the plane even when the plane itself is fitted.
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.max(1, Math.ceil(left + right + pad * 2));
+  canvas.height = Math.max(1, Math.ceil(ascent + descent + pad * 2));
+  const ctx = canvas.getContext('2d');
   ctx.font = `${size}px ${fontFamily}`;
-  ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
-  const metrics = ctx.measureText(label);
-  const rawW = Math.max(1, metrics.width);
-  const rawH = Math.max(1, (metrics.actualBoundingBoxAscent || size * 0.8) + (metrics.actualBoundingBoxDescent || size * 0.2));
-  // Fit by the actual glyph bounds, not the entire transparent canvas.
-  const pad = 24;
-  const scale = Math.min((canvas.width - pad * 2) / rawW, (canvas.height - pad * 2) / rawH, 1);
-  const fittedSize = size * scale;
-  ctx.font = `${fittedSize}px ${fontFamily}`;
-  const fitted = ctx.measureText(label);
-  const glyphW = Math.max(1, fitted.width);
-  const ascent = fitted.actualBoundingBoxAscent || fittedSize * 0.8;
-  const descent = fitted.actualBoundingBoxDescent || fittedSize * 0.2;
-  const glyphH = Math.max(1, ascent + descent);
-  const baseline = (canvas.height - glyphH) / 2 + ascent;
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
   ctx.fillStyle = state.textColor || '#ffffff';
-  ctx.fillText(label, canvas.width / 2, baseline);
+  ctx.fillText(label, pad + left, pad + ascent);
+
   const scaleFactor = state.textSize || 1;
   const boxW = maxW * scaleFactor;
   const boxH = maxH * scaleFactor;
-  const fit = Math.min(boxW / glyphW, boxH / glyphH);
-  const planeW = glyphW * fit;
-  const planeH = glyphH * fit;
+  const fit = Math.min(boxW / canvas.width, boxH / canvas.height);
+  const planeW = canvas.width * fit;
+  const planeH = canvas.height * fit;
+
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.anisotropy = renderer.capabilities.getMaxAnisotropy();
@@ -847,7 +851,6 @@ function makeSelectedTextPlane(label, maxW, maxH) {
   });
   return { geometry: new THREE.PlaneGeometry(planeW, planeH), material };
 }
-
 
 // Bounding box of the real artwork inside the image (skips transparent or plain-colour margins),
 // so added text sits right next to the logo instead of next to the empty canvas edge.
