@@ -1135,7 +1135,7 @@ function buildCharm() {
   }
   {
     const txt = state.text.trim();
-    const selectedFont = loadedFonts[state.font || "bebas"];
+    const selectedFont = loadedFonts[state.font || "bebas"] || loadedFonts.bebas; // TTF display fonts use the canvas artwork; keep 3D text visible with the default extrusion font.
     if (selectedFont && txt && !def.art) { // custom assets: the text is already printed + cut in processAsset()
       const tg = new TextGeometry(txt, {
         font: selectedFont, size: 0.4, height: 0.04, depth: 0.04, curveSegments: 8,
