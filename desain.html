@@ -6,7 +6,11 @@
 <title>Desain 3D - Friendship KeyChain</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Anton&family=Bebas+Neue&family=Inter:wght@400;600;800&family=Oswald:wght@400;600;700&family=Permanent+Marker&family=Roboto+Slab:wght@700&display=swap" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Inter:wght@400;600;800&family=Oswald:wght@400;600;700&family=Permanent+Marker&family=Roboto+Slab:wght@700&display=swap" />
+<style>
+@font-face { font-family: "Pastor of Muppets"; src: url("./assets/font/pastor-of-muppets/pastor%20of%20muppets.ttf") format("truetype"); font-display: swap; }
+@font-face { font-family: "Pastor of Muppets Flipped"; src: url("./assets/font/pastor-of-muppets/pastor%20of%20muppets%20flipped.ttf") format("truetype"); font-display: swap; }
+</style>
 <meta name="theme-color" content="#0d0d10" />
 <link rel="canonical" href="https://friendshipmerch.vercel.app/desain.html" />
 <meta property="og:type" content="website" />
@@ -318,6 +322,8 @@
         <option value="marker">Permanent Marker — handwritten</option>
         <option value="slab">Roboto Slab — serif</option>
         <option value="inter">Inter — clean</option>
+        <option value="pastor">Pastor of Muppets — metal</option>
+        <option value="pastor-flipped">Pastor of Muppets Flipped — metal mirror</option>
       </select>
     <div id="textOpts">
       <label for="textSize">Ukuran tulisan <span class="val" id="textSizeVal"></span></label>
@@ -758,7 +764,9 @@ const FONT_PRESETS = {
   oswald: { label: "Oswald", css: '"Oswald", "Arial Narrow", sans-serif', url: "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/fonts/helvetiker_regular.typeface.json" },
   marker: { label: "Permanent Marker", css: '"Permanent Marker", cursive', url: "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/fonts/optimer_bold.typeface.json" },
   slab: { label: "Roboto Slab", css: '"Roboto Slab", Georgia, serif', url: "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/fonts/gentilis_bold.typeface.json" },
-  inter: { label: "Inter", css: 'Inter, Arial, sans-serif', url: "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/fonts/droid/droid_sans_bold.typeface.json" }
+  inter: { label: "Inter", css: 'Inter, Arial, sans-serif', url: "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/fonts/droid/droid_sans_bold.typeface.json" },
+  pastor: { label: "Pastor of Muppets", css: '"Pastor of Muppets", fantasy' },
+  "pastor-flipped": { label: "Pastor of Muppets Flipped", css: '"Pastor of Muppets Flipped", fantasy' }
 };
 const loadedFonts = {};
 const LABEL_FONT = () => FONT_PRESETS[state?.font || "bebas"].css;
@@ -1167,6 +1175,14 @@ function rebuildAll() { for (const c of charms) withCharm(c, buildCharm); }
 function loadTextFont(key) {
   const preset = FONT_PRESETS[key] || FONT_PRESETS.bebas;
   if (loadedFonts[key]) { rebuildAll(); return; }
+  if (!preset.url) {
+    if (document.fonts?.load) document.fonts.load(`40px ${preset.css}`).then(() => {
+      rebuildAll();
+      for (const c of charms) if (c.custom.data && c.state.font === key && c.state.text.trim()) withCharm(c, runProcess);
+    }).catch(() => console.warn(`Font ${key} gagal dimuat`));
+    else rebuildAll();
+    return;
+  }
   new FontLoader().load(preset.url, f => { loadedFonts[key] = f; rebuildAll(); }, undefined,
     () => console.warn(`Font 3D ${key} gagal dimuat`));
   if (document.fonts?.load) document.fonts.load(`40px ${preset.css}`).then(() => {
