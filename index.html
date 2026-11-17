@@ -36,7 +36,7 @@
 <script>
   // Defensive cleanup for a stray literal "\\n" text node above the catalog navbar.
   for (const node of [...document.body.childNodes]) {
-    if (node.nodeType === Node.TEXT_NODE && node.nodeValue.trim() === "\\\\n") node.remove();
+    if (node.nodeType === Node.TEXT_NODE && node.nodeValue.trim() === "\\n") node.remove();
   }
 </script>
 <header class="topnav">
