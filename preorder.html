@@ -258,6 +258,9 @@
       color: $('warna').value.trim(),
       notes: $('catatan').value.trim(),
       design: sel.value === DESIGN_OPT && design ? {
+        // Keep the 3D preview so built-in shapes (heart, star, tag, circle, pick)
+        // can also be viewed by admin even when they have no separate artwork canvas.
+        thumb: design.thumb || '',
         items: (design.items || []).map(item => ({
           bentuk: item.bentuk, tulisan: item.tulisan, warna: item.warna, asset: item.asset,
           artwork: item.artwork || ''
