@@ -97,27 +97,20 @@
     container.textContent = '';
 
     const items = Array.isArray(order.design?.items) ? order.design.items : [];
+    const isSupportedArtwork = value => typeof value === 'string' && (
+      /^data:image\/(?:png|jpeg|webp|svg\+xml);base64,/i.test(value) ||
+      /^https:\/\/raw\.githubusercontent\.com\/Ridho-Fauzan\/GantunganKunci3d\/main\/assets\/demo-artworks\/[a-z0-9-]+\.svg$/i.test(value) ||
+      /^https:\/\/images\.clipsafari\.com\//i.test(value)
+    );
     const withArtwork = items
       .map((item, index) => ({ item, index }))
-      .filter(({ item }) => typeof item.artwork === 'string' && (
-        /^data:image\\/(?:png|jpeg|webp|svg\\+xml);base64,/i.test(item.artwork) ||
-        /^https:\\/\\/raw\\.githubusercontent\\.com\\/Ridho-Fauzan\\/GantunganKunci3d\\/main\\/assets\\/demo-artworks\\/[a-z0-9-]+\\.svg$/i.test(item.artwork) ||
-        /^https:\\/\\/images\\.clipsafari\\.com\\//i.test(item.artwork)
-      ));
+      .filter(({ item }) => isSupportedArtwork(item.artwork));
 
     const orderCode = order.id.slice(0, 8).toUpperCase();
-
-    // Built-in shapes (heart, star, tag, circle, guitar pick) do not have
-    // a separate cutout artwork canvas. Their 3D preview is stored as design.thumb.
-    // Show that preview instead of leaving the admin artwork section empty.
     const previews = withArtwork.length
       ? withArtwork
-      : (typeof order.design?.thumb === 'string' && (
-          /^data:image\\/(?:png|jpeg|webp|svg\\+xml);base64,/i.test(order.design.thumb) ||
-          /^https:\\/\\/raw\\.githubusercontent\\.com\\/Ridho-Fauzan\\/GantunganKunci3d\\/main\\/assets\\/demo-artworks\\/[a-z0-9-]+\\.svg$/i.test(order.design.thumb) ||
-          /^https:\\/\\/images\\.clipsafari\\.com\\//i.test(order.design.thumb)
-        )
-        ? [{ item: { artwork: order.design.thumb, bentuk: 'Preview desain 3D' }, index: 0, isPreview: true }]
+      : (isSupportedArtwork(order.design?.thumb)
+        ? [{ item: { artwork: order.design.thumb, bentuk: 'Preview desain' }, index: 0, isPreview: true }]
         : []);
 
     if (!previews.length) {
@@ -131,7 +124,7 @@
       const figure = document.createElement('figure');
       const img = document.createElement('img');
       img.src = item.artwork;
-      img.alt = (entry.isPreview ? 'Preview 3D' : 'Artwork hasil kustomisasi') + ' - ' + (item.bentuk || 'desain');
+      img.alt = (entry.isPreview ? 'Preview desain' : 'Artwork hasil kustomisasi') + ' - ' + (item.bentuk || 'desain');
       img.loading = 'lazy';
 
       const caption = document.createElement('figcaption');
@@ -140,7 +133,10 @@
       const download = document.createElement('a');
       download.className = 'btn-small artwork-download';
       download.href = item.artwork;
-      const ext = /^data:image\/jpeg/i.test(item.artwork) ? 'jpg' : /^data:image\/webp/i.test(item.artwork) ? 'webp' : 'png';
+      const ext = /\.svg(?:$|\?)/i.test(item.artwork) || /^data:image\/svg\+xml/i.test(item.artwork)
+        ? 'svg'
+        : /^data:image\/jpeg/i.test(item.artwork) ? 'jpg'
+        : /^data:image\/webp/i.test(item.artwork) ? 'webp' : 'png';
       download.download = 'FK-' + orderCode + '-' + String(index + 1).padStart(2, '0') + '-' + safeFilename(item.bentuk) + '.' + ext;
       download.textContent = entry.isPreview ? 'Download preview' : (ext === 'svg' ? 'Download SVG siap cetak' : 'Download PNG');
       download.setAttribute('aria-label', 'Download ' + (item.bentuk || 'artwork') + ' desain');
