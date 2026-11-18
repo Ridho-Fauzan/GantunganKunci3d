@@ -4,11 +4,11 @@
 <desc>Original vector keychain artwork, transparent outside the charm silhouette, with a red acrylic cut contour.</desc>
 <defs>
  <linearGradient id="grad15" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f5e1e8"/><stop offset="1" stop-color="#25232a"/></linearGradient>
- <clipPath id="clip15"><path d="M500 1055 C390 955 145 765 145 505 C145 315 275 185 430 185 C475 185 505 205 500 245 C495 205 525 185 570 185 C725 185 855 315 855 505 C855 765 610 955 500 1055 Z"/></clipPath>
- <mask id="mask15"><rect width="1000" height="1200" fill="black"/><path d="M500 1055 C390 955 145 765 145 505 C145 315 275 185 430 185 C475 185 505 205 500 245 C495 205 525 185 570 185 C725 185 855 315 855 505 C855 765 610 955 500 1055 Z" fill="white"/><circle cx="500" cy="250" r="48" fill="black"/></mask>
+ <clipPath id="clip15"><path d="M440 105 L560 105 Q590 105 590 135 L590 205 C730 150 870 290 855 505 C840 730 650 940 500 1055 C350 940 160 730 145 505 C130 290 270 150 410 205 L410 135 Q410 105 440 105 Z"/></clipPath>
+ <mask id="mask15"><rect width="1000" height="1200" fill="black"/><path d="M440 105 L560 105 Q590 105 590 135 L590 205 C730 150 870 290 855 505 C840 730 650 940 500 1055 C350 940 160 730 145 505 C130 290 270 150 410 205 L410 135 Q410 105 440 105 Z" fill="white"/><circle cx="500" cy="155" r="48" fill="black"/></mask>
 </defs>
 <g mask="url(#mask15)">
- <path d="M500 1055 C390 955 145 765 145 505 C145 315 275 185 430 185 C475 185 505 205 500 245 C495 205 525 185 570 185 C725 185 855 315 855 505 C855 765 610 955 500 1055 Z" fill="url(#grad15)"/>
+ <path d="M440 105 L560 105 Q590 105 590 135 L590 205 C730 150 870 290 855 505 C840 730 650 940 500 1055 C350 940 160 730 145 505 C130 290 270 150 410 205 L410 135 Q410 105 440 105 Z" fill="url(#grad15)"/>
  <g clip-path="url(#clip15)">
   <path d="M70 320 Q500 150 930 320 M70 900 Q500 1040 930 900" fill="none" stroke="#bd6687" stroke-width="10" opacity=".45"/>
   <g opacity=".2" stroke="#bd6687" stroke-width="7"><path d="M120 300 L120 970"/><path d="M215 300 L215 970"/><path d="M310 300 L310 970"/><path d="M405 300 L405 970"/><path d="M500 300 L500 970"/><path d="M595 300 L595 970"/><path d="M690 300 L690 970"/><path d="M785 300 L785 970"/><path d="M880 300 L880 970"/></g>
@@ -20,7 +20,7 @@
   <text x="500" y="1030" text-anchor="middle" fill="#ffffff" opacity=".7" font-family="Arial, sans-serif" font-size="20" letter-spacing="8">FRIENDSHIP KEYCHAIN • 16</text>
  </g>
 </g>
-<path d="M500 1055 C390 955 145 765 145 505 C145 315 275 185 430 185 C475 185 505 205 500 245 C495 205 525 185 570 185 C725 185 855 315 855 505 C855 765 610 955 500 1055 Z" fill="none" stroke="#ff1744" stroke-width="10" stroke-linejoin="round"/>
-<circle cx="500" cy="250" r="48" fill="none" stroke="#ff1744" stroke-width="10"/>
-<circle cx="500" cy="250" r="17" fill="none" stroke="#bd6687" stroke-width="5" opacity=".7"/>
+<path d="M440 105 L560 105 Q590 105 590 135 L590 205 C730 150 870 290 855 505 C840 730 650 940 500 1055 C350 940 160 730 145 505 C130 290 270 150 410 205 L410 135 Q410 105 440 105 Z" fill="none" stroke="#ff1744" stroke-width="10" stroke-linejoin="round"/>
+<circle cx="500" cy="155" r="48" fill="none" stroke="#ff1744" stroke-width="10"/>
+<circle cx="500" cy="155" r="17" fill="none" stroke="#bd6687" stroke-width="5" opacity=".7"/>
 </svg>
