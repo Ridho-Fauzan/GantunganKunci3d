@@ -99,7 +99,11 @@
     const items = Array.isArray(order.design?.items) ? order.design.items : [];
     const withArtwork = items
       .map((item, index) => ({ item, index }))
-      .filter(({ item }) => typeof item.artwork === 'string' && (/^data:image\/(?:png|jpeg|webp);base64,/i.test(item.artwork) || /^https:\/\/images\.clipsafari\.com\//i.test(item.artwork)));
+      .filter(({ item }) => typeof item.artwork === 'string' && (
+        /^data:image\\/(?:png|jpeg|webp|svg\\+xml);base64,/i.test(item.artwork) ||
+        /^https:\\/\\/raw\\.githubusercontent\\.com\\/Ridho-Fauzan\\/GantunganKunci3d\\/main\\/assets\\/demo-artworks\\/[a-z0-9-]+\\.svg$/i.test(item.artwork) ||
+        /^https:\\/\\/images\\.clipsafari\\.com\\//i.test(item.artwork)
+      ));
 
     const orderCode = order.id.slice(0, 8).toUpperCase();
 
@@ -108,7 +112,11 @@
     // Show that preview instead of leaving the admin artwork section empty.
     const previews = withArtwork.length
       ? withArtwork
-      : (typeof order.design?.thumb === 'string' && (/^data:image\/(?:png|jpeg|webp);base64,/i.test(order.design.thumb) || /^https:\/\/images\.clipsafari\.com\//i.test(order.design.thumb))
+      : (typeof order.design?.thumb === 'string' && (
+          /^data:image\\/(?:png|jpeg|webp|svg\\+xml);base64,/i.test(order.design.thumb) ||
+          /^https:\\/\\/raw\\.githubusercontent\\.com\\/Ridho-Fauzan\\/GantunganKunci3d\\/main\\/assets\\/demo-artworks\\/[a-z0-9-]+\\.svg$/i.test(order.design.thumb) ||
+          /^https:\\/\\/images\\.clipsafari\\.com\\//i.test(order.design.thumb)
+        )
         ? [{ item: { artwork: order.design.thumb, bentuk: 'Preview desain 3D' }, index: 0, isPreview: true }]
         : []);
 
@@ -134,7 +142,7 @@
       download.href = item.artwork;
       const ext = /^data:image\/jpeg/i.test(item.artwork) ? 'jpg' : /^data:image\/webp/i.test(item.artwork) ? 'webp' : 'png';
       download.download = 'FK-' + orderCode + '-' + String(index + 1).padStart(2, '0') + '-' + safeFilename(item.bentuk) + '.' + ext;
-      download.textContent = entry.isPreview ? 'Download preview' : 'Download PNG';
+      download.textContent = entry.isPreview ? 'Download preview' : (ext === 'svg' ? 'Download SVG siap cetak' : 'Download PNG');
       download.setAttribute('aria-label', 'Download ' + (item.bentuk || 'artwork') + ' desain');
       figure.append(img, caption, download);
       container.append(figure);
