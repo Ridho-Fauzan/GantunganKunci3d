@@ -99,6 +99,7 @@
     const items = Array.isArray(order.design?.items) ? order.design.items : [];
     const isSupportedArtwork = value => typeof value === 'string' && (
       /^data:image\/(?:png|jpeg|webp|svg\+xml);base64,/i.test(value) ||
+      /^\/assets\/demo-artworks\/[a-z0-9-]+\.svg$/i.test(value) ||
       /^https:\/\/raw\.githubusercontent\.com\/Ridho-Fauzan\/GantunganKunci3d\/main\/assets\/demo-artworks\/[a-z0-9-]+\.svg$/i.test(value) ||
       /^https:\/\/images\.clipsafari\.com\//i.test(value)
     );
