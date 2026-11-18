@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1200" viewBox="0 0 1000 1200">
+<title>RADIOHEAD — CREEP — Nabila Putri</title>
+<desc>Original vector keychain artwork, transparent outside the charm silhouette, with a red acrylic cut contour.</desc>
+<defs>
+ <linearGradient id="grad1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f7e9df"/><stop offset="1" stop-color="#25232a"/></linearGradient>
+ <clipPath id="clip1"><path d="M500 110 C755 110 900 300 900 570 C900 830 735 1040 500 1040 C265 1040 100 830 100 570 C100 300 245 110 500 110 Z"/></clipPath>
+ <mask id="mask1"><rect width="1000" height="1200" fill="black"/><path d="M500 110 C755 110 900 300 900 570 C900 830 735 1040 500 1040 C265 1040 100 830 100 570 C100 300 245 110 500 110 Z" fill="white"/><circle cx="500" cy="240" r="48" fill="black"/></mask>
+</defs>
+<g mask="url(#mask1)">
+ <path d="M500 110 C755 110 900 300 900 570 C900 830 735 1040 500 1040 C265 1040 100 830 100 570 C100 300 245 110 500 110 Z" fill="url(#grad1)"/>
+ <g clip-path="url(#clip1)">
+  <path d="M70 320 Q500 150 930 320 M70 900 Q500 1040 930 900" fill="none" stroke="#d65b78" stroke-width="10" opacity=".45"/>
+  <g opacity=".2" stroke="#d65b78" stroke-width="7"><path d="M120 300 L120 970"/><path d="M215 300 L215 970"/><path d="M310 300 L310 970"/><path d="M405 300 L405 970"/><path d="M500 300 L500 970"/><path d="M595 300 L595 970"/><path d="M690 300 L690 970"/><path d="M785 300 L785 970"/><path d="M880 300 L880 970"/></g>
+  <g transform="translate(500 525)"><circle r="230" fill="#15151a" stroke="#d65b78" stroke-width="18"/><circle r="175" fill="none" stroke="#d65b78" stroke-width="5" opacity=".7"/><circle r="130" fill="none" stroke="#d65b78" stroke-width="5" opacity=".6"/><circle r="82" fill="#d65b78"/><circle r="18" fill="#f7e9df"/><path d="M-210 -40 Q-80 -170 40 -190" fill="none" stroke="#fff" stroke-width="9" opacity=".3"/></g>
+  <text x="500" y="790" text-anchor="middle" fill="#d65b78" font-family="Arial Black, Impact, sans-serif" font-size="66" letter-spacing="5" font-weight="900">RADIOHEAD</text>
+  <path d="M210 825 H790" stroke="#d65b78" stroke-width="7" opacity=".9"/>
+  <text x="500" y="895" text-anchor="middle" fill="#fff" font-family="Arial Black, Impact, sans-serif" font-size="70" font-weight="900" letter-spacing="2">CREEP</text>
+  <text x="500" y="970" text-anchor="middle" fill="#d65b78" font-family="Arial, sans-serif" font-size="31" font-weight="700" letter-spacing="7">NABILA PUTRI</text>
+  <text x="500" y="1030" text-anchor="middle" fill="#ffffff" opacity=".7" font-family="Arial, sans-serif" font-size="20" letter-spacing="8">FRIENDSHIP KEYCHAIN • 02</text>
+ </g>
+</g>
+<path d="M500 110 C755 110 900 300 900 570 C900 830 735 1040 500 1040 C265 1040 100 830 100 570 C100 300 245 110 500 110 Z" fill="none" stroke="#ff1744" stroke-width="10" stroke-linejoin="round"/>
+<circle cx="500" cy="240" r="48" fill="none" stroke="#ff1744" stroke-width="10"/>
+<circle cx="500" cy="240" r="17" fill="none" stroke="#d65b78" stroke-width="5" opacity=".7"/>
+</svg>
