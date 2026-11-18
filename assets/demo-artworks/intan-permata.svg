@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1200" viewBox="0 0 1000 1200">
+<title>REALITY CLUB — DANCING IN THE MOONLIGHT — Intan Permata</title>
+<desc>Original vector keychain artwork, transparent outside the charm silhouette, with a red acrylic cut contour.</desc>
+<defs>
+ <linearGradient id="grad7" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f4dce8"/><stop offset="1" stop-color="#25232a"/></linearGradient>
+ <clipPath id="clip7"><path d="M500 110 C755 110 900 300 900 570 C900 830 735 1040 500 1040 C265 1040 100 830 100 570 C100 300 245 110 500 110 Z"/></clipPath>
+ <mask id="mask7"><rect width="1000" height="1200" fill="black"/><path d="M500 110 C755 110 900 300 900 570 C900 830 735 1040 500 1040 C265 1040 100 830 100 570 C100 300 245 110 500 110 Z" fill="white"/><circle cx="500" cy="240" r="48" fill="black"/></mask>
+</defs>
+<g mask="url(#mask7)">
+ <path d="M500 110 C755 110 900 300 900 570 C900 830 735 1040 500 1040 C265 1040 100 830 100 570 C100 300 245 110 500 110 Z" fill="url(#grad7)"/>
+ <g clip-path="url(#clip7)">
+  <path d="M70 320 Q500 150 930 320 M70 900 Q500 1040 930 900" fill="none" stroke="#c45b8b" stroke-width="10" opacity=".45"/>
+  <g opacity=".2" stroke="#c45b8b" stroke-width="7"><path d="M120 300 L120 970"/><path d="M215 300 L215 970"/><path d="M310 300 L310 970"/><path d="M405 300 L405 970"/><path d="M500 300 L500 970"/><path d="M595 300 L595 970"/><path d="M690 300 L690 970"/><path d="M785 300 L785 970"/><path d="M880 300 L880 970"/></g>
+  <g transform="translate(500 520)" fill="none" stroke="#c45b8b" stroke-width="18"><circle r="52" fill="#c45b8b"/><ellipse cx="0" cy="-145" rx="55" ry="105" transform="rotate(0)" fill="#c45b8b" opacity=".75"/><ellipse cx="0" cy="-145" rx="55" ry="105" transform="rotate(45)" fill="#c45b8b" opacity=".75"/><ellipse cx="0" cy="-145" rx="55" ry="105" transform="rotate(90)" fill="#c45b8b" opacity=".75"/><ellipse cx="0" cy="-145" rx="55" ry="105" transform="rotate(135)" fill="#c45b8b" opacity=".75"/><ellipse cx="0" cy="-145" rx="55" ry="105" transform="rotate(180)" fill="#c45b8b" opacity=".75"/><ellipse cx="0" cy="-145" rx="55" ry="105" transform="rotate(225)" fill="#c45b8b" opacity=".75"/><ellipse cx="0" cy="-145" rx="55" ry="105" transform="rotate(270)" fill="#c45b8b" opacity=".75"/><ellipse cx="0" cy="-145" rx="55" ry="105" transform="rotate(315)" fill="#c45b8b" opacity=".75"/><path d="M0 205 Q-20 310 35 370 M0 275 Q-130 215 -165 285 M20 310 Q130 230 165 285"/></g>
+  <text x="500" y="790" text-anchor="middle" fill="#c45b8b" font-family="Arial Black, Impact, sans-serif" font-size="66" letter-spacing="5" font-weight="900">REALITY CLUB</text>
+  <path d="M210 825 H790" stroke="#c45b8b" stroke-width="7" opacity=".9"/>
+  <text x="500" y="895" text-anchor="middle" fill="#fff" font-family="Arial Black, Impact, sans-serif" font-size="48" font-weight="900" letter-spacing="2">DANCING IN THE MOONLIGHT</text>
+  <text x="500" y="970" text-anchor="middle" fill="#c45b8b" font-family="Arial, sans-serif" font-size="31" font-weight="700" letter-spacing="7">INTAN PERMATA</text>
+  <text x="500" y="1030" text-anchor="middle" fill="#ffffff" opacity=".7" font-family="Arial, sans-serif" font-size="20" letter-spacing="8">FRIENDSHIP KEYCHAIN • 08</text>
+ </g>
+</g>
+<path d="M500 110 C755 110 900 300 900 570 C900 830 735 1040 500 1040 C265 1040 100 830 100 570 C100 300 245 110 500 110 Z" fill="none" stroke="#ff1744" stroke-width="10" stroke-linejoin="round"/>
+<circle cx="500" cy="240" r="48" fill="none" stroke="#ff1744" stroke-width="10"/>
+<circle cx="500" cy="240" r="17" fill="none" stroke="#c45b8b" stroke-width="5" opacity=".7"/>
+</svg>
