@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1200" viewBox="0 0 1000 1200">
+<title>FEAST — KAMAR GELAP — Fajar Maulana</title>
+<desc>Original vector keychain artwork, transparent outside the charm silhouette, with a red acrylic cut contour.</desc>
+<defs>
+ <linearGradient id="grad4" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#171717"/><stop offset="1" stop-color="#08090d"/></linearGradient>
+ <clipPath id="clip4"><path d="M500 100 L610 365 L900 390 L680 585 L745 880 L500 725 L255 880 L320 585 L100 390 L390 365 Z"/></clipPath>
+ <mask id="mask4"><rect width="1000" height="1200" fill="black"/><path d="M500 100 L610 365 L900 390 L680 585 L745 880 L500 725 L255 880 L320 585 L100 390 L390 365 Z" fill="white"/><circle cx="500" cy="230" r="48" fill="black"/></mask>
+</defs>
+<g mask="url(#mask4)">
+ <path d="M500 100 L610 365 L900 390 L680 585 L745 880 L500 725 L255 880 L320 585 L100 390 L390 365 Z" fill="url(#grad4)"/>
+ <g clip-path="url(#clip4)">
+  <path d="M70 320 Q500 150 930 320 M70 900 Q500 1040 930 900" fill="none" stroke="#ff5a36" stroke-width="10" opacity=".45"/>
+  <g opacity=".2" stroke="#ff5a36" stroke-width="7"><path d="M120 300 L120 970"/><path d="M215 300 L215 970"/><path d="M310 300 L310 970"/><path d="M405 300 L405 970"/><path d="M500 300 L500 970"/><path d="M595 300 L595 970"/><path d="M690 300 L690 970"/><path d="M785 300 L785 970"/><path d="M880 300 L880 970"/></g>
+  <path d="M570 235 L335 570 H485 L410 835 L680 480 H520 Z" fill="#ff5a36" stroke="#ff5a36" stroke-width="14" stroke-linejoin="round"/>
+  <text x="500" y="790" text-anchor="middle" fill="#ff5a36" font-family="Arial Black, Impact, sans-serif" font-size="66" letter-spacing="5" font-weight="900">FEAST</text>
+  <path d="M210 825 H790" stroke="#ff5a36" stroke-width="7" opacity=".9"/>
+  <text x="500" y="895" text-anchor="middle" fill="#fff" font-family="Arial Black, Impact, sans-serif" font-size="70" font-weight="900" letter-spacing="2">KAMAR GELAP</text>
+  <text x="500" y="970" text-anchor="middle" fill="#ff5a36" font-family="Arial, sans-serif" font-size="31" font-weight="700" letter-spacing="7">FAJAR MAULANA</text>
+  <text x="500" y="1030" text-anchor="middle" fill="#ffffff" opacity=".7" font-family="Arial, sans-serif" font-size="20" letter-spacing="8">FRIENDSHIP KEYCHAIN • 05</text>
+ </g>
+</g>
+<path d="M500 100 L610 365 L900 390 L680 585 L745 880 L500 725 L255 880 L320 585 L100 390 L390 365 Z" fill="none" stroke="#ff1744" stroke-width="10" stroke-linejoin="round"/>
+<circle cx="500" cy="230" r="48" fill="none" stroke="#ff1744" stroke-width="10"/>
+<circle cx="500" cy="230" r="17" fill="none" stroke="#ff5a36" stroke-width="5" opacity=".7"/>
+</svg>
