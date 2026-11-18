@@ -99,7 +99,7 @@
     const items = Array.isArray(order.design?.items) ? order.design.items : [];
     const withArtwork = items
       .map((item, index) => ({ item, index }))
-      .filter(({ item }) => typeof item.artwork === 'string' && /^data:image\/(?:png|jpeg|webp);base64,/i.test(item.artwork));
+      .filter(({ item }) => typeof item.artwork === 'string' && (/^data:image\/(?:png|jpeg|webp);base64,/i.test(item.artwork) || /^https:\/\/images\.clipsafari\.com\//i.test(item.artwork)));
 
     const orderCode = order.id.slice(0, 8).toUpperCase();
 
@@ -108,7 +108,7 @@
     // Show that preview instead of leaving the admin artwork section empty.
     const previews = withArtwork.length
       ? withArtwork
-      : (typeof order.design?.thumb === 'string' && /^data:image\/(?:png|jpeg|webp);base64,/i.test(order.design.thumb)
+      : (typeof order.design?.thumb === 'string' && (/^data:image\/(?:png|jpeg|webp);base64,/i.test(order.design.thumb) || /^https:\/\/images\.clipsafari\.com\//i.test(order.design.thumb))
         ? [{ item: { artwork: order.design.thumb, bentuk: 'Preview desain 3D' }, index: 0, isPreview: true }]
         : []);
 
