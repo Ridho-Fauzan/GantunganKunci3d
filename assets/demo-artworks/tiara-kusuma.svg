@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="1200" viewBox="0 0 1000 1200">
+<title>REALITY CLUB — YOU LET HER GO AGAIN — Tiara Kusuma</title>
+<desc>Original vector keychain artwork, transparent outside the charm silhouette, with a red acrylic cut contour.</desc>
+<defs>
+ <linearGradient id="grad19" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f2dfe9"/><stop offset="1" stop-color="#25232a"/></linearGradient>
+ <clipPath id="clip19"><path d="M500 1055 C390 955 145 765 145 505 C145 315 275 185 430 185 C475 185 505 205 500 245 C495 205 525 185 570 185 C725 185 855 315 855 505 C855 765 610 955 500 1055 Z"/></clipPath>
+ <mask id="mask19"><rect width="1000" height="1200" fill="black"/><path d="M500 1055 C390 955 145 765 145 505 C145 315 275 185 430 185 C475 185 505 205 500 245 C495 205 525 185 570 185 C725 185 855 315 855 505 C855 765 610 955 500 1055 Z" fill="white"/><circle cx="500" cy="250" r="48" fill="black"/></mask>
+</defs>
+<g mask="url(#mask19)">
+ <path d="M500 1055 C390 955 145 765 145 505 C145 315 275 185 430 185 C475 185 505 205 500 245 C495 205 525 185 570 185 C725 185 855 315 855 505 C855 765 610 955 500 1055 Z" fill="url(#grad19)"/>
+ <g clip-path="url(#clip19)">
+  <path d="M70 320 Q500 150 930 320 M70 900 Q500 1040 930 900" fill="none" stroke="#a95c83" stroke-width="10" opacity=".45"/>
+  <g opacity=".2" stroke="#a95c83" stroke-width="7"><path d="M120 300 L120 970"/><path d="M215 300 L215 970"/><path d="M310 300 L310 970"/><path d="M405 300 L405 970"/><path d="M500 300 L500 970"/><path d="M595 300 L595 970"/><path d="M690 300 L690 970"/><path d="M785 300 L785 970"/><path d="M880 300 L880 970"/></g>
+  <g transform="translate(500 520)" fill="#a95c83"><path d="M0 -250 L65 -70 L255 -65 L105 55 L160 245 L0 130 L-160 245 L-105 55 L-255 -65 L-65 -70Z"/><circle r="30" fill="#f2dfe9"/></g>
+  <text x="500" y="790" text-anchor="middle" fill="#a95c83" font-family="Arial Black, Impact, sans-serif" font-size="66" letter-spacing="5" font-weight="900">REALITY CLUB</text>
+  <path d="M210 825 H790" stroke="#a95c83" stroke-width="7" opacity=".9"/>
+  <text x="500" y="895" text-anchor="middle" fill="#fff" font-family="Arial Black, Impact, sans-serif" font-size="48" font-weight="900" letter-spacing="2">YOU LET HER GO AGAIN</text>
+  <text x="500" y="970" text-anchor="middle" fill="#a95c83" font-family="Arial, sans-serif" font-size="31" font-weight="700" letter-spacing="7">TIARA KUSUMA</text>
+  <text x="500" y="1030" text-anchor="middle" fill="#ffffff" opacity=".7" font-family="Arial, sans-serif" font-size="20" letter-spacing="8">FRIENDSHIP KEYCHAIN • 20</text>
+ </g>
+</g>
+<path d="M500 1055 C390 955 145 765 145 505 C145 315 275 185 430 185 C475 185 505 205 500 245 C495 205 525 185 570 185 C725 185 855 315 855 505 C855 765 610 955 500 1055 Z" fill="none" stroke="#ff1744" stroke-width="10" stroke-linejoin="round"/>
+<circle cx="500" cy="250" r="48" fill="none" stroke="#ff1744" stroke-width="10"/>
+<circle cx="500" cy="250" r="17" fill="none" stroke="#a95c83" stroke-width="5" opacity=".7"/>
+</svg>
